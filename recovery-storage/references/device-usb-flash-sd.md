@@ -7,8 +7,8 @@ Facts from real captures on this project's machine (Windows 11, non-admin; fixtu
   otherwise unverified.
 - Windows reports junk serials for such devices (a single character); identity then rests on model, exact bytes,
   VID/PID and the MBR signature / GPT guid. Re-partitioning changes that on-media id: after a gated format the
-  close step updates it when only this stick is attached; otherwise the stick comes back `ambiguous` and the
-  operator links it with `rs.py device link <observation> <device>` (which learns the new id).
+  close records identity drift (`media-id-changed`) and the operator confirms it is the same stick with
+  `rs.py device link <observation> <device>` in their own terminal (learns the new id, clears the drift).
 - An SD card in a USB reader shows the reader's VID/PID and often MBR signature 0: identity is weak. Gates still open
   when it is the only such card attached; the phrase is the exact byte count. Keep only one card in the reader.
 - A data partition without a recognised filesystem (no volume, RAW) points to a partition/filesystem cause or to a

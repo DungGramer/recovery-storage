@@ -13,6 +13,29 @@ from .errors import Refused, UsageError
 STATES = ("none", "secured", "waived", "not-needed")
 
 
+def last_write_ts(store, device_id):
+    """Latest moment the source may have been written (amendment 02): close of a writes-source gate, or abort of
+    one that had been confirmed; across all sessions. None if never."""
+    from .actions import CATALOG
+
+    kinds = [k for k, act in CATALOG.items() if act.writes_source]
+    marks = ",".join("?" * len(kinds))
+    r = store.one(f"SELECT MAX(closed_ts) AS ts FROM gates WHERE device_id = ? AND kind IN ({marks}) AND "
+                  "(state = 'closed' OR (state = 'aborted' AND confirmed_ts IS NOT NULL))", (device_id, *kinds))
+    return r["ts"] if r and r["ts"] else None
+
+
+def secured_after_last_write(store, device_id, session_id=None):
+    """A secured / waived data state recorded after the last write (any session, or the given one)."""
+    lw = last_write_ts(store, device_id) or ""
+    sql = "SELECT 1 FROM data_states WHERE device_id = ? AND state IN ('secured', 'waived') AND ts > ?"
+    args = [device_id, lw]
+    if session_id:
+        sql += " AND session_id = ?"
+        args.append(session_id)
+    return store.one(sql, tuple(args)) is not None
+
+
 def current(store, session_id, device_id):
     r = store.one("SELECT * FROM data_states WHERE session_id = ? AND device_id = ? ORDER BY ts DESC, id DESC LIMIT 1",
                   (session_id, device_id))
@@ -43,6 +66,9 @@ def operator_yes(ctx, what, argv_tail):
 
 
 def cmd_data_state(ctx, a):
+    from .operator import require_echo_safe
+
+    require_echo_safe(reason=a.reason, home=ctx.home_flag)
     s = sess.load(ctx.store, a.session)
     dev = device_row(ctx.store, a.device)
     fp = dev["fingerprint"]
@@ -57,14 +83,26 @@ def cmd_data_state(ctx, a):
                 raise Refused(f"evidence {a.evidence} belongs to another device/session", ["evidence-other-device"])
             if ev["kind"] != "ddrescue":
                 raise Refused("secured --evidence needs an ingested ddrescue mapfile", ["evidence-not-image"])
+            # the mapfile must come from a gated imaging run of this device (amendment 02: no hand-written maps)
+            img = ctx.store.one("SELECT id FROM gates WHERE device_id = ? AND session_id = ? AND kind = 'image-ddrescue' "
+                                "AND state = 'closed' AND outcome = 'success' AND confirmed_ts < ? "
+                                "ORDER BY closed_ts DESC LIMIT 1", (a.device, a.session, ev["ts"]))
+            reasons, notes = [], []
+            if img is None:
+                reasons.append("image-gate-missing")
+                notes.append("needs a closed, successful image-ddrescue gate on this device in this session, "
+                             "confirmed before the mapfile was ingested")
             parsed = (st.loads(ev["data"]) or {}).get("parsed") or {}
             ok, why = mapfile_complete(parsed, fp.get("bytes"))
             if not ok:
-                raise Refused(f"{why}: rescued {parsed.get('rescued')} of {fp.get('bytes')} device bytes, bad "
-                              f"{parsed.get('bad')}, finished {parsed.get('finished')}, blocks "
-                              f"{parsed.get('start')}..{parsed.get('end')} contiguous {parsed.get('contiguous')}; "
-                              "continue ddrescue over the whole device, or let the operator record "
-                              f"`session data-state {a.session} {a.device} waived --reason <text>`", [why])
+                reasons.append(why)
+                notes.append(f"{why}: rescued {parsed.get('rescued')} of {fp.get('bytes')} device bytes, bad "
+                             f"{parsed.get('bad')}, finished {parsed.get('finished')}, blocks "
+                             f"{parsed.get('start')}..{parsed.get('end')} contiguous {parsed.get('contiguous')}")
+            if reasons:  # every failing reason at once (as gate open, D8)
+                raise Refused("secured refused: " + "; ".join(notes) + "; continue ddrescue over the whole device "
+                              "under an image-ddrescue gate, or let the operator record "
+                              f"`session data-state {a.session} {a.device} waived --reason <text>`", reasons)
             evidence_id = a.evidence
         elif a.attested:
             if not a.reason:

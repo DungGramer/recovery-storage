@@ -89,3 +89,89 @@ def test_G6_confirm_on_open_gate_does_not_reconfirm_other_device(cli):
     res = cli("gate", "confirm", g, runner=cli.runner(BASELINE), answers=["1000204886016"])
     assert res.code == 3, res  # 990 PRO byte count is not this gate's phrase
     assert cli("gate", "confirm", g, runner=cli.runner(BASELINE), answers=[phrase_980()]).code == 0
+
+
+# ---------------- G6b (amendment 02 G, N5): no shell metacharacters in values echoed into an operator command
+UNSAFE = [('"', "dquote"), ("$", "dollar"), ("`", "backtick"), (";", "semicolon"), ("&", "amp"), ("|", "pipe"),
+          ("<", "lt"), (">", "gt"), ("\n", "newline")]
+UNSAFE_IDS = [i for _, i in UNSAFE]
+CONSOLE = [(["YES"], "operator-yes"), ([], "no-console")]
+STATES = {"waived": ("waived",), "secured-attested": ("secured", "--attested")}
+
+
+def _refused_unsafe(res, home, before):
+    """exit 2 unsafe-characters, nothing stored, and no printed `rs.py` command line carries the payload."""
+    from conftest import operator_state
+
+    assert res.code == 2, res
+    assert "unsafe-characters" in res.reasons or "unsafe-characters" in res.text, res
+    assert operator_state(home) == before
+    assert "INJECTED" not in str((res.data or {}).get("command") or "")
+    lines = (res.out + "\n" + res.err).replace("\n", "\n").splitlines()
+    assert not [ln for ln in lines if "rs.py" in ln and "INJECTED" in ln], res
+
+
+@pytest.mark.parametrize("answers", [a for a, _ in CONSOLE], ids=[i for _, i in CONSOLE])
+@pytest.mark.parametrize("state", sorted(STATES))
+@pytest.mark.parametrize("ch", [c for c, _ in UNSAFE], ids=UNSAFE_IDS)
+def test_G6b_reason_with_unsafe_character_exit_2(cli, ch, state, answers):
+    """Amendment 02 G: `--reason` values that would be echoed into a printed operator command must not contain
+    " $ ` ; & | < > or a newline: exit 2 unsafe-characters before anything is stored (reviewer scen2.py #1: the
+    payload `x" ; echo INJECTED ; "` landed in the copy-paste command). no-console = the path that prints the command.
+    Mutation, one per character: drop that character from the check -> exit 0 (YES) or exit 3 with the payload in
+    the printed command (no console) -> red."""
+    from conftest import operator_state
+
+    sid, dev = nvme1(cli, "--goal", "data-recovery")
+    before = operator_state(cli.home)
+    res = cli("session", "data-state", sid, dev, *STATES[state], "--reason", f"backed up {ch} echo INJECTED",
+              answers=answers)
+    _refused_unsafe(res, cli.home, before)
+
+
+@pytest.mark.parametrize("answers", [a for a, _ in CONSOLE], ids=[i for _, i in CONSOLE])
+@pytest.mark.parametrize("ch", [c for c, _ in UNSAFE], ids=UNSAFE_IDS)
+def test_G6b_file_with_unsafe_character_exit_2(cli, tmp_path, ch, answers):
+    """Amendment 02 G for `--file` (echoed in the `ingest attested` operator command). Where the OS allows the name,
+    the file exists, so only the character rule can refuse; on Windows `" | < >` and newline cannot be in a file
+    name and the path does not exist (test-designer reading: the character rule decides first, CONTRACT amendment 02).
+    Mutation: `--file` not checked -> exit 0 / payload in the printed command -> red."""
+    from conftest import operator_state
+
+    sid, dev = nvme1(cli, "--goal", "data-recovery")
+    f = tmp_path / f"h2testw {ch} echo INJECTED.txt"
+    try:
+        f.write_bytes(b"operator attachment: H2testw transcript")
+    except OSError:
+        pass
+    before = operator_state(cli.home)
+    res = cli("ingest", "attested", sid, dev, "--tool", "h2testw", "--result", "pass", "--file", f, answers=answers)
+    _refused_unsafe(res, cli.home, before)
+
+
+@pytest.mark.parametrize("ch", [c for c, _ in UNSAFE], ids=UNSAFE_IDS)
+def test_G6b_note_with_unsafe_character_exit_2(cli, tmp_path, ch):
+    """Amendment 02 G for `--note` (ingest attested, echoed with the command). Mutation: `--note` not checked -> red."""
+    from conftest import operator_state
+
+    sid, dev = nvme1(cli, "--goal", "data-recovery")
+    f = tmp_path / "h2testw.txt"
+    f.write_bytes(b"operator attachment: H2testw transcript")
+    before = operator_state(cli.home)
+    res = cli("ingest", "attested", sid, dev, "--tool", "h2testw", "--result", "pass", "--file", f, "--note",
+              f"seen {ch} echo INJECTED", answers=[])
+    _refused_unsafe(res, cli.home, before)
+
+
+def test_G6b_safe_text_still_accepted(cli, tmp_path):
+    """Counter-case: ordinary text (spaces, commas, dots, parentheses, Vietnamese) passes. Mutation: reject every
+    non-alphanumeric character -> red."""
+    sid, dev = nvme1(cli, "--goal", "data-recovery")
+    res = cli("session", "data-state", sid, dev, "waived", "--reason", "chủ máy đã sao lưu (2 bản), đã kiểm tra.",
+              answers=["YES"])
+    assert res.code == 0, res
+    f = tmp_path / "h2testw-result.txt"
+    f.write_bytes(b"operator attachment: H2testw transcript")
+    res2 = cli("ingest", "attested", sid, dev, "--tool", "h2testw", "--result", "pass", "--file", f, "--note",
+               "verified by owner, 2026-10-19", answers=["YES"])
+    assert res2.code == 0, res2

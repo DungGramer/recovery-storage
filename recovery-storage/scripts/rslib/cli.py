@@ -58,7 +58,9 @@ class Ctx:
 
     def ask_operator(self, prompt, argv_tail):
         """One line typed by the human at an interactive console (amendment 01)."""
-        from .operator import NoConsole, console_command
+        from .operator import NoConsole, console_command, require_echo_safe
+
+        require_echo_safe(home=self.home_flag)
 
         try:
             return self.operator.ask(prompt)

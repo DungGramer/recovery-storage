@@ -14,7 +14,7 @@ import sys
 import pytest
 
 from conftest import BASELINE, SCRIPTS, Cli, gate_ok, gate_open_state, nvme1, phrase_980
-from test_guard_patterns import ALLOW, BLOCK, H4, H8
+from test_guard_patterns import ALLOW, AM02_ALLOW, AM02_BLOCK, BLOCK, H4, H8
 
 SENTINEL_BASH = ("Bash", H4[0])
 SENTINEL_PS = ("PowerShell", "Clear-Disk -Number 2 -RemoveData")
@@ -106,6 +106,33 @@ def test_H8_H9_allowed_without_gate(tool, cmd, tmp_path, monkeypatch, capsys):
     """H8/H9 through the hook. Mutation: hook blocks a read-only command -> red."""
     code, out, _ = hook(payload(tool, cmd), tmp_path / "fresh", monkeypatch, capsys)
     assert code == 0 and out == ""
+
+
+@pytest.mark.parametrize("tool,cmd", AM02_BLOCK, ids=[c for _, c in AM02_BLOCK])
+def test_H7b_amendment02_blocked_through_hook(tool, cmd, tmp_path, monkeypatch, capsys):
+    """Amendment 02 H Must BLOCK, end to end through guard_hook.main (no gate): exit 2 with rule id and next step.
+    Mutation: the hook tokenizes differently from guard_patterns (e.g. strips `$x =` only in find()) -> red."""
+    code, out, err = hook(payload(tool, cmd), tmp_path / "fresh", monkeypatch, capsys)
+    assert code == 2, (cmd, err)
+    assert "no gate is open" in err
+    assert "rs.py gate open" in err
+
+
+@pytest.mark.parametrize("tool,cmd", AM02_ALLOW, ids=[c for _, c in AM02_ALLOW])
+def test_H8c_amendment02_allowed_through_hook(tool, cmd, tmp_path, monkeypatch, capsys):
+    """Amendment 02 H Must ALLOW through the hook (multi-line command text arrives as one tool_input.command).
+    Mutation: the hook splits the payload on newlines before tokenizing (heredoc body becomes a command) -> red."""
+    code, out, _ = hook(payload(tool, cmd), tmp_path / "fresh", monkeypatch, capsys)
+    assert (code, out) == (0, ""), cmd
+
+
+def test_H10b_amendment02_open_gate_unlocks_new_block_list(tmp_path, monkeypatch, capsys):
+    """H10 for the amendment 02 corpus: with one open gate every newly matched command passes. Mutation: the new
+    matches bypass the gate lookup (always deny) -> red."""
+    home, _ = store_with(tmp_path, "open")
+    for tool, cmd in AM02_BLOCK:
+        code, out, _ = hook(payload(tool, cmd), home, monkeypatch, capsys)
+        assert (code, out) == (0, ""), cmd
 
 
 # ---------------- H10 / H11

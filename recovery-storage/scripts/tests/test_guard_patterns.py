@@ -56,6 +56,40 @@ H9 = [  # PowerShell tool
 BLOCK = [("Bash", c) for c in H4 + H5 + H5B_BLOCK] + [("PowerShell", c) for c in H6]
 ALLOW = [("Bash", c) for c in H8 + H5B_ALLOW] + [("PowerShell", c) for c in H9]
 
+# Amendment 02 H (N3, N10, N11): guard tokenizer corpus, verbatim from the amendment's Must BLOCK / Must ALLOW lists.
+# Kept out of BLOCK / ALLOW (frozen H7/H8 node ids unchanged); test_guard_hook runs these through the hook itself.
+H5C_BLOCK_BASH = [
+    "sudo -n mkfs.ext4 /dev/sdb1",              # sudo value-flag table: -n takes no value
+    "sudo -E wipefs -a /dev/sdb",
+    "sudo -S dd if=x of=/dev/sdb",
+    "sudo -u root -E mkfs.vfat /dev/sdb1",      # -u takes a value, -E does not
+    "env -i wipefs -a /dev/sdb",
+    "xargs -t mkfs.ext4",
+    "echo x &> /dev/sdb",                       # &> is a redirect
+    "cat img > /dev/disk/by-id/usb-X",          # device targets: /dev/disk/by-*, /dev/mapper/*, /dev/md*, /dev/dm-*,
+    "cp img /dev/mapper/vg-lv",                 # /dev/loop*
+    "cat img > /dev/md0",
+    "cat img > /dev/dm-0",
+    "cat img > /dev/loop0",
+]
+H5C_BLOCK_PS = [
+    "$null = Clear-Disk -Number 2 -RemoveData -Confirm:$false",   # `$name =` assignment prefix skipped
+    "$r = Format-Volume -DriveLetter E",
+]
+H8B_ALLOW_BASH = [
+    "command -v mkfs.ext4",                     # command -v|-V never executes
+    "command -v ddrescue f3probe",
+    "cat <<'EOF' > notes.md\nrun `mkfs.ext4` later\nEOF",           # heredoc body dropped
+    'git commit -m "guard: tighten rules\n\nmkfs and Clear-Disk are matched as commands only"',  # multi-line message
+    "cp /dev/sdb disk.img",                     # cp/tee/pv judged by the write target only
+    "pv /dev/sdb > disk.img",
+    "parted /dev/sdb print free",
+    "parted -s /dev/sdb unit B print",
+    "fsck -N /dev/sdb1",
+]
+AM02_BLOCK = [("Bash", c) for c in H5C_BLOCK_BASH] + [("PowerShell", c) for c in H5C_BLOCK_PS]
+AM02_ALLOW = [("Bash", c) for c in H8B_ALLOW_BASH]
+
 
 def find(cmd):
     from rslib.guard_patterns import find as f
@@ -106,6 +140,27 @@ def test_H8_read_only_and_text_mentions_never_match(cmd):
 @pytest.mark.parametrize("cmd", H9)
 def test_H9_powershell_read_only_never_match(cmd):
     """H9. Mutation: Format-Table matched as format, or Repair-Volume -Scan blocked -> red."""
+    assert find(cmd) is None
+
+
+@pytest.mark.parametrize("cmd", H5C_BLOCK_BASH + H5C_BLOCK_PS)
+def test_H5c_amendment02_wrapped_and_redirected_writes_match(cmd):
+    """Amendment 02 H 'Must BLOCK (no open gate)'. Mutations, one per group: a wrapper flag consumed as a value
+    (sudo -n/-E/-S, sudo -u root -E, env -i, xargs -t) -> the tool name is skipped -> red; `$name =` prefix not
+    skipped -> red; `&>` not a redirect -> red; /dev/disk/by-*, /dev/mapper, /dev/md, /dev/dm-, /dev/loop not device
+    targets -> red."""
+    m = find(cmd)
+    assert m is not None
+    from rslib.guard_patterns import RULES
+
+    assert m.rule_id in {r.id for r in RULES}
+
+
+@pytest.mark.parametrize("cmd", H8B_ALLOW_BASH)
+def test_H8b_amendment02_lookups_text_and_reads_never_match(cmd):
+    """Amendment 02 H 'Must ALLOW'. Mutations, one per group: `command -v` treated as running its argument -> red;
+    heredoc body or a multi-line quoted message tokenized as commands -> red; cp/pv judged by any device argument
+    instead of the write target -> red; parted read-only verbs (print) or fsck -N (dry run) blocked -> red."""
     assert find(cmd) is None
 
 

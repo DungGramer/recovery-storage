@@ -59,10 +59,18 @@ secured or waived somewhere.
 
 ## After a gated write
 
-Formatting or re-partitioning changes the MBR signature / GPT guid. At `gate close` the device is recognised by
-model, bytes and USB/serial ids when exactly one such disk is attached, and its on-media id is updated (recorded in
-the device history). If a lookalike is attached the close records identity drift; resolve it with the operator
-(`rs.py device link <observation> <device>` updates the on-media id the same way).
+Formatting or re-partitioning changes the MBR signature / GPT guid. `gate close` never changes a device identity:
+it records identity drift with `drift_reason` `media-id-changed` (exactly one attached disk is the same hardware
+with a new on-media id) or `device-changed`, and prints the operator command. The operator confirms in their own
+terminal with `rs.py device link <observation> <device>`: it learns the new on-media id (device history) and clears
+the drift of earlier gates on that device. Linking different hardware is refused (`hardware-mismatch`, use `--new`).
+
+## Last write
+
+The last write to a device is the close of a source-writing gate, or the abort of one that had been confirmed, in
+any session. A secured / waived data state only counts if recorded after it, and the PASS evidence window starts at
+it (or at the session start, whichever is later). `secured --evidence` also needs a closed, successful
+`image-ddrescue` gate on the device in the session, confirmed before the mapfile was ingested.
 
 ## Locks
 

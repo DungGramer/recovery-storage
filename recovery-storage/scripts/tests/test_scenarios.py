@@ -207,14 +207,42 @@ def test_G8_report_check_matches_verdict_presence(runs):
     assert bad == []
 
 
+def _gate_steps(steps):
+    """{gate var: kind} from successful `gate open` steps that save `gate.id`."""
+    kinds = {}
+    for st in steps:
+        if st["cli"][:2] == ["gate", "open"] and st.get("exit", 0) == 0:
+            for var, path in st.get("save", {}).items():
+                if path == "gate.id":
+                    kinds[var] = st["cli"][4]
+    return kinds
+
+
 def test_G9_full_flow_scenarios_exist():
-    """G9: the full data-recovery flow is scripted (NVMe real capture; HDD structural). Mutation: flow removed -> red."""
+    """G9: the full data-recovery flow is scripted (NVMe real capture; HDD structural); data is secured before the
+    source-writing gate is confirmed. Amendment 02 C: the secured step itself follows a closed image-ddrescue gate
+    (the first `gate confirm` is now the image gate's, so the order check names the format gate).
+    Mutation: flow removed, format confirmed before secured, or secured without an image gate -> red."""
     assert {"full-data-recovery-nvme", "full-data-recovery-hdd"} <= set(NAMES)
-    order = [s["cli"][:2] for s in load("full-data-recovery-nvme")[0]["steps"]]
-    assert order.index(["gate", "confirm"]) > order.index(["session", "data-state"])
+    steps = load("full-data-recovery-nvme")[0]["steps"]
+    kinds = _gate_steps(steps)
+    idx = {"secured": [], "format-confirm": [], "image-close": []}
+    for i, st in enumerate(steps):
+        c = st["cli"]
+        if c[:2] == ["session", "data-state"] and "secured" in c and st.get("exit", 0) == 0:
+            idx["secured"].append(i)
+        if c[:2] in (["gate", "confirm"], ["gate", "close"]) and c[2].startswith("$"):
+            kind = kinds.get(c[2][1:])
+            if kind == "format" and c[1] == "confirm":
+                idx["format-confirm"].append(i)
+            if kind == "image-ddrescue" and c[1] == "close" and st.get("exit", 0) == 0:
+                idx["image-close"].append(i)
+    assert idx["secured"] and idx["format-confirm"] and idx["image-close"], idx
+    assert min(idx["format-confirm"]) > min(idx["secured"])
+    assert min(idx["image-close"]) < min(idx["secured"])
 
 
-OPERATOR_STEPS = (["gate", "confirm"], ["ingest", "attested"])
+OPERATOR_STEPS = (["gate", "confirm"], ["ingest", "attested"], ["device", "link"])   # device link: amendment 02 A
 
 
 def _needs_operator(cli_):
@@ -224,8 +252,9 @@ def _needs_operator(cli_):
 
 
 def test_scenarios_operator_steps_use_the_console():
-    """Amendment 01 A: no scenario passes `--phrase`; every operator command step carries `answers`.
-    Mutation: a scenario left on the removed `--phrase` path -> red (it would fail at argparse with exit 2)."""
+    """Amendment 01 A: no scenario passes `--phrase`; every operator command step carries `answers` (amendment 02 A
+    adds `device link`). Mutation: a scenario left on the removed `--phrase` path -> red (it would fail at argparse
+    with exit 2); a `device link` step without the operator's answer -> red."""
     bad = []
     for n in NAMES:
         for i, st in enumerate(load(n)[0]["steps"]):

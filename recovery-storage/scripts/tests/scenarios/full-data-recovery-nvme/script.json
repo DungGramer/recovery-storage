@@ -30,7 +30,8 @@
     "capture": "windows/baseline-nvme-only"
    },
    "save": {
-    "dev": "observations[os_path=/dev/pd1].device_id"
+    "dev": "observations[os_path=/dev/pd1].device_id",
+    "dest": "observations[os_path=/dev/pd0].device_id"
    }
   },
   {
@@ -66,6 +67,60 @@
    "reasons": [
     "data-not-secured"
    ]
+  },
+  {
+   "cli": [
+    "gate",
+    "open",
+    "$sid",
+    "$dev",
+    "image-ddrescue",
+    "--dest-device",
+    "$dest"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   },
+   "expect": {
+    "gate.state": "pending",
+    "gate.kind": "image-ddrescue"
+   },
+   "save": {
+    "gi": "gate.id"
+   }
+  },
+  {
+   "cli": [
+    "gate",
+    "confirm",
+    "$gi"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   },
+   "expect": {
+    "gate.state": "open",
+    "os_path": "/dev/pd1"
+   },
+   "answers": [
+    "0D9Z"
+   ]
+  },
+  {
+   "cli": [
+    "gate",
+    "close",
+    "$gi",
+    "--outcome",
+    "success"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   },
+   "expect": {
+    "gate.state": "closed",
+    "gate.identity_drift": false
+   }
   },
   {
    "cli": [
@@ -238,5 +293,6 @@
     "PASS"
    ]
   }
- ]
+ ],
+ "amended": "amendment 02 C: secured --evidence needs a closed image-ddrescue gate confirmed before the ingest"
 }

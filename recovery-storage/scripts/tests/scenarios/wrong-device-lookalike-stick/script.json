@@ -105,7 +105,10 @@
    },
    "save": {
     "dev_b": "device_id"
-   }
+   },
+   "answers": [
+    "YES"
+   ]
   },
   {
    "cli": [
@@ -188,5 +191,6 @@
     5
    ]
   }
- ]
+ ],
+ "amended": "amendment 02 A: device link needs the operator's YES"
 }

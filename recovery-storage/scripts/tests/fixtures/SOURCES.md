@@ -76,6 +76,8 @@ attribute 9 and `power_on_time.hours`) is changed in all its places so no reader
 | `scrutiny-ata-ssd-healthy.satafirm.derived.json` | smartctl/scrutiny-ata-ssd-healthy.json | model_name | Samsung SSD 860 EVO 500GB | SATAFIRM S11 (C15; researcher-04 §4) |
 | `scrutiny-ata-ssd-healthy.bytes0.derived.json` | smartctl/scrutiny-ata-ssd-healthy.json | user_capacity.bytes | 500107862016 | 0 (C15) |
 | `scrutiny-ata-hdd-healthy.p197-1.derived.json` | smartctl/scrutiny-ata-hdd-healthy.json | attr 197 raw (value+string) | 0 | 1 (D23 counters-rising) |
+| `scrutiny-ata-hdd-healthy.poh67236.derived.json` | smartctl/scrutiny-ata-hdd-healthy.json | POH (attr 9 raw value+string + power_on_time.hours) | 1730 | 67236 = 65536 + 1700: newest self-test raw 1708 is 65528 h old (amendment 02 E, D23b wrap through verdict set) |
+| `scrutiny-ata-hdd-healthy.poh67244.derived.json` | smartctl/scrutiny-ata-hdd-healthy.json | POH (attr 9 raw value+string + power_on_time.hours) | 1730 | 67244 = 65536 + 1708: newest self-test raw 1708 is 0 h old (amendment 02 E counter-case) |
 | `scrutiny-scsi-no-smartctl-block.no-serial.derived.json` | smartctl/scrutiny-scsi-no-smartctl-block.json | key serial_number removed | VE12VEKDB058NJLD0RYQ | absent (B22 ambiguous) |
 | `smartctl-x-pd0.cw4.derived.json` | windows/baseline-nvme-only/smartctl-x-pd0.json | nvme_smart_health_information_log.critical_warning | 0 | 4 (D24) |
 | `smartctl-x-pd0.eui-mismatch.derived.json` | windows/baseline-nvme-only/smartctl-x-pd0.json | nvme_namespaces[0].eui64.ext_id | 61296693158 | 61296693159 (B10 join_conflict) |
@@ -118,6 +120,10 @@ skipped as BLOCKED in the suite.
 - `-d sat` forms are answered with `smartctl-x-sat-pdN.json`. Exit codes come from `*.meta.json`.
 - Tool-failure cells (G5, B20) use synthetic stdout (empty, or the bytes `{ not json`) and runner flags; they are
   failure injections, not device output.
+- Amendment 02 D (test_collect_cli B17b, another disk answering at the path): `smartctl -j -x -n standby /dev/pd1` of
+  `baseline-nvme-only` answered with the real `smartctl-x-pd0.json` (990 PRO) or the existing derived
+  `smartctl-x-pd1.serial-swap.derived.json`; `smartctl -j -x -n standby -d sat /dev/pd2` of `usb-stick` answered with
+  the real `usb-stick/smartctl-x-pd1.json` (980 PRO). Real files, wrong argv: no new fixture.
 
 ## In-test single-field mutations (not stored as files)
 
@@ -131,6 +137,13 @@ skipped as BLOCKED in the suite.
 - test_ingest_mapfile: size token of line 10 (0x00000200) -> 0x200, 512, 010, 0o10, -0x200, -512, abc, 12z; status
   char of line 10 -> X; a trailing comment on line 9.
 - test_hypotheses: PnP chain VID_ABCD&PID_1234 -> VID_05E3&PID_0751.
+- test_verdict D23b (amendment 02 E): self-test tables built in the test from the numbers stated in the amendment
+  (pass at 10000 with POH 70000; pass raw 4500 / fail raw 4564 with POH 70100; boundary 4464 / 4463; wrap order raw
+  30 / 65530 with POH 65600) in the smartctl `ata_smart_self_test_log.standard.table` entry shape of
+  `scrutiny-ata-hdd-healthy.json`; spec numbers, not device output. The real wrapped log is
+  `scrutiny-usbjmicron-hdd-failing.json` (POH 65592, entries 42, 18, 4, 65530, ...), read unchanged.
+- test_identity_drift / test_collect_cli B16b (amendment 02 A): no new data; the look-alike stick is the existing
+  `win-disks.othersig.derived.json`.
 - test_ingest_mapfile / test_datastate (amendment 01 B): the 980 PRO full-coverage map with its third block line
   (`0x00117200  0x00001000  +`) removed (gap -> not contiguous); the same map with the first block pos
   0x00000000 -> 0x00000200 and size 0x00117000 -> 0x00116E00 (contiguous, starts at 512, ends at the device byte count).

@@ -1,8 +1,9 @@
 """Phase 04 gate open (D1-D11, D9b, D9c). Spec: phase-04 Requirements 'Gate open checks', 'Gate open success' + D1-D11."""
 import pytest
 
-from conftest import (BASELINE, USB_SD, USB_STICK, assess, collect, device_at, gate_ok, ingested_assessment,
-                      new_session, nvme1, open_gate, phrase_980, prepared, secure, serial_980, stick)
+from conftest import (BASELINE, USB_SD, USB_STICK, assess, close, collect, device_at, gate_ok,
+                      gate_open_state, ingested_assessment, new_session, nvme1, ok, open_gate, phrase_980, prepared,
+                      secure, serial_980, stick)
 from test_actions_catalog import R1, R2, R3
 
 TWIN = {"win-disks": f"{USB_STICK}/win-disks.twin.derived.json",
@@ -235,3 +236,78 @@ def test_D11_junk_usb_serial_phrase_is_byte_count(cli):
     sid, dev = stick(cli, "--goal", "diagnosis-only", "--ceiling", "R1")
     _, res = gate_ok(cli, USB_STICK, sid, dev, "disk-offline")
     assert res.data["confirmation"]["phrase"] == "8054112256"
+
+
+# ---------------- D4b (amendment 02 B, N2): secured / waived count only after the device's last write
+DATAREC = ("--goal", "data-recovery", "--goal", "device-recovery", "--ceiling", "R2")
+
+
+def _record(cli, sid, dev, state):
+    if state == "secured":
+        res = secure(cli, sid, dev)[1]
+    else:
+        res = cli("session", "data-state", sid, dev, "waived", "--reason", "owner says data is backed up",
+                  answers=["YES"])
+    assert res.code == 0 and res.data["data_state"] == state, res
+
+
+def _format_closed(cli, sid, dev):
+    g = gate_open_state(cli, BASELINE, sid, dev, "format", phrase_980())
+    res = close(cli, BASELINE, g, "success")
+    assert res.code == 0 and res.data["gate"]["identity_drift"] is False, res
+
+
+@pytest.mark.parametrize("state", ["secured", "waived"])
+def test_D4b_data_state_from_before_the_last_write_is_stale(cli, state):
+    """Amendment 02 B 'secured / waived count for a write gate only if recorded after last_write_ts(device)'.
+    Same session: state recorded, format gate closed (last write), second format gate -> data-not-secured; recording
+    the state again after the write lets it open. Mutation: data state read without the last-write comparison ->
+    second format opens -> red; rule applied to secured only -> waived row red."""
+    sid, dev = nvme1(cli, *DATAREC)
+    _record(cli, sid, dev, state)
+    _format_closed(cli, sid, dev)
+    res = open_gate(cli, BASELINE, sid, dev, "format")
+    assert res.code == 3, res
+    assert "data-not-secured" in res.reasons, res
+    _record(cli, sid, dev, state)
+    gate_ok(cli, BASELINE, sid, dev, "format")
+
+
+def test_D4b_stale_secured_across_sessions_refused(cli):
+    """Amendment 02 B scenario (reviewer scen2.py #2): S1 secured + format gate closed; S2 data-recovery on the same
+    device -> format refused data-not-secured. Mutation: a device's secured state carried into later sessions without
+    the last-write check -> opens -> red."""
+    s1, dev = nvme1(cli, "--goal", "device-recovery", "--preserve-data", "yes", "--ceiling", "R2")
+    assert secure(cli, s1, dev)[1].code == 0
+    _format_closed(cli, s1, dev)
+    s2 = new_session(cli, "--goal", "data-recovery", "--ceiling", "R2")
+    collect(cli, BASELINE, s2, dev)
+    assess(cli, s2, dev)
+    res = open_gate(cli, BASELINE, s2, dev, "format")
+    assert res.code == 3, res
+    assert "data-not-secured" in res.reasons, res
+
+
+def test_D4b_write_gate_aborted_after_confirm_is_a_write(cli):
+    """Amendment 02 B 'closed_ts of an aborted gate whose kind writes the source and that had been confirmed'. The
+    tool may have run between confirm and abort. Mutation: only closed gates count as writes -> second format opens
+    -> red."""
+    sid, dev = nvme1(cli, *DATAREC)
+    _record(cli, sid, dev, "secured")
+    g = gate_open_state(cli, BASELINE, sid, dev, "format", phrase_980())
+    assert ok(cli("gate", "abort", g, "--reason", "format stopped midway"))["gate"]["state"] == "aborted"
+    res = open_gate(cli, BASELINE, sid, dev, "format")
+    assert res.code == 3 and "data-not-secured" in res.reasons, res
+
+
+def test_D4b_unconfirmed_or_read_only_gates_are_not_writes(cli):
+    """Amendment 02 B: a write gate aborted while still pending (never confirmed) and a closed gate whose kind does not
+    write the source (smart-selftest-short, R1) leave the secured state valid. Mutation: every aborted gate, or every
+    closed gate, counts as a write -> format refused -> red."""
+    sid, dev = nvme1(cli, *DATAREC)
+    _record(cli, sid, dev, "secured")
+    g, _ = gate_ok(cli, BASELINE, sid, dev, "format")
+    assert ok(cli("gate", "abort", g, "--reason", "changed plan before confirm"))["gate"]["state"] == "aborted"
+    t = gate_open_state(cli, BASELINE, sid, dev, "smart-selftest-short", phrase_980())
+    assert close(cli, BASELINE, t, "success").code == 0
+    gate_ok(cli, BASELINE, sid, dev, "format")

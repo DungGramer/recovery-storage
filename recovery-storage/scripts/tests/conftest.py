@@ -455,9 +455,34 @@ def stick(cli, *flags):
     return sid, dev
 
 
-def secure(cli, sid, dev, mapfile=MAP_980):
-    """ingest ddrescue + data-state secured --evidence (no operator: --evidence is tool evidence).
-    Default map covers the 980 PRO (nvme1 / BASELINE /dev/pd1) exactly; other devices pass their own map."""
+def other_device(cli, capture, sid, dev, dest_path=None):
+    """Device id of another attached disk of `capture` (dest of an image gate): `dest_path`, else the first
+    observed disk that is not `dev`."""
+    res = inventory(cli, cli.runner(capture), sid)
+    if dest_path is not None:
+        return obs_for(res, dest_path)["device_id"]
+    return next(o["device_id"] for o in res.data["observations"] if o["device_id"] and o["device_id"] != dev)
+
+
+def image_gate(cli, capture, sid, dev, outcome="success", dest_path=None):
+    """Amendment 02 C: open + operator-confirm (+ close with `outcome`, unless outcome is None) an `image-ddrescue`
+    gate on `dev`, dest = another attached device of the same capture. The session ceiling must allow R1.
+    Returns the gate id."""
+    dest = other_device(cli, capture, sid, dev, dest_path)
+    g, opened = gate_ok(cli, capture, sid, dev, "image-ddrescue", "--dest-device", dest)
+    res = confirm(cli, capture, g, opened.data["confirmation"]["phrase"])
+    assert res.code == 0 and res.data["gate"]["state"] == "open", res
+    if outcome is not None:
+        res = close(cli, capture, g, outcome)
+        assert res.code == 0 and res.data["gate"]["state"] == "closed", res
+    return g
+
+
+def secure(cli, sid, dev, mapfile=MAP_980, capture=BASELINE):
+    """Amendment 02 C: image-ddrescue gate (open, confirm, close success) -> ingest ddrescue -> data-state secured
+    --evidence (no operator: --evidence is tool evidence). Default map covers the 980 PRO (nvme1 / BASELINE /dev/pd1)
+    exactly; other devices pass their own map. The session ceiling must allow R1 (the image gate)."""
+    image_gate(cli, capture, sid, dev)
     ev = ok(cli("ingest", "ddrescue", sid, dev, fx(mapfile)))["evidence"]["id"]
     res = cli("session", "data-state", sid, dev, "secured", "--evidence", ev)
     return ev, res
@@ -504,6 +529,25 @@ def db_rows(home, table):
 def operator_state(home):
     """Rows an operator command may change (amendment 01 A 'nothing is changed in the store')."""
     return {t: sorted(map(repr, db_rows(home, t))) for t in ("gates", "data_states", "evidence")}
+
+
+# ---------------------------------------------------------------- amendment 02 helpers
+# Look-alike stick: the same capture with only Disk 2's MBR Signature changed (fixtures/SOURCES.md).
+OTHERSIG = {"win-disks": f"{USB_STICK}/win-disks.othersig.derived.json"}
+STICK_BYTES = 8054112256
+STICK_PHRASE = "8054112256"   # junk serial -> phrase = byte count (D11)
+
+
+def link(cli, obs, target, answers=("YES",), **kw):
+    """Amendment 02 A: `device link <observation> <device|--new>` asks the operator; tests answer YES by default."""
+    return cli("device", "link", obs, target, answers=list(answers) if answers is not None else None, **kw)
+
+
+def printed_link_command(res, dev):
+    """Amendment 02 A: the close output prints `device link <observation> <device>`. Returns the observation token
+    (None when no such command is printed)."""
+    m = re.search(r"device link\s+\"?([A-Za-z0-9_.:-]+)\"?\s+\"?" + re.escape(str(dev)), res.out + "\n" + res.err)
+    return m.group(1) if m else None
 
 
 def assert_console_required(res, *command_words):

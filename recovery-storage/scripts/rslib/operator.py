@@ -56,6 +56,20 @@ class ScriptedOperator:
         return str(self.answers.pop(0)).strip()
 
 
+UNSAFE_CHARS = set('"$`;&|<>\n\r')
+
+
+def require_echo_safe(**values):
+    """Values echoed into a command the operator will paste must not carry shell syntax (amendment 02 G)."""
+    from .errors import UsageError
+
+    for name, v in values.items():
+        if v is not None and set(str(v)) & UNSAFE_CHARS:
+            bad = "".join(sorted(set(str(v)) & UNSAFE_CHARS)).replace("\n", "\\n").replace("\r", "\\r")
+            raise UsageError(f"--{name.replace('_', '-')} contains characters that are not allowed ({bad}): "
+                             "use plain text", ["unsafe-characters"])
+
+
 def console_command(argv_tail):
     """Exact command line for the operator to run in their own terminal."""
     import pathlib

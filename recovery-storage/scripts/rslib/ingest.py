@@ -248,6 +248,9 @@ def cmd_ingest_f3read(ctx, a):
 def cmd_ingest_attested(ctx, a):
     if not a.file:
         raise UsageError("ingest attested needs --file (log or screenshot of the tool result)")
+    from .operator import require_echo_safe
+
+    require_echo_safe(file=a.file, note=a.note, home=ctx.home_flag)
     sess.load(ctx.store, a.session)
     fp = device_row(ctx.store, a.device)["fingerprint"]
     p, data = _read(a.file)

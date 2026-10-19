@@ -299,26 +299,23 @@ def _same_hardware(fp, dev_fp):
                for k in ("eui64", "wwn"))
 
 
-def media_id_changed(ctx, rows, device_id):
-    """After a gated write (format / repartition) the MBR signature or GPT guid changes. Accept the device when
-    exactly one attached disk is the same hardware, update its on-media ids, and relink that observation."""
+def media_id_candidate(ctx, rows, device_id):
+    """Read-only (amendment 02): the single attached disk that is the same hardware as device_id but carries another
+    on-media id (MBR signature / GPT guid change after a format), not claimed by any other stored device.
+    Never changes the fingerprint: only the operator does that with `device link`."""
     dev = device_row(ctx.store, device_id)
-    cands = [(s, o) for s, o in rows if _same_hardware(o["fingerprint"], dev["fingerprint"])]
-    if len(cands) != 1:
-        return None
-    s, o = cands[0]
-    fp = dict(dev["fingerprint"])
-    old = {k: fp.get(k) for k in ("ptuuid", "mbr_signature")}
-    fp["ptuuid"], fp["mbr_signature"] = o["fingerprint"].get("ptuuid"), o["fingerprint"].get("mbr_signature")
-    data = dict(dev["data"])
-    data.setdefault("media_id_history", []).append({"ts": ctx.store.now(), "old": old,
-                                                    "new": {k: fp[k] for k in old}})
-    ctx.store.execute("UPDATE devices SET fingerprint = ?, data = ? WHERE id = ?",
-                      (st.dumps(fp), st.dumps(data), device_id))
-    o = dict(o, device_id=device_id, match="media-id-changed")
-    ctx.store.execute("UPDATE observations SET device_id = ?, match = ?, data = ? WHERE id = ?",
-                      (device_id, "probable", st.dumps(o), o["observation_id"]))
-    return Resolved(s, o, "probable")
+    stored = stored_devices(ctx.store)
+    cands = []
+    for s, o in rows:
+        if not _same_hardware(o["fingerprint"], dev["fingerprint"]):
+            continue
+        if o["device_id"] not in (None, device_id) and o["match"] in ("exact", "probable", "weak"):
+            continue  # another registered device answers here (a lookalike), not ours
+        others = [d for d, fp in stored.items() if d != device_id and _same_hardware(o["fingerprint"], fp.to_dict())]
+        if others:
+            return None  # a registered lookalike exists: a human must tell them apart
+        cands.append((s, o))
+    return cands[0] if len(cands) == 1 else None
 
 
 def pick(ctx, rows, device_id):
@@ -417,6 +414,28 @@ def class_conflict(declared, detected):
     return detected not in allowed
 
 
+def _answers_for_device(rec, dev_fp):
+    """True when the smartctl answer can belong to the stored device (no identity in the answer -> nothing to check)."""
+    ident = rec.identity or {}
+    if not (ident.get("model") or ident.get("serial") or ident.get("eui64") or ident.get("wwn")):
+        return True
+    level = match(fingerprint(smart=rec), {"dev": Fingerprint.from_dict(dev_fp)}).level
+    if level in ("exact", "probable", "weak"):
+        return True
+    if level == "conflict":
+        return False
+    same_bytes = ident.get("bytes") is not None and ident.get("bytes") == dev_fp.get("bytes")
+    same = (" ".join(str(ident.get("model") or "").split()).casefold() ==
+            " ".join(str(dev_fp.get("model") or "").split()).casefold()) and same_bytes
+    if same:
+        return True
+    # USB-SATA/NVMe bridge: the OS saw the bridge's INQUIRY model, `-d sat` reaches the inner disk. Accept it when the
+    # stored device has no strong id to contradict (the fingerprint itself is not changed)
+    no_strong = not (dev_fp.get("serial_trust") == "high" and dev_fp.get("serial_norm")) and \
+        not dev_fp.get("eui64") and not dev_fp.get("wwn")
+    return dev_fp.get("bus") == "usb" and same_bytes and no_strong
+
+
 def take_snapshot(ctx, session_id, device_id, r, dtype=None, allow_spinup=False, with_events=True):
     """R0 smartctl -x on the resolved path (+ one -d sat retry for USB without SMART) -> stored snapshot."""
     path = r.os_path
@@ -427,17 +446,15 @@ def take_snapshot(ctx, session_id, device_id, r, dtype=None, allow_spinup=False,
         res = ctx.runner.run("smartctl", base + (["-d", dtype] if dtype else []) + [path])
         rec = _smart_from_run(res)
         raw = res.stdout if not (res.tool_missing or res.timed_out) else None
-    if rec.identity and (rec.identity.get("serial") or rec.identity.get("eui64") or rec.identity.get("wwn")):
-        # the disk answering at this path must still be this device (a swap between enumerate and collect)
-        if match(fingerprint(smart=rec), {device_id: Fingerprint.from_dict(device_row(ctx.store, device_id)
-                                                                           ["fingerprint"])}).level == "conflict":
-            raise Refused(f"device at {path} answered with another identity; nothing attached to {device_id}",
-                          ["identity-conflict"])
     hints = []
     usb_without_smart = r.seen.os_disk.bus == "usb" and not dtype and not has_smart(rec)
     if usb_without_smart and rec.collection_status not in ("tool_missing", "timeout"):
         res2 = ctx.runner.run("smartctl", base + ["-d", "sat", path])
         rec, raw = _smart_from_run(res2), (res2.stdout if not (res2.tool_missing or res2.timed_out) else None)
+    if not _answers_for_device(rec, device_row(ctx.store, device_id)["fingerprint"]):
+        # the disk answering at this path is not this device (swap between enumerate and collect, amendment 02 D)
+        raise Refused(f"device at {path} answered with another identity ({rec.identity.get('model')}, "
+                      f"{rec.identity.get('bytes')} bytes); nothing attached to {device_id}", ["identity-conflict"])
     if rec.collection_status == "ok" and not has_smart(rec):
         rec.collection_status = "not_exposed"
     if rec.collection_status == "needs_elevation":
@@ -519,15 +536,33 @@ def cmd_device_link(ctx, a):
     if bool(a.device) == bool(a.new):
         raise UsageError("give either a device id or --new")
     fp = Fingerprint.from_dict(st.loads(row["fingerprint"]))
+    obs = st.loads(row["data"]) or {}
+    target = "a new device" if a.new else a.device
+    dev = None if a.new else device_row(ctx.store, a.device)
+    if dev is not None and not _same_hardware(fp.to_dict(), dev["fingerprint"]):
+        raise Refused(f"observation {a.observation} ({fp.model}, {fp.bytes} bytes) is different hardware from "
+                      f"{a.device} ({dev['fingerprint'].get('model')}, {dev['fingerprint'].get('bytes')} bytes); "
+                      "link it with --new", ["hardware-mismatch"])
+    # identity decisions belong to the human (amendment 02): same console rule as gate confirm
+    from .datastate import operator_yes
+
+    operator_yes(ctx, f"link observation {a.observation} ({fp.model}, {fp.bytes} bytes, {obs.get('os_path')}) to "
+                      f"{target}", ["device", "link", a.observation] + (["--new"] if a.new else [a.device]))
     created = False
+    cleared = []
     if a.new:
         device_id, created = create_device(ctx.store, fp), True
     else:
-        dev = device_row(ctx.store, a.device)
         device_id = a.device
         new_fp = fp.to_dict()
-        if _same_hardware(new_fp, dev["fingerprint"]) and any(
-                new_fp.get(k) != dev["fingerprint"].get(k) for k in ("ptuuid", "mbr_signature")):
+        # drift recorded at earlier closes is resolved by this operator decision
+        for g in ctx.store.query("SELECT id, closed_ts, data FROM gates WHERE device_id = ? AND state = 'closed' "
+                                 "AND identity_drift = 1", (device_id,)):
+            printed = (st.loads(g["data"]) or {}).get("link_observation") == a.observation  # the close's own command
+            if printed or g["closed_ts"] <= row["ts"]:
+                ctx.store.execute("UPDATE gates SET identity_drift = 0 WHERE id = ?", (g["id"],))
+                cleared.append(g["id"])
+        if any(new_fp.get(k) != dev["fingerprint"].get(k) for k in ("ptuuid", "mbr_signature")):
             # operator says it is the same device, re-partitioned: learn the new on-media ids (audited)
             cur = dict(dev["fingerprint"])
             hist = dict(dev["data"])
@@ -542,5 +577,7 @@ def cmd_device_link(ctx, a):
     data["device_id"], data["match"] = device_id, "linked"
     ctx.store.execute("UPDATE observations SET device_id = ?, match = ?, data = ? WHERE id = ?",
                       (device_id, "linked", st.dumps(data), a.observation))
-    return ctx.reply({"observation_id": a.observation, "device_id": device_id, "created": created},
-                     f"observation {a.observation} linked to {device_id}" + (" (new device)" if created else ""))
+    return ctx.reply({"observation_id": a.observation, "device_id": device_id, "created": created,
+                      "drift_cleared": cleared},
+                     f"observation {a.observation} linked to {device_id}" + (" (new device)" if created else "")
+                     + (f"; identity drift cleared on gates {', '.join(cleared)}" if cleared else ""))

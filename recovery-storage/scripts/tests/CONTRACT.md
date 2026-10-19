@@ -297,3 +297,118 @@ rslib.operator.ScriptedOperator(answers: list[str])   # .ask returns answers in 
 - Fixtures: `ingest/ddrescue-finished.980pro.derived.map` (2000398934016 B),
   `ingest/ddrescue-finished.990pro.derived.map` (1000204886016 B), `ingest/ddrescue-finished.hitachi500.derived.map`
   (500107862016 B): verbatim 1.30 structure, last block size computed (fixtures/SOURCES.md).
+
+## Amendment 02 (2026-10-19): identity by operator, last write, image gate, snapshot identity, self-test wrap, SSD read verify, operator command text, guard tokenizer
+
+Source: `plans/20261019-1726-recovery-storage-skill/amendment-02-review-round-2.md` (approved by the user after code
+review round 2, findings N1-N16; reproductions in the reviewer's scratchpad `scen.py`, `scen2.py`, `selftest.py`,
+`guard_corpus.py`). Where this section and anything above disagree, this section wins. Lines marked "test-designer
+reading" fill gaps the amendment leaves open; they are open questions in the test-designer report and bind the frozen
+tests until a further amendment.
+
+### A. Identity changes only by the operator (N1, N4, N16)
+
+- `gate close` never changes a device fingerprint (on-media ids included).
+- "Found" at close = the re-resolution returns this device alone (exact, probable or a single weak match). Not found =
+  not attached, `conflict`, `ambiguous`, or only its on-media id differs (test-designer reading of "exactly": a probable
+  USB match by MBR signature and a single weak SD match stay "found", as the D9b / D9c / D15 counter-cases require).
+- Not found -> the gate is still `closed` (exit 0), JSON `gate.identity_drift` = `true` (stays a JSON bool as in D15;
+  the amendment's "= 1" is the stored value) and `gate.drift_reason`: `media-id-changed` when exactly one attached disk
+  is the same hardware (model, bytes, USB ids, trusted serial / EUI / WWN) with another MBR signature / GPT guid, else
+  `device-changed`. A clean close has `drift_reason` null or absent.
+- The close output (JSON `message` / text) contains the operator command `device link <observation> <device>` for
+  `media-id-changed`. Test-designer reading: the observation named is one the operator can link, and linking it with
+  `YES` clears this gate's drift. For `device-changed` the printed observation is not asserted.
+- `device link <observation> <device>` and `device link <observation> --new` ask the operator, exactly one `ask`:
+  `Type YES to link observation <obs> (<model>, <bytes> bytes, <os_path>) to <device>: ` (for `--new` the target wording
+  is free). No console -> exit 3 `operator-console-required`, message `python <abs>/rs.py device link <obs>
+  <device|--new>` (amendment 01 A rules, optional global `--home` tolerated). Answer not exactly `YES` -> exit 3
+  `operator-declined`. Refused or declined -> nothing linked, no device created, no id learned.
+- Link to an existing device whose hardware matches: learns the observation's on-media ids (a later inventory of that
+  disk resolves to the device) and clears `identity_drift` on every closed gate of that device whose close happened
+  before the linked observation. Gates closed after that observation keep their drift.
+- Link to a device with different hardware -> exit 3 `hardware-mismatch` (use `--new`); nothing changes.
+- Ambiguous inventories (exit 5, B16) still need `device link`; tests answer `YES`; scenario `device link` steps carry
+  `answers`.
+
+### B. Last write (N2, N9)
+
+- `last_write_ts(device)` = latest of `closed_ts` of a closed gate whose kind writes the source, and `closed_ts` of an
+  aborted gate whose kind writes the source and that had been confirmed; across all sessions; None if none. Gates of
+  kinds that do not write the source, and write gates aborted while still pending, are not writes.
+- `secured` / `waived` count for a write gate only if recorded after `last_write_ts(device)`; a stale state ->
+  `data-not-secured`. Recording the state again after the write makes it count.
+- Verdict window start = max(session start, `last_write_ts(device)`); evidence before it -> `evidence-before-recovery`.
+
+### C. Secured needs an image gate (N15)
+
+- `session data-state <s> <d> secured --evidence E` also requires a gate of kind `image-ddrescue` on that device, state
+  `closed`, outcome `success`, closed in this session, with E ingested after that gate was confirmed. Missing -> exit 3
+  `image-gate-missing`, store unchanged. `secured --attested` and `waived` unchanged.
+- Test-designer reading: a refused `secured --evidence` lists every failing check (`image-gate-missing` and the
+  `mapfile_complete` reason), as `gate open` does (D8). Tests asserting one reason make every other check pass.
+- Consequence (test-designer reading, open question): a boot/system disk (D3: no gate of any kind) and a device known
+  only via ingest (not attached) can never be `secured --evidence`; the HDD scenario now ends `image-gate-missing`.
+- conftest `secure()` = `image_gate()` (open, operator confirm with the opened gate's phrase, close success; dest =
+  another attached device of the same capture) + ingest ddrescue + `secured --evidence`. Sessions using it allow R1.
+
+### D. Snapshot identity (N7)
+
+- `collect` attaches a smartctl result only when the answering identity matches the device (exact / probable / weak)
+  or model and bytes are equal and no strong id (serial, EUI-64, WWN) differs; otherwise exit 3 `identity-conflict` and
+  no snapshot is stored for the device (`device show` history gains no snapshot). The check also runs on the `-d sat`
+  retry result. Test-designer reading: an answer with no identity at all (unknown bridge, open failed) is not a
+  conflict and is stored as before (B17, B18 unchanged).
+- Gate before/after snapshots apply the same rule (not asserted beyond D15 / D15b: other hardware at close is drift).
+
+### E. Self-test hours wrap (N8)
+
+```python
+rslib.verdict.selftest_window(table: list[dict], latest_poh: int, since_hours: int) -> bool
+    # table = smartctl `ata_smart_self_test_log.standard.table` entries
+    #         ({"status": {"passed": bool, ...}, "lifetime_hours": int, 16-bit raw});
+    # latest_poh = power-on hours of the snapshot;
+    # entry inside the window when (latest_poh - h) % 65536 <= latest_poh - since_hours;
+    # "after" = smaller distance (latest_poh - h) % 65536, never list position or raw hours;
+    # True iff an inside entry with status.passed true has no inside entry with status.passed false after it.
+```
+Test-designer reading: the amendment fixes the formula, not a name; this pure entry point is the minimum the frozen
+tests need. "No failed entry after it" is the phase-04 PASS matrix wording.
+
+### F. SSD read verify (N13)
+
+- ssd-sata / nvme / external-ssd: an f3read pass counts as read verify only with coverage >=
+  `rslib.verdict.CAPACITY_COVERAGE` x device bytes; ddrescue needs the full-coverage mapfile (amendment 01 B); an
+  attested pass still counts (plan Q3). The f3read cases stay BLOCKED (no sourced f3read output with Data OK numbers);
+  only the parameter (0 < value <= 1) is tested.
+
+### G. Operator command text (N5)
+
+- `--reason`, `--note`, `--file`, `--home` values that would be echoed into a printed operator command must not contain
+  `"` `$` backtick `;` `&` `|` `<` `>` or a newline: exit 2 `unsafe-characters` (in JSON `reasons` or in the text)
+  before anything is stored, with or without an operator answer; no printed `rs.py` command line carries the value.
+  Test-designer reading: the character rule is checked before the `--file` path is opened (on Windows `" | < >` and
+  newline cannot be in an existing file name). Ordinary text (spaces, commas, dots, parentheses, Unicode) passes.
+- `--home` is not tested (which commands echo it is open).
+
+### H. Guard tokenizer (N3, N10, N11)
+
+- `rslib.guard_patterns.find` and the hook: every Must BLOCK case matches (no open gate -> deny; one open gate ->
+  allow, H10); no Must ALLOW case matches. PowerShell-tool cases: `$null = Clear-Disk ...`, `$r = Format-Volume ...`;
+  all others Bash. Lists `test_guard_patterns.H5C_BLOCK_BASH`, `H5C_BLOCK_PS`, `H8B_ALLOW_BASH` are verbatim from the
+  amendment; the heredoc and the multi-line `git commit -m` cases are one command string with embedded newlines.
+- Rules: per-wrapper value-flag tables compared case-sensitively; `name =` / `$name =` assignment prefixes skipped;
+  `command -v|-V` never executes; the whole text is tokenized (newlines separate commands outside quotes) and heredoc
+  bodies are dropped; `cp` / `tee` / `pv` judged only by the write target; `&>` and `>&` are redirects; device targets
+  include `/dev/disk/by-*`, `/dev/mapper/*`, `/dev/md*`, `/dev/dm-*`, `/dev/loop*`.
+
+### Keys and reason codes added
+
+| command | keys |
+|---|---|
+| `gate close` | `gate`: + `drift_reason` ("media-id-changed" / "device-changed" / null) |
+| `device link` | unchanged keys (`observation_id`, `device_id`, `created`); asks the operator |
+
+Reason codes: `media-id-changed`, `device-changed` (drift_reason values), `hardware-mismatch`, `image-gate-missing`,
+`identity-conflict` (collect), `unsafe-characters`; amendment 01 `operator-console-required` / `operator-declined`
+now also for `device link`.

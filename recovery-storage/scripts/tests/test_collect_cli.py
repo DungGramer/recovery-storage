@@ -1,9 +1,12 @@
 """Phase 02 commands through the CLI with a RecordedRunner (B15-B22, B18b).
 Spec: phase-02 Requirements (collect, events, ingest smartctl, device link, class detection) + B15-B22."""
+import io
+import sys
+
 import pytest
 
-from conftest import (BASELINE, USB_SD, USB_STICK, collect, device_at, fx, fx_bytes, inventory, make_runner,
-                      new_session, obs_for, ok, sha256_hex)
+from conftest import (BASELINE, OTHERSIG, STICK_BYTES, USB_SD, USB_STICK, assert_console_required, collect, device_at,
+                      fx, fx_bytes, inventory, link, make_runner, new_session, obs_for, ok, sha256_hex)
 
 X = ["-j", "-x", "-n", "standby"]
 SAT = ["-j", "-x", "-n", "standby", "-d", "sat"]
@@ -81,10 +84,77 @@ def test_B16_ambiguous_exit_5_no_link_then_device_link(cli):
         assert cands[d_a]["model"] == "General UDisk" and cands[d_a]["bytes"] == 8054112256
     assert obs_for(res, "/dev/pd0")["match"] == "exact"  # unaffected disks still matched
     o2, o3 = obs_for(res, "/dev/pd2")["observation_id"], obs_for(res, "/dev/pd3")["observation_id"]
-    lk = ok(cli("device", "link", o2, d_a))
+    # amendment 02 A: device link asks the operator; the human types YES
+    lk = ok(cli("device", "link", o2, d_a, answers=["YES"]))
     assert lk["device_id"] == d_a and lk["created"] is False
-    new = ok(cli("device", "link", o3, "--new"))
+    new = ok(cli("device", "link", o3, "--new", answers=["YES"]))
     assert new["created"] is True and new["device_id"] != d_a
+
+
+# ---------------- B16b (amendment 02 A): device link needs the operator at the console
+def _lookalike_obs(cli):
+    """Stored stick + a look-alike capture (only the MBR Signature differs, G3): inventory exit 5, pd2 unlinked."""
+    sid = new_session(cli)
+    d_a = device_at(cli, USB_STICK, sid, "/dev/pd2")
+    res = cli("inventory", "--session", sid, runner=make_runner(USB_STICK, OTHERSIG))
+    assert res.code == 5, res
+    return sid, d_a, obs_for(res, "/dev/pd2")["observation_id"]
+
+
+def _nothing_linked(cli, sid, n_devices):
+    """Store unchanged by a refused link: the look-alike is still unresolved and no device was created."""
+    res = cli("inventory", "--session", sid, runner=make_runner(USB_STICK, OTHERSIG))
+    assert res.code == 5 and obs_for(res, "/dev/pd2")["device_id"] is None, res
+    assert len(ok(cli("device", "list"))["devices"]) == n_devices
+
+
+@pytest.mark.parametrize("target", ["existing", "new"])
+@pytest.mark.parametrize("how", ["no-tty-console", "operator-out-of-answers"])
+def test_B16b_device_link_without_console_refused(cli, monkeypatch, target, how):
+    """Amendment 02 A (N4/N16) '`device link` requires the operator at the console; no console -> exit 3
+    operator-console-required' with the command line for the human (amendment 01 mechanism).
+    Mutation: link without asking (pre-amendment) -> exit 0 -> red; link stored before the ask -> store differs -> red."""
+    sid, d_a, obs = _lookalike_obs(cli)
+    n = len(ok(cli("device", "list"))["devices"])
+    tgt = d_a if target == "existing" else "--new"
+    if how == "no-tty-console":
+        monkeypatch.setattr(sys, "stdin", io.StringIO(""))
+        res = cli("device", "link", obs, tgt, operator=None)
+    else:
+        res = cli("device", "link", obs, tgt, answers=[])
+    assert_console_required(res, "device", "link", obs, tgt)
+    _nothing_linked(cli, sid, n)
+
+
+@pytest.mark.parametrize("target", ["existing", "new"])
+@pytest.mark.parametrize("answer", ["yes", "", "no", "Y"])
+def test_B16b_device_link_answer_not_YES_declined(cli, target, answer):
+    """Amendment 02 A 'answer not `YES` -> exit 3 operator-declined'. Mutation: case-insensitive / prefix answer
+    check, or any answer accepted -> exit 0 -> red."""
+    sid, d_a, obs = _lookalike_obs(cli)
+    n = len(ok(cli("device", "list"))["devices"])
+    res = link(cli, obs, d_a if target == "existing" else "--new", answers=[answer])
+    assert res.code == 3, res
+    assert "operator-declined" in res.reasons, res
+    _nothing_linked(cli, sid, n)
+
+
+@pytest.mark.parametrize("target", ["existing", "new"])
+def test_B16b_device_link_prompt_names_observation_model_bytes_path(cli, target):
+    """Amendment 02 A prompt `Type YES to link observation <obs> (<model>, <bytes> bytes, <os_path>) to <device>: `.
+    Exactly one ask. Mutation: prompt without model/bytes/path (the human cannot tell the disk) or no ask -> red."""
+    sid, d_a, obs = _lookalike_obs(cli)
+    res = link(cli, obs, d_a if target == "existing" else "--new")
+    assert res.code == 0, res
+    assert len(res.prompts) == 1, res.prompts
+    p = res.prompts[0]
+    for s in ("YES", str(obs), "General UDisk", str(STICK_BYTES), "/dev/pd2"):
+        assert s in p, (s, p)
+    if target == "existing":
+        assert str(d_a) in p, p
+        assert res.data["device_id"] == d_a and res.data["created"] is False
+    else:
+        assert res.data["created"] is True and res.data["device_id"] != d_a
 
 
 def test_B16_ambiguous_text_shows_candidates(cli):
@@ -125,6 +195,46 @@ def test_B17_device_absent_exit_3_nothing_stored(cli):
     assert [a for t, a in runner.calls if "-x" in a] == []
     hist = ok(cli("device", "show", stick))["history"]
     assert not [h for h in hist if h["type"] == "snapshot"]
+
+
+# ---------------- B17b (amendment 02 D): the answering identity must be the device's
+def _snapshots(cli, dev):
+    return [h for h in ok(cli("device", "show", dev))["history"] if h["type"] == "snapshot"]
+
+
+@pytest.mark.parametrize("answer", [f"{BASELINE}/smartctl-x-pd0.json",
+                                    f"{BASELINE}/smartctl-x-pd1.serial-swap.derived.json"],
+                         ids=["other-model-and-bytes", "same-model-bytes-other-serial"])
+def test_B17b_collect_answer_from_other_disk_identity_conflict_nothing_stored(cli, answer):
+    """Amendment 02 D (N7): `collect` attaches a smartctl result only when the answering identity matches the device
+    (exact/probable/weak) or model and bytes are equal and no strong id differs; otherwise exit 3 identity-conflict and
+    nothing is stored. The pd1 `-x` answer is replaced by the 990 PRO capture (other model/bytes) or by the derived
+    serial swap (same model/bytes, other serial = strong id differs).
+    Mutation: store whatever disk answers at the path -> exit 0 + snapshot -> red (row 1); accept on model+bytes
+    alone -> red (row 2)."""
+    sid = new_session(cli)
+    dev = device_at(cli, BASELINE, sid, "/dev/pd1")
+    before = len(_snapshots(cli, dev))
+    runner = make_runner(BASELINE, replace={("smartctl", tuple(X + ["/dev/pd1"])): answer})
+    res = cli("collect", dev, "--session", sid, runner=runner)
+    assert res.code == 3, res
+    assert "identity-conflict" in res.reasons, res
+    assert len(_snapshots(cli, dev)) == before
+
+
+def test_B17b_sat_retry_answer_from_other_disk_identity_conflict(cli):
+    """Amendment 02 D 'The check also runs on the `-d sat` retry result'. The stick's `-x` answer is the real
+    unknown-bridge failure (no identity, B18 retry); the `-d sat` answer is replaced by the real 980 PRO capture of the
+    same machine. Mutation: identity checked on the first answer only -> 980 PRO data stored for the stick -> red."""
+    sid = new_session(cli)
+    dev = device_at(cli, USB_STICK, sid, "/dev/pd2")
+    before = len(_snapshots(cli, dev))
+    runner = make_runner(USB_STICK, replace={("smartctl", tuple(SAT + ["/dev/pd2"])): f"{USB_STICK}/smartctl-x-pd1.json"})
+    res = cli("collect", dev, "--session", sid, runner=runner)
+    assert calls_for(runner, "/dev/pd2") == [tuple(X + ["/dev/pd2"]), tuple(SAT + ["/dev/pd2"])]
+    assert res.code == 3, res
+    assert "identity-conflict" in res.reasons, res
+    assert len(_snapshots(cli, dev)) == before
 
 
 # ---------------- B18 / B18b

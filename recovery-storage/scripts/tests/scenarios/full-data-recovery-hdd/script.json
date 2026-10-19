@@ -84,6 +84,37 @@
   },
   {
    "cli": [
+    "inventory",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   },
+   "save": {
+    "dest": "observations[os_path=/dev/pd1].device_id"
+   }
+  },
+  {
+   "cli": [
+    "gate",
+    "open",
+    "$sid",
+    "$dev",
+    "image-ddrescue",
+    "--dest-device",
+    "$dest"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   },
+   "exit": 3,
+   "reasons": [
+    "device-not-found"
+   ]
+  },
+  {
+   "cli": [
     "ingest",
     "ddrescue",
     "$sid",
@@ -103,6 +134,10 @@
     "secured",
     "--evidence",
     "$ev2"
+   ],
+   "exit": 3,
+   "reasons": [
+    "image-gate-missing"
    ]
   },
   {
@@ -122,5 +157,6 @@
    ]
   }
  ],
- "structural_reason": "No real HDD-behind-USB-dock capture on Windows (SOURCES.md 'No real sample yet'): the HDD is known only via ingest, so the format gate ends at device-not-found and the self-test/PASS matrix steps cannot run."
+ "structural_reason": "No real HDD-behind-USB-dock capture on Windows (SOURCES.md 'No real sample yet'): the HDD is known only via ingest, so the format gate ends at device-not-found and the self-test/PASS matrix steps cannot run. Amendment 02 C: with no attached HDD no image-ddrescue gate can run, so even the full-coverage map cannot secure the data (image-gate-missing).",
+ "amended": "amendment 02 C"
 }

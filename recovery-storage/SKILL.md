@@ -27,8 +27,8 @@ outside any repo. Requires smartmontools 7.x: see [tools-windows](references/too
 ## Hard rules
 
 1. Identify devices by fingerprint (model, serial, bytes, EUI-64/WWN, VID/PID, on-media id), never by Disk number,
-   drive letter or `/dev/sdX`. An `ambiguous` result (exit 5) goes to the operator: `rs.py device link <observation> <device>`
-   or `rs.py device link <observation> --new`.
+   drive letter or `/dev/sdX`. An `ambiguous` result (exit 5) and any identity drift go to the operator, who runs
+   `rs.py device link <observation> <device>` or `rs.py device link <observation> --new` in their own terminal.
 2. Never type a device path yourself. Use only the path printed by `rs.py gate confirm` for the action, and run the
    action right after confirm.
 3. Every action above R0 goes through a gate: `rs.py gate open` -> show the confirmation block -> the operator runs

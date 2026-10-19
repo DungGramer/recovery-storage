@@ -114,7 +114,9 @@ def selftest_entries(rec):
         status = row.get("status") if isinstance(row.get("status"), dict) else {}
         s = str(status.get("string") or "")
         low = s.lower()
-        if isinstance(status.get("passed"), bool):
+        if isinstance(status.get("value"), int) and not isinstance(status.get("value"), bool):
+            failed = 3 <= (status["value"] >> 4) <= 8  # ATA status nibble: 3 fatal ... 8 handling damage
+        elif isinstance(status.get("passed"), bool):
             failed = status["passed"] is False and "aborted by host" not in low and "interrupted" not in low
         else:  # older smartctl without `passed`: read the text, "Completed without error" is a pass
             failed = "without error" not in low and any(w in low for w in ("fail", "error"))

@@ -5,10 +5,10 @@ missing item by name. History is kept; the latest verdict is the effective one.
 from . import session as sess
 from . import store as st
 from .collect import class_conflict, device_row, load_snapshot_record
-from .datastate import mapfile_complete
+from .datastate import last_write_ts, mapfile_complete
 from .delta import delta
 from .errors import Refused, UsageError
-from .health import selftest_entries, verdict as health_verdict
+from .health import verdict as health_verdict
 
 CAPACITY_COVERAGE = 0.9  # f3read verified bytes / device bytes needed for a flash PASS (parameter)
 HDD = ("hdd", "external-hdd")
@@ -21,11 +21,10 @@ SSD_COUNTERS = HDD_COUNTERS + ("media_errors",)
 def _window_start(store, s, device_id):
     """Post-recovery window: after the last closed R2 gate on this device in ANY session, never before this
     session started."""
-    r = store.one("SELECT closed_ts FROM gates WHERE device_id = ? AND state = 'closed' AND risk = 'R2' "
-                  "ORDER BY closed_ts DESC LIMIT 1", (device_id,))
-    if r and r["closed_ts"] > s["created_ts"]:
-        return r["closed_ts"], True
-    return s["created_ts"], bool(r)
+    lw = last_write_ts(store, device_id)  # closed write gates + write gates aborted after confirm (amendment 02)
+    if lw and lw > s["created_ts"]:
+        return lw, True
+    return s["created_ts"], bool(lw)
 
 
 def _snaps(store, s, device_id):
@@ -37,23 +36,49 @@ def _snaps(store, s, device_id):
 ATA_HOURS_WRAP = 65536  # ATA self-test log stores lifetime hours in 16 bits
 
 
+def _entry_passed(row):
+    """True / False / None (not a verdict). smartctl sets `passed: true` even for "in progress" (0xF) and unknown
+    nibbles (ataprint.cpp), so the ATA status nibble decides: 0 pass; 3-8 fail; 1, 2, 9-15 not counted."""
+    status = row.get("status") if isinstance(row.get("status"), dict) else {}
+    if isinstance(status.get("value"), int) and not isinstance(status.get("value"), bool):
+        nibble = status["value"] >> 4
+        return True if nibble == 0 else False if 3 <= nibble <= 8 else None
+    if isinstance(status.get("passed"), bool):
+        return status["passed"]
+    s = str(status.get("string") or "").lower()
+    return "without error" in s if s else None
+
+
+def selftest_window(table, latest_poh, since_hours):
+    """Pure (amendment 02 E): True iff a passed entry inside the window has no failed entry at or after it.
+    Inside: (latest_poh - h) % 65536 <= latest_poh - since_hours; "after" = smaller distance, never raw hours."""
+    if not isinstance(latest_poh, int) or not isinstance(since_hours, int) or latest_poh < since_hours:
+        return False
+    window = latest_poh - since_hours
+    inside = []
+    for row in table or []:
+        if not isinstance(row, dict) or not isinstance(row.get("lifetime_hours"), int):
+            continue
+        h = row["lifetime_hours"]
+        if latest_poh < ATA_HOURS_WRAP and h > latest_poh:
+            continue  # cannot be in the future of a counter that never wrapped
+        dist = (latest_poh - h) % ATA_HOURS_WRAP
+        if dist <= window:
+            inside.append((dist, _entry_passed(row)))
+    passes = [d for d, ok in inside if ok is True]
+    if not passes:
+        return False
+    newest_pass = min(passes)
+    return not any(ok is False and d <= newest_pass for d, ok in inside)
+
+
 def _selftest_ok(rec, since_hours):
-    """A completed-without-error test at or after `since_hours`, and no failed test after it."""
-    if since_hours is None:
-        return False
-    entries = [(path, st_, h, failed) for path, st_, h, failed in selftest_entries(rec) if isinstance(h, int)]
-
-    def after(h):
-        if h >= since_hours:
-            return True
-        # 16-bit wrap: compare within the same 65536-hour cycle
-        return since_hours >= ATA_HOURS_WRAP and h < ATA_HOURS_WRAP and h >= since_hours % ATA_HOURS_WRAP
-
-    good = [h for _, s_, h, failed in entries if not failed and "without error" in s_.lower() and after(h)]
-    if not good:
-        return False
-    best = max(good)
-    return not any(failed and h >= best for _, _, h, failed in entries)
+    """A completed-without-error test inside the window and no failed test at or after it.
+    ATA logs store lifetime hours in 16 bits: an entry's age is (latest_poh - h) mod 65536 (amendment 02 E)."""
+    latest = (rec.health_fields or {}).get("power_on_hours")
+    doc = rec.doc if isinstance(getattr(rec, "doc", None), dict) else {}
+    table = (((doc.get("ata_smart_self_test_log") or {}).get("standard") or {}).get("table")) or []
+    return selftest_window(table if isinstance(table, list) else [], latest, since_hours)
 
 
 def pass_missing(store, s, device_id):
@@ -136,7 +161,9 @@ def pass_missing(store, s, device_id):
         def read_ok(e):
             p = e["parsed"]
             return (e["kind"] == "ddrescue" and mapfile_complete(p, dev["fingerprint"].get("bytes"))[0]) or \
-                (e["kind"] == "f3read" and p.get("result") == "pass") or \
+                (e["kind"] == "f3read" and p.get("result") == "pass" and isinstance(p.get("data_ok_bytes"), int)
+                 and isinstance(dev["fingerprint"].get("bytes"), int)
+                 and p["data_ok_bytes"] >= CAPACITY_COVERAGE * dev["fingerprint"]["bytes"]) or \
                 (e["kind"] == "attested" and p.get("result") == "pass")
         if not any(read_ok(e) for e in post_ev):
             missing.append("read-verify-missing")

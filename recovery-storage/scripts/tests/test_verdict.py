@@ -2,8 +2,8 @@
 spec §2 Phase 5 + §8 'format success is not recovery' + D21-D27."""
 import pytest
 
-from conftest import (BASELINE, MAP_990, MAP_FINISHED, USB_STICK, close, collect, confirm, fx, gate_ok, ingest_smart,
-                      inventory, new_session, ok, prepared)
+from conftest import (BASELINE, MAP_990, MAP_FINISHED, USB_STICK, close, collect, confirm, fx, fx_json, gate_ok,
+                      ingest_smart, inventory, new_session, ok, prepared)
 
 DEVREC = ("--goal", "device-recovery", "--preserve-data", "no", "--ceiling", "R2")
 
@@ -213,3 +213,120 @@ def test_D27_show_history_newest_first_latest_effective(cli):
     d = ok(cli("verdict", "show", sid, dev))
     assert [v["status"] for v in d["verdicts"]] == ["RETIRED", "FAIL"]
     assert d["effective"] == "RETIRED"
+
+
+# ---------------- D22b (amendment 02 B, N9): a confirmed-then-aborted write gate moves the verdict window
+def test_D22b_write_gate_aborted_after_confirm_moves_the_window(cli, tmp_path):
+    """Amendment 02 B 'Verdict window start = max(session start, last_write_ts(device))', last_write_ts including an
+    aborted write gate that had been confirmed. The H2testw attestation precedes that aborted format gate.
+    Mutation: aborted gates ignored for the window (reviewer scen2.py #3) -> PASS -> red."""
+    sid, dev = formatted_stick(cli)
+    attest(cli, sid, dev, tmp_path)
+    g, _ = gate_ok(cli, USB_STICK, sid, dev, "format")
+    assert confirm(cli, USB_STICK, g, "8054112256").code == 0
+    assert ok(cli("gate", "abort", g, "--reason", "format stopped midway"))["gate"]["state"] == "aborted"
+    replug(cli, sid)
+    res = cli("verdict", "set", sid, dev, "PASS")
+    assert res.code == 3, res
+    assert "evidence-before-recovery" in res.reasons, res
+
+
+def test_D22b_write_gate_aborted_while_pending_leaves_the_window(cli, tmp_path):
+    """Counter-case: aborted before confirm (`confirmed_ts` unset) is not a write, so the D22 PASS flow still passes.
+    Mutation: every aborted gate moves the window -> evidence-before-recovery -> red."""
+    sid, dev = formatted_stick(cli)
+    attest(cli, sid, dev, tmp_path)
+    g, _ = gate_ok(cli, USB_STICK, sid, dev, "format")
+    assert ok(cli("gate", "abort", g, "--reason", "changed plan"))["gate"]["state"] == "aborted"
+    replug(cli, sid)
+    res = cli("verdict", "set", sid, dev, "PASS")
+    assert res.code == 0, res
+
+
+# ---------------- D23b (amendment 02 E, N8): ATA self-test lifetime hours are 16-bit
+def _entry(passed, hours):
+    return {"type": {"value": 1, "string": "Short offline"},
+            "status": {"value": 0 if passed else 121,
+                       "string": "Completed without error" if passed else "Completed: read failure",
+                       "passed": passed},
+            "lifetime_hours": hours}
+
+
+def window_ok(table, latest_poh, since_hours):
+    from rslib.verdict import selftest_window
+
+    return selftest_window(table, latest_poh, since_hours)
+
+
+@pytest.mark.parametrize("table,latest,since,want", [
+    # amendment E case 1: since 70000, pass logged at 10000 (60000 h ago, latest = 70000) -> not counted
+    ([_entry(True, 10000)], 70000, 70000, False),
+    # amendment E case 2: fail at raw 4564 (= 70100) after a pass at raw 4500 (= 70036) -> refused; pass listed first
+    ([_entry(True, 4500), _entry(False, 4564)], 70100, 70000, False),
+    # the pass at raw 4500 alone, same window -> counted
+    ([_entry(True, 4500)], 70100, 70000, True),
+    # boundary: distance == latest - since is inside ('<='); one hour older is outside
+    ([_entry(True, 70000 % 65536)], 70100, 70000, True),
+    ([_entry(True, 69999 % 65536)], 70100, 70000, False),
+    # ordering across the wrap: fail at raw 30 (= 65566, 34 h ago) is newer than the pass at raw 65530 (70 h ago)
+    ([_entry(True, 65530), _entry(False, 30)], 65600, 65500, False),
+    # a pass newer than the fail is not refused ('no failed entry after it', phase-04 matrix)
+    ([_entry(False, 65530), _entry(True, 30)], 65600, 65500, True),
+], ids=["E1-stale-60000h", "E2-fail-after-pass", "pass-in-wrapped-window", "boundary-equal-in",
+        "boundary-one-hour-out", "wrap-order-fail-newer", "wrap-order-pass-newer"])
+def test_D23b_selftest_window_wraps_at_65536(table, latest, since, want):
+    """Amendment 02 E: entry inside the window when (latest_poh - h) % 65536 <= latest_poh - since_hours; 'after'
+    ordering uses that distance. Contract: rslib.verdict.selftest_window(table, latest_poh, since_hours) -> bool
+    (a passed entry inside the window with no failed entry after it). Mutations, one per row: compare h with
+    since % 65536 (E1 accepted); compare raw h >= since (pass-in-wrapped-window refused); order by list position
+    (E2 accepted); '<' instead of '<=' (boundary-equal-in refused); off by one the other way (boundary-one-hour-out
+    accepted); order by raw hours (wrap-order rows flipped)."""
+    assert window_ok(table, latest, since) is want
+
+
+@pytest.mark.parametrize("since,want", [(65578, True), (65579, False), (65540, True)])
+def test_D23b_selftest_window_on_real_wrapped_log(since, want):
+    """Amendment 02 E on a real wrapped log: scrutiny-usbjmicron-hdd-failing (POH 65592; newest entries logged at 42,
+    18, 4 = read failure, 65530 ...). 65578: the pass at raw 42 is 14 h old, window 14 -> counted; 65579: window 13 ->
+    nothing inside; 65540: window 52 holds 42 (pass), 18 (pass), 4 (fail, older) -> the newest pass has no fail after
+    it. Mutation: no wrap (raw 42 < 65578) -> first row refused; '<' -> first row refused; 'any failure in the window
+    refuses' -> third row refused."""
+    doc = fx_json("smartctl/scrutiny-usbjmicron-hdd-failing.json")
+    table = doc["ata_smart_self_test_log"]["standard"]["table"]
+    assert doc["power_on_time"]["hours"] == 65592
+    assert window_ok(table, 65592, since) is want
+
+
+@pytest.mark.parametrize("rel,missing", [
+    ("smartctl/scrutiny-ata-hdd-healthy.poh67236.derived.json", True),
+    ("smartctl/scrutiny-ata-hdd-healthy.poh67244.derived.json", False),
+], ids=["poh-67236-newest-test-65528h-old", "poh-67244-newest-test-0h-old"])
+def test_D23b_verdict_set_uses_the_wrapped_window(cli, rel, missing):
+    """Amendment 02 E through `verdict set` (D23 flow, one snapshot: window start POH = latest POH, width 0).
+    POH 67236 (= 65536 + 1700): the newest entry, raw 1708, is (67236 - 1708) % 65536 = 65528 h old -> outside ->
+    `selftest-missing` listed. POH 67244 (= 65536 + 1708): distance 0 -> inside -> not listed.
+    Mutation: verdict keeps the pre-amendment comparison of raw hours with POH % 65536 (1708 >= 1700 accepted) ->
+    first row red; raw hours vs full POH without wrap (1708 < 67244) -> second row red; selftest_window exists but
+    `verdict set` does not use it -> first row red."""
+    sid = new_session(cli)
+    dev = ingest_smart(cli, sid, rel).data["device_id"]
+    res = cli("verdict", "set", sid, dev, "PASS")
+    assert res.code == 3, res
+    assert ("selftest-missing" in res.reasons) is missing, res
+
+
+# ---------------- D24c (amendment 02 F, N13): SSD read verify by f3read needs flash coverage
+@pytest.mark.skip(reason="BLOCKED (open question F3-numbers, amendment 02 F): an f3read pass counts as SSD/NVMe read "
+                         "verify only with coverage >= verdict.CAPACITY_COVERAGE x device bytes; testing it needs a real "
+                         "f3read output with Data OK amounts, and research quotes the labels only.")
+@pytest.mark.parametrize("cls", ["ssd-sata", "nvme", "external-ssd"])
+def test_D24c_ssd_f3read_below_flash_coverage_is_not_read_verify(cls):
+    """Amendment 02 F: f3read pass below coverage -> not a read verify (PASS refused); at/above coverage -> counts."""
+
+
+def test_D24c_coverage_parameter_is_exposed():
+    """Amendment 02 F names the parameter `verdict.CAPACITY_COVERAGE` (phase-04 D22: 0.9 x bytes for USB). Only the
+    name and range are sourced; the f3read cases above stay BLOCKED. Mutation: parameter renamed/removed -> red."""
+    from rslib import verdict
+
+    assert 0 < verdict.CAPACITY_COVERAGE <= 1

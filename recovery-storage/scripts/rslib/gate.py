@@ -14,8 +14,8 @@ import sqlite3
 from . import session as sess
 from . import store as st
 from .actions import CATALOG, RISK_ORDER
-from .collect import class_conflict, device_row, media_id_changed, observe, pick, resolve, take_snapshot
-from .datastate import current as data_state
+from .collect import class_conflict, device_row, media_id_candidate, observe, pick, resolve, take_snapshot
+from .datastate import secured_after_last_write
 from .errors import CommandError, NeedsHuman, Refused, UsageError
 from .fleet import latest_assessment
 
@@ -105,11 +105,9 @@ def _preserving_sessions(store, device_id, current):
 
 
 def _secured_anywhere(store, device_id):
-    rows = store.query("SELECT session_id, state FROM data_states WHERE device_id = ? ORDER BY ts, id", (device_id,))
-    last = {}
-    for r in rows:
-        last[r["session_id"]] = r["state"]
-    return any(v in ("secured", "waived") for v in last.values())
+    """secured / waived recorded after the last write to the source (amendment 02: a stale state from before a
+    format does not protect today's data)."""
+    return secured_after_last_write(store, device_id)
 
 
 def _resolve_dest(ctx, session_id, dest):
@@ -147,8 +145,7 @@ def cmd_open(ctx, a):
             notes.append("goal forensic-preservation never writes the source (change goals to proceed)")
         if action.writes_source:
             keepers = _preserving_sessions(ctx.store, a.device, s)
-            if keepers and not _secured_anywhere(ctx.store, a.device) and \
-                    data_state(ctx.store, a.session, a.device) not in ("secured", "waived"):
+            if keepers and not _secured_anywhere(ctx.store, a.device):
                 reasons.append("data-not-secured")
                 notes.append("data must be preserved (sessions " + ", ".join(keepers) + "): secure it first "
                              "(session data-state ... secured --evidence <full mapfile>) or have the operator waive it")
@@ -295,37 +292,44 @@ def cmd_close(ctx, a):
     if g["state"] != "open":
         raise Refused(f"gate {a.gate} is {g['state']}, only an open gate can be closed", ["gate-not-open"],
                       {"gate": _pub(g)})
-    warnings = []
-    drift = False
+    warnings, drift, drift_reason, link_obs = [], False, None, None
     after = {"observation_id": None, "snapshot_id": None, "collection_status": None}
     writes = bool(CATALOG.get(g["kind"]) and CATALOG[g["kind"]].writes_source)
     try:
         rows = observe(ctx, g["session_id"])
         try:
             r = pick(ctx, rows, g["device_id"])
-        except (Refused, NeedsHuman) as e:
-            r = media_id_changed(ctx, rows, g["device_id"]) if writes else None
-            if r is None:
-                raise
-            warnings.append("on-media id changed by the action (MBR signature / GPT guid): device fingerprint "
-                            "updated; same hardware confirmed by model, bytes and USB/serial ids")
-        after = _before_after(ctx, g["session_id"], g["device_id"], r)
-    except (Refused, NeedsHuman) as e:
-        drift = True
-        warnings.append(f"identity drift: the device at close is not the one confirmed ({e.message}); "
-                        "a PASS verdict is refused until this is resolved")
+        except (Refused, NeedsHuman):
+            cand = media_id_candidate(ctx, rows, g["device_id"]) if writes else None
+            drift, drift_reason = True, "media-id-changed" if cand else "device-changed"
+            if cand:
+                link_obs = cand[1]["observation_id"]
+                warnings.append(f"on-media id changed (MBR signature / GPT guid) after {g['kind']}: identity drift "
+                                f"until the operator confirms it is the same device: rs.py device link {link_obs} "
+                                f"{g['device_id']}")
+            else:
+                warnings.append("identity drift: the device at close is not the one confirmed; a PASS verdict is "
+                                "refused until the operator resolves it with device link")
+            r = None
+        if r is not None:
+            after = _before_after(ctx, g["session_id"], g["device_id"], r)
+            if str(after.get("collection_status") or "").startswith("error") and "identity" in after[
+                    "collection_status"]:
+                drift, drift_reason = True, "device-changed"
+                warnings.append("identity drift: smartctl at close answered with another identity")
     except CommandError as e:  # environment failure: the gate is still closed (never left open)
-        drift = True
+        drift, drift_reason = True, "device-changed"
         after["collection_status"] = f"error: {e.message}"
         warnings.append(f"after-state not recorded ({e.message}); identity unverified, treated as drift")
     data = g["data"]
-    data.update({"note": a.note, "evidence": a.evidence or [], "warnings": warnings})
+    data.update({"note": a.note, "evidence": a.evidence or [], "warnings": warnings, "drift_reason": drift_reason,
+                 "link_observation": link_obs})
     _transition(ctx.store, g["id"], ("open",), "state = 'closed', outcome = ?, identity_drift = ?, after_json = ?, "
                 "closed_ts = ?, data = ?", (a.outcome, int(drift), st.dumps(after), ctx.store.now(), st.dumps(data)))
     g = _gate(ctx.store, g["id"])
     text = f"gate {g['id']} closed ({a.outcome})" + ("".join("\nWARNING: " + w for w in warnings))
-    return ctx.reply({"gate": _pub(g), "after": after, "warnings": warnings,
-                      "message": " ".join(warnings)}, text)
+    return ctx.reply({"gate": _pub(g, drift_reason=drift_reason, link_observation=link_obs), "after": after,
+                      "warnings": warnings, "message": " ".join(warnings)}, text)
 
 
 def cmd_abort(ctx, a):

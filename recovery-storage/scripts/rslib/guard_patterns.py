@@ -1,10 +1,11 @@
-"""Destructive-command patterns for the guard hook (phase 08). Pure: no I/O, no processes.
+"""Destructive-command patterns for the guard hook (phase 08, amendment 02). Pure: no I/O, no processes.
 
 A deny-list over shell text is LEAKY by construction (variables, eval, script files, GUI tools); it is a second
-barrier behind the gate protocol, never the primary control. Commands are tokenised with quote awareness, so a
-keyword inside a quoted string (git commit -m "mkfs ...") is an argument, not an executable. Control syntax
-(`then`, `do`, `{`, `(`, `$( )`, backticks), wrappers (sudo, timeout, ionice, xargs, busybox, Start-Process ...) and
-nested shells (bash -c, cmd /c, powershell -Command / -EncodedCommand, wsl) are unwrapped.
+barrier behind the gate protocol, never the primary control. Commands are tokenised over the whole text with quote
+awareness, so a keyword inside a quoted string or a heredoc body (git commit -m "mkfs ...") is data, not an
+executable. Control syntax (`then`, `do`, `{`, `(`, `$( )`, backticks, `$x =` assignments), wrappers (sudo,
+timeout, ionice, xargs, busybox, Start-Process ...) and nested shells (bash -c, cmd /c, powershell -Command /
+-EncodedCommand, wsl) are unwrapped.
 """
 import base64
 import binascii
@@ -13,16 +14,38 @@ import shlex
 from dataclasses import dataclass
 
 MAX_DEPTH = 5  # nested shell unwrap depth
-SEPARATORS = {";", "&&", "||", "|", "&", "|&", ";;", "(", ")", "{", "}", "((", "))", "$"}
+SEPARATORS = {";", "&&", "||", "|", "&", "|&", ";;", "(", ")", "{", "}", "((", "))", "$", "\n"}
 KEYWORDS = {"then", "do", "else", "elif", "if", "while", "until", "!", "time"}
-WRAPPERS = {"sudo", "doas", "nohup", "command", "exec", "env", "stdbuf", "nice", "ionice", "timeout", "xargs",
-            "busybox", "pkexec", "chroot", "nsenter", "start-process", "saps", "start", "call"}
-WRAPPER_VALUE_FLAGS = {"-u", "-g", "-n", "-c", "-p", "-s", "-k", "-t", "-i", "-o", "-e", "-filepath",
-                       "-argumentlist", "-verb", "-workingdirectory", "-windowstyle"}
+# wrapper -> flags that take a value (case-sensitive: sudo -E / -n / -S take none)
+WRAPPER_VALUE_FLAGS = {
+    "sudo": {"-u", "-g", "-h", "-p", "-C", "-D", "-R", "-T", "-r", "-t", "--user", "--group", "--host", "--prompt",
+             "--chdir", "--chroot", "--close-from", "--other-user", "--role", "--type", "--command-timeout"},
+    "doas": {"-u", "-C"},
+    "env": {"-u", "-C", "-S", "--unset", "--chdir", "--split-string"},
+    "nice": {"-n", "--adjustment"},
+    "ionice": {"-c", "-n", "-p", "-P", "-u", "--class", "--classdata", "--pid", "--pgid", "--uid"},
+    "timeout": {"-s", "-k", "--signal", "--kill-after"},
+    "xargs": {"-a", "-d", "-E", "-e", "-I", "-i", "-L", "-l", "-n", "-P", "-s", "--arg-file", "--delimiter",
+              "--max-args", "--max-procs", "--max-chars", "--replace", "--max-lines", "--eof"},
+    "stdbuf": {"-i", "-o", "-e", "--input", "--output", "--error"},
+    "chroot": {"--userspec", "--groups"},
+    "nsenter": {"-t", "--target", "-S", "-G", "--setuid", "--setgid"},
+    "nohup": set(), "exec": {"-a"}, "busybox": set(), "pkexec": {"--user"}, "call": set(),
+    "start-process": {"-verb", "-workingdirectory", "-windowstyle", "-credential", "-redirectstandardinput",
+                      "-redirectstandardoutput", "-redirectstandarderror"},
+    "saps": {"-verb", "-workingdirectory", "-windowstyle", "-credential"},
+    "start": set(),
+}
+WRAPPERS = set(WRAPPER_VALUE_FLAGS)
+CASE_FOLD_WRAPPERS = {"start-process", "saps", "start"}  # PowerShell parameters are case-insensitive
 SHELLS = {"bash", "sh", "zsh", "dash", "ksh"}
 PS = {"powershell", "pwsh"}
-DEVICE_TARGET = re.compile(r"(?i)^(/dev/(sd[a-z]+\d*|nvme\d+n\d+(p\d+)?|mmcblk\d+(p\d+)?|hd[a-z]+\d*|vd[a-z]+\d*|"
-                           r"xvd[a-z]+\d*|disk\d+(s\d+)?|rdisk\d+)|.*physicaldrive\d+|[/\\]{2}[.?][/\\].*)$")
+DEVICE_TARGET = re.compile(
+    r"(?i)^(/dev/(sd[a-z]+\d*|nvme\d+n\d+(p\d+)?|mmcblk\d+(p\d+)?|hd[a-z]+\d*|vd[a-z]+\d*|xvd[a-z]+\d*|"
+    r"disk\d+(s\d+)?|rdisk\d+|disk/by-[a-z-]+/.+|mapper/.+|md\d+(p\d+)?|md/.+|dm-\d+|loop\d+(p\d+)?|nbd\d+)|"
+    r".*physicaldrive\d+|[/\\]{2}[.?][/\\].*)$")
+NOT_DEVICE = {"/dev/null", "/dev/stdout", "/dev/stderr", "/dev/zero", "/dev/tty", "/dev/urandom", "/dev/random"}
+
 
 
 @dataclass(frozen=True)
@@ -70,14 +93,17 @@ def _parted(args):
     if "-l" in args or "--list" in args:
         return False
     words = [a for a in args if not a.startswith("-") and not a.startswith("/dev/")]
-    return not (words and all(w == "print" for w in words))
+    # read-only: print [free|all|list], optionally after `unit <u>`
+    read_words = {"print", "free", "all", "list", "unit", "b", "kb", "mb", "gb", "tb", "kib", "mib", "gib", "tib",
+                  "s", "%", "cyl", "chs", "compact"}
+    return not (words and "print" in words and all(w.lower() in read_words for w in words))
 
 
 def _dd(args):
     for a in args:
         if a.startswith("of="):
             target = a[3:]
-            if target in ("/dev/null", "/dev/stdout", "/dev/stderr"):
+            if target in NOT_DEVICE:
                 return False
             if target.startswith("/dev/") or DEVICE_TARGET.match(target):
                 return True
@@ -124,7 +150,7 @@ def _smartctl(args):
 
 
 def _fsck(args):
-    if "-n" in args or "--no-action" in args or "--dry-run" in args:
+    if "-n" in args or "-N" in args or "--no-action" in args or "--dry-run" in args:
         return False
     if any(re.fullmatch(r"-[A-Za-z]+", a) and "n" in a[1:] and not set(a[1:]) & set("ypa") for a in args):
         return False
@@ -176,9 +202,24 @@ def _manage_bde(args):
     return any(a.lower() in ("-on", "-off", "-w", "-wipefreespace") for a in args)
 
 
-def _cp_tee(args):
+def _cp_tee(args, exe=None):
+    """Only the WRITE target matters: cp SRC.. DST (last), tee FILE.. (all), pv writes to stdout only."""
     targets = [a for a in args if not a.startswith("-")]
-    return bool(targets) and any(DEVICE_TARGET.match(t) for t in targets[-1:] + targets)
+    return bool(targets) and is_device_target(targets[-1])
+
+
+def _pv(args):
+    """pv writes to stdout unless -o/--output names a file (pv 1.8+)."""
+    for i, a in enumerate(args):
+        if a in ("-o", "--output") and i + 1 < len(args) and is_device_target(args[i + 1]):
+            return True
+        if a.startswith("--output=") and is_device_target(a.split("=", 1)[1]):
+            return True
+    return False
+
+
+def _tee(args):
+    return any(is_device_target(a) for a in args if not a.startswith("-"))
 
 
 def _always(args):
@@ -211,7 +252,9 @@ RULES = (
     Rule("sfdisk", _rx(r"^sfdisk$"), lambda a: not ({"-l", "-d", "-J", "--dump", "--list", "--json"} & set(a))),
     Rule("cfdisk", _rx(r"^cfdisk$"), _always),
     Rule("dd-to-device", _rx(r"^dd$"), _dd),
-    Rule("copy-to-device", _rx(r"^(cp|tee|pv)$"), _cp_tee),
+    Rule("copy-to-device", _rx(r"^(cp|install)$"), _cp_tee),
+    Rule("tee-to-device", _rx(r"^tee$"), _tee),
+    Rule("pv-to-device", _rx(r"^pv$"), _pv),
     Rule("ddrescue", _rx(r"^ddrescue$"), _not_help),
     Rule("f3-write", _rx(r"^(f3probe|f3write|f3fix|f3brew)$"), _not_help),
     Rule("badblocks-write", _rx(r"^badblocks$"), _badblocks),
@@ -231,36 +274,118 @@ RULES = (
 RULE_IDS = {r.id for r in RULES}
 
 
-def _normalise(text):
-    # keep Windows path separators: posix shlex would eat the backslash in C:\Windows\diskpart.exe
-    text = re.sub(r"\\(?=[A-Za-z0-9_.$-])", "/", text)
-    return text.replace("`", " ; ")
+
+# executables that run a heredoc body as commands (`bash <<EOF`, `cat <<EOF | sh`, `ssh host <<EOF` ...)
+STDIN_RUNNERS = SHELLS | PS | {"ssh", "wsl", "cmd", "python", "python3", "perl", "ruby", "node", "iex",
+                                "invoke-expression", "source", "."}
 
 
-def _tokens(line):
+def _line_tokens(line):
+    """Tokens of one line, quote-aware; an unbalanced quote falls back to a plain split of THIS line only."""
     try:
         lex = shlex.shlex(line, posix=True, punctuation_chars=";&|(){}<>$")
         lex.whitespace_split = True
-        lex.whitespace = " \t\r"
         lex.commenters = ""
-        return list(lex)
+        return _split_punct(list(lex))
     except ValueError:
         return re.sub(r"([;&|(){}<>])", r" \1 ", line).split()
 
 
-def _segments(text):
+def _drop_heredoc_bodies(text):
+    """Line scan, O(n log n): a heredoc body is data unless the line that opens it runs it (shell, ssh, ...).
+    `<<` inside quotes is not an operator (quote-aware tokens)."""
+    import bisect
+
+    lines = text.split("\n")
+    positions = {}
+    for i, ln in enumerate(lines):
+        positions.setdefault(ln.strip(), []).append(i)
+    out, i = [], 0
+    while i < len(lines):
+        toks = _line_tokens(lines[i])
+        delim = None
+        for k, t in enumerate(toks):
+            if t in ("<<", "<<-") and k + 1 < len(toks) and re.fullmatch(r"[A-Za-z_][\w-]*", toks[k + 1]):
+                delim = toks[k + 1]
+                break
+        if delim is None:
+            out.append(lines[i])
+            i += 1
+            continue
+        ends = positions.get(delim, [])
+        j = bisect.bisect_right(ends, i)
+        if j == len(ends):
+            out.append(lines[i])
+            i += 1
+            continue
+        end = ends[j]
+        runs = any(exe_name(t) in STDIN_RUNNERS for t in toks)
+        out.append(lines[i])
+        if runs:
+            out.extend(lines[i + 1:end])  # executed: judge the body as commands
+        i = end + 1
+    return "\n".join(out)
+
+
+PUNCT_OPS = re.compile(r"&&|\|\||;;|&>>|>>|<<<|<<-|<<|&>|>&|<&|>\||\|&|[;&|(){}<>$\n]")
+
+
+def _split_punct(tokens):
+    """shlex glues adjacent punctuation (`)>`, `;(`): split it into shell operators."""
     out = []
-    for line in _normalise(text).splitlines() or [text]:
-        seg = []
-        for t in _tokens(line):
-            if t in SEPARATORS or (t and set(t) <= set(";&|(){}$")):
-                if seg:
-                    out.append(seg)
-                seg = []
+    for t in tokens:
+        if t and set(t) <= set(";&|(){}<>$\n"):
+            out.extend(PUNCT_OPS.findall(t))
+        else:
+            out.append(t)
+    return out
+
+
+def _normalise(text):
+    # line continuations (backslash-newline) join lines before anything else
+    text = re.sub(r"\\\r?\n", " ", text)
+    # keep Windows path separators: posix shlex would eat the backslash in C:\Windows\diskpart.exe
+    text = re.sub(r"\\(?=[A-Za-z0-9_.$-])", "/", text)
+    text = _drop_heredoc_bodies(text)
+    return text.replace("`", " ; ")
+
+
+def _tokens(text):
+    """Whole-text tokenizer: quotes may span lines; newlines outside quotes are separators. If the whole text does
+    not tokenize (an unbalanced quote such as `# don't`), fall back to line by line so later lines are still seen."""
+    try:
+        lex = shlex.shlex(text, posix=True, punctuation_chars=";&|(){}<>$\n")
+        lex.whitespace_split = True
+        lex.whitespace = " \t\r"
+        lex.commenters = ""
+        out = []
+        for t in lex:
+            if "\n" in t and t.strip("\n") == "":
+                out.append("\n")
+            elif t and set(t) <= set(";&|(){}$\n") and "\n" in t:
+                out.extend(t.replace("\n", " \n ").split(" "))
             else:
-                seg.append(t)
-        if seg:
-            out.append(seg)
+                out.append(t)
+        return _split_punct([t for t in out if t != ""])
+    except ValueError:
+        out = []
+        for ln in text.split("\n"):
+            out.extend(_line_tokens(ln))
+            out.append("\n")
+        return out
+
+
+def _segments(text):
+    out, seg = [], []
+    for t in _tokens(_normalise(text)):
+        if t in SEPARATORS or (t and set(t) <= set(";&|(){}$\n")):
+            if seg:
+                out.append(seg)
+            seg = []
+        else:
+            seg.append(t)
+    if seg:
+        out.append(seg)
     return out
 
 
@@ -269,29 +394,71 @@ def exe_name(tok):
     return re.sub(r"\.(exe|com|cmd|bat)$", "", base, flags=re.I).lower()
 
 
+REDIRECT_OPS = {">", ">>", ">|", "<", "<<", "<<<", "&>", ">&", "&>>", "<&"}
+
+
+def _without_redirects(args):
+    """Drop redirections (operator, its target, a leading fd number) so rules see only real arguments."""
+    out, i = [], 0
+    while i < len(args):
+        a = args[i]
+        if a.isdigit() and i + 1 < len(args) and args[i + 1] in REDIRECT_OPS:
+            i += 1
+            continue
+        if a in REDIRECT_OPS:
+            i += 2
+            continue
+        out.append(a)
+        i += 1
+    return out
+
+
+def _strip_assignment(seg):
+    # PowerShell `$x = <cmd>` / `x = <cmd>` (the `$` itself is a separator token)
+    while len(seg) >= 2 and re.fullmatch(r"[A-Za-z_][\w:]*", seg[0]) and seg[1] in ("=", "+=", "-="):
+        seg = seg[2:]
+    # `$x=Clear-Disk ...` without spaces: the value is a cmdlet (Verb-Noun), not an environment assignment
+    if seg:
+        m = re.fullmatch(r"[A-Za-z_][\w:]*=([A-Za-z]+-[A-Za-z]+)", seg[0])
+        if m:
+            seg = [m.group(1)] + seg[1:]
+    return seg
+
+
 def _strip_wrappers(seg):
     i = 0
     start_process = False
     while i < len(seg):
+        seg = seg[:i] + _strip_assignment(seg[i:])
+        if i >= len(seg):
+            break
         e = exe_name(seg[i])
         if e in KEYWORDS:
             i += 1
             continue
-        if e in WRAPPERS:
-            start_process = start_process or e in ("start-process", "saps", "start")
+        if e == "command" and i + 1 < len(seg) and seg[i + 1] in ("-v", "-V"):
+            return []  # `command -v x` only looks a name up
+        if e in WRAPPERS or e == "command":
+            fold = e in CASE_FOLD_WRAPPERS
+            start_process = start_process or fold
+            vflags = WRAPPER_VALUE_FLAGS.get(e, set())
             i += 1
-            while i < len(seg) and (seg[i].startswith("-") or re.fullmatch(r"\w+=.*", seg[i]) or
-                                    (e == "timeout" and re.fullmatch(r"\d+[smhd]?", seg[i]))):
-                if seg[i].lower() in WRAPPER_VALUE_FLAGS and i + 1 < len(seg) and \
-                        seg[i].lower() not in ("-filepath", "-argumentlist"):
-                    i += 1
-                if seg[i].lower() == "-filepath":
+            while i < len(seg):
+                tok = seg[i]
+                key = tok.lower() if fold else tok
+                if fold and key == "-filepath":
                     i += 1  # the value is the executable
                     break
-                if seg[i].lower() == "-argumentlist":
+                if fold and key == "-argumentlist":
                     seg = seg[:i] + seg[i + 1:]
                     continue
-                i += 1
+                if tok.startswith("-"):
+                    i += 2 if (key in vflags and "=" not in tok and i + 1 < len(seg)) else 1
+                    continue
+                if re.fullmatch(r"\w+=.*", tok) or (e == "timeout" and re.fullmatch(r"\d+(\.\d+)?[smhd]?", tok)):
+                    i += 1
+                    continue
+                break
             continue
         if re.fullmatch(r"[A-Za-z_]\w*=.*", seg[i]):
             i += 1
@@ -312,13 +479,17 @@ def _decode_ps(b64):
 
 
 def _is_encoded_flag(low):
-    return low == "-ec" or (len(low) >= 2 and "-encodedcommand".startswith(low) and low not in ("-",))
+    return low == "-ec" or (len(low) >= 2 and "-encodedcommand".startswith(low))
 
 
 def _nested(seg):
     """Inner command text for shell wrappers -> (text|None, undecodable: bool)."""
     e = exe_name(seg[0])
     args = seg[1:]
+    if e in ("invoke-expression", "iex"):
+        # PowerShell eval of a literal string: judge the string (a variable argument stays a documented leak)
+        vals = [a for a in args if a.lower() not in ("-command", "-c")]
+        return " ".join(vals), False
     if e in SHELLS:
         for i, a in enumerate(args):
             if a == "-c" or re.fullmatch(r"-[a-z]*c[a-z]*", a):
@@ -365,12 +536,15 @@ def _nested(seg):
     return None, False
 
 
+def is_device_target(t):
+    return t not in NOT_DEVICE and bool(DEVICE_TARGET.match(t))
+
+
 def _redirect_target(seg):
     for i, t in enumerate(seg):
-        if t in (">", ">>", ">|") and i + 1 < len(seg):
-            target = seg[i + 1]
-            if target not in ("/dev/null", "/dev/stdout", "/dev/stderr") and DEVICE_TARGET.match(target):
-                return target
+        if t in (">", ">>", ">|", "&>", ">&", "&>>") and i + 1 < len(seg):
+            if is_device_target(seg[i + 1]):
+                return seg[i + 1]
     return None
 
 
@@ -390,8 +564,9 @@ def _find(text, depth):
                 return m
             continue
         e = exe_name(seg[0])
+        args = _without_redirects(seg[1:])
         for r in RULES:
-            if r.exe.pattern != "^$" and r.exe.match(e) and r.blocks(seg[1:]):
+            if r.exe.pattern != "^$" and r.exe.match(e) and r.blocks(args):
                 return Match(r.id, " ".join(seg))
     return None
 
