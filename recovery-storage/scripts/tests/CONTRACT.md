@@ -412,3 +412,78 @@ tests need. "No failed entry after it" is the phase-04 PASS matrix wording.
 Reason codes: `media-id-changed`, `device-changed` (drift_reason values), `hardware-mismatch`, `image-gate-missing`,
 `identity-conflict` (collect), `unsafe-characters`; amendment 01 `operator-console-required` / `operator-declined`
 now also for `device link`.
+
+## Amendment 03 (2026-10-19): card reader present, medium never detected after isolation
+
+Source: `plans/20261019-1726-recovery-storage-skill/amendment-03-real-run-card-reader.md` (real-device run
+2026-10-19: microSD in a USB reader, reader `No Media`, card never detected after reseat / other reader / other host).
+Where this section and anything above disagree, this section wins. Lines marked "test-designer reading" fill gaps the
+amendment leaves open; they are open questions in the test-designer report and bind the frozen tests until a further
+amendment.
+
+### A1. Isolation values
+
+- `session new --tried` values, in this order (exit-2 text lists them in this order; A9 / sec. 2):
+  `other-port`, `other-cable`, `other-host`, `other-os`, `reseat-media`, `other-reader`. Repeatable as before.
+- Only `session new` accepts `--tried` (unchanged; amendment Q4).
+
+### A2. Reader present, no medium, isolated -> T2a
+
+- `inventory` observation key `no_media` (bool) is part of the contract (test-designer reading: the tests read it as a
+  precondition; `true` for the real capture `windows/sd-reader-empty` Disk 3 = `/dev/pd3`, `false` for every other disk
+  and for the derived `win-disks.media-online.derived.json`).
+- `assess`: symptoms include `not-detected`, the device's LATEST observation has `no_media` true, and at least
+  `triage.ISOLATION_MIN` (2) DISTINCT `--tried` values (any of the six) -> `triage.class` `HARDWARE_DIAGNOSIS_REQUIRED`,
+  `rule_id` `T2a-not-detected-isolated`, `branch` `a`. Device type is not a condition (test-designer reading: A2 lists
+  its conditions; `--device-type` is not among them).
+- `triage.evidence` has items with `path` `observation.no_media` (`value` true), `session.symptoms` (value names
+  `not-detected`) and `session.tried` (value names every recorded step; list or string).
+- `triage.next_test` (case-insensitive) contains `card`, `no software tool` and `lab`, and does not contain
+  `insert or reseat` (test-designer reading of "names the medium, says no software tool applies, data needs a lab";
+  the T5 instruction is not repeated after the steps were recorded).
+- Precedence: T1 (`T1-stop-unsafe`, `STOP_UNSAFE`) before this case; this case before the T5 `no_media` rule.
+
+### A3. Unchanged
+
+- `no_media` + `not-detected` + fewer than 2 distinct steps (none, one, or the same step twice) -> `T5-undetermined`,
+  `next_test` contains `reseat` (case-insensitive).
+- `no_media` + 2 steps + no detect symptom -> `T5-undetermined`, `next_test` contains `reseat`.
+- An earlier `no_media` observation does not count when the latest observation of the device has `no_media` false ->
+  not `HARDWARE_DIAGNOSIS_REQUIRED`, not `T2a-not-detected-isolated` (the class is otherwise not asserted).
+- Absent-device T2a (C14) unchanged; `rule_id` `T2a-not-detected-isolated`.
+
+### A4. Missing steps listed
+
+- `no_media` + `not-detected` + fewer than 2 distinct steps -> `UNDETERMINED`, and the text of `triage.next_test` joined
+  with every `hypotheses[].next_test` contains each of the six codes not recorded, verbatim (as C14 does for the absent
+  path).
+
+### Fixture added
+
+- `windows/sd-reader-empty/win-disks.media-online.derived.json`: Disk 3 `OperationalStatus` `No Media` -> `Online`,
+  everything else verbatim (fixtures/SOURCES.md), frozen. The real capture `windows/sd-reader-empty` (2026-10-19 live
+  smoke) is used as-is; like every real capture it is governed by fixtures/SOURCES.md, not by the manifest.
+
+## Amendment 04 (2026-10-19): verification gates and the PASS evidence window
+
+Source: `plans/20261019-1726-recovery-storage-skill/amendment-04-verification-gate-window.md` (real-device run
+2026-10-19: stick, gate `f3write-f3read`, f3read ingested before `gate close --outcome success` -> PASS refused
+`evidence-before-recovery`). Where this section and anything above disagree, this section wins (it replaces the
+amendment 02 B line "Verdict window start = max(session start, `last_write_ts(device)`)" for the PASS evidence window
+only). Lines marked "test-designer reading" bind the frozen tests until a further amendment.
+
+- Verification kinds: `f3write-f3read`, `h2testw`, `f3probe`, `f3probe-destructive`. All other writes-source kinds
+  (`format`, `partition-write`, `fs-repair-on-source`, `clear-disk`, `badblocks-write`, `firmware-update`,
+  `mptool-reflash`) are ordinary writes.
+- PASS evidence window start (test-designer reading of B1-B6 as one formula) = max of: session start; `closed_ts` of
+  every closed ordinary write gate; `closed_ts` of every write gate (either group) aborted after confirm; `closed_ts`
+  of every verification gate closed `failed` / `interrupted`; `confirmed_ts` of every verification gate closed
+  `success`. Across all sessions of the device, as `last_write_ts`. Capacity evidence ingested before it ->
+  `evidence-before-recovery` (`verdict set ... PASS` exit 3).
+- `last_write_ts(device)` (data state, amendment 02 B) is unchanged: a verification gate closed `success` still writes
+  at its `closed_ts`; `secured` / `waived` recorded between its confirm and close are stale.
+- Not changed: the observation window (>= 2 observations, one `--after-replug`; open question Q1), the PASS class
+  matrix (f3probe is not added as a USB PASS item; Q2), evidence dedup by sha256.
+- Tests (D22c, D4c) use attested H2testw as capacity evidence and `/dev/pd2` of `windows/usb-stick` with session
+  `--goal device-recovery --preserve-data no --ceiling R2` (D4c: `--goal data-recovery --goal device-recovery
+  --ceiling R2` + `waived`); `gate close` may carry `--evidence <id>` of evidence ingested inside the gate.

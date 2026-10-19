@@ -1,0 +1,1960 @@
+{
+ "frozen_at": "2026-10-19T12:10:35+00:00",
+ "plan": "plans/20261019-1726-recovery-storage-skill/plan.md",
+ "reason": "spec-first acceptance + unit suite for phases 01-08 (test-designer); contract in tests/CONTRACT.md",
+ "files": {
+  "pytest.ini": "b0cdc0191afb27a3ef8f41d4c25ea016a7c379913f8986d863ac871b3d50be67",
+  "recovery-storage/scripts/tests/CONTRACT.md": "4cc5b6dde3958bf08da1eefcf3237dc5212290dc20b04fa94a4631755ee0ffa2",
+  "recovery-storage/scripts/tests/conftest.py": "8d34b6ce4a7eca28d017057f4b1c71f1d7c19a097c95882de4a38e4d538422b0",
+  "recovery-storage/scripts/tests/fixtures/ingest/ddrescue-finished.980pro.derived.map": "910cd87fc46f417dc8729b84e2cfb9088aefa61547bac2af8d67a4ed369bbe3e",
+  "recovery-storage/scripts/tests/fixtures/ingest/ddrescue-finished.990pro.derived.map": "f9c2d62c450e4a466c1197843c579ba9accaf57ccfcef38a1af5d5204a5f4f2f",
+  "recovery-storage/scripts/tests/fixtures/ingest/ddrescue-finished.hitachi500.derived.map": "d1f36ee25c58e7c1683798e3efbf7956aa1036062305418e91d5f1e6c4f1806d",
+  "recovery-storage/scripts/tests/fixtures/ingest/ddrescue-manual-1.30.finished.derived.map": "d59165b97fcf47840bb5bdcb67a4e357bf9d4042dfa625aa3bb55574fa4c6a68",
+  "recovery-storage/scripts/tests/fixtures/ingest/ddrescue-manual-1.30.map": "9bb611e7b7f18be863a0420e174cc8200fdfe2e24921220aedcd6d26568e295d",
+  "recovery-storage/scripts/tests/fixtures/ingest/f3probe-damaged.verbatim.txt": "2f4499b680b30354a6ea9d6a9284a415764fd338a97a30ca156ea1ac19f0722b",
+  "recovery-storage/scripts/tests/fixtures/ingest/f3probe-good.verbatim.txt": "e6dacfd16e0108b2247662e66f330e29bd412383ca97857a5fe98b5e09f5234a",
+  "recovery-storage/scripts/tests/fixtures/ingest/f3probe-wraparound.verbatim.txt": "ec4bf1f23cc11a49a4725dcefe54e8cc0ae5fa5dc58b847d485c0319ed3e905c",
+  "recovery-storage/scripts/tests/fixtures/ingest/f3write-no-space.verbatim.txt": "7c138a3c3579ebd58a8ab858687bf5db894c8252ff9076f31d14d377324876e7",
+  "recovery-storage/scripts/tests/fixtures/smartctl/nvme-990pro-x.cw1.derived.json": "03793f25cd4b331b0ad66ff0b09599c274c230478f136be90ec9f395e33fd657",
+  "recovery-storage/scripts/tests/fixtures/smartctl/nvme-990pro-x.cw8.derived.json": "d3c8b140781441b6fff6de14ec592e8756b8c5cf2020a85443ba2eaee051c7b8",
+  "recovery-storage/scripts/tests/fixtures/smartctl/nvme-990pro-x.media3-poh10.derived.json": "13d10790886c09b75f9833812916edb9e1fc139f315fa1e172b6819ecc0178d1",
+  "recovery-storage/scripts/tests/fixtures/smartctl/nvme-990pro-x.no-media-errors.derived.json": "f44fefcd2b91a4fe3fc44e073d1e18f454112c7266c276653fc700167cfe9595",
+  "recovery-storage/scripts/tests/fixtures/smartctl/nvme-990pro-x.poh-back.derived.json": "28946acc2321c9f4b36a52ed39a722dd0a5ff6b3b1158ef29aa8dc231aff716a",
+  "recovery-storage/scripts/tests/fixtures/smartctl/nvme-990pro-x.pu100.derived.json": "2eac15ae70dc8a53fd0b43215f17e5fc4d200511734c2f35334b55971c0ee33f",
+  "recovery-storage/scripts/tests/fixtures/smartctl/nvme-990pro-x.pu79.derived.json": "9ce9b594102917d1273553d72a239e892e90f9c79b53cf0b2df44fc421157f90",
+  "recovery-storage/scripts/tests/fixtures/smartctl/nvme-990pro-x.pu80.derived.json": "543c75570e5637981293bb97af43c2911f4476bedf32c8562552f3703de99f65",
+  "recovery-storage/scripts/tests/fixtures/smartctl/nvme-990pro-x.pu99.derived.json": "aeb80143a57a6954a1c059af4722ea21fb4548c9109e75a75bfb180b2b27aa62",
+  "recovery-storage/scripts/tests/fixtures/smartctl/nvme-990pro-x.spare5.derived.json": "289da673ab43b66f1a7845536117147d0206949218e3e6b145d5f7860e9328cc",
+  "recovery-storage/scripts/tests/fixtures/smartctl/nvme-990pro-x.temp85.derived.json": "150365c8a16a0ae9d65e6ab27ba7b7be02aee91042fc1ecea84ec4bb5874a404",
+  "recovery-storage/scripts/tests/fixtures/smartctl/scrutiny-ata-hdd-healthy.p197-1.derived.json": "a7d4309484178e03884a45da2dfe4a1ff1212ce7de4fb4534742db1e5b0a34ef",
+  "recovery-storage/scripts/tests/fixtures/smartctl/scrutiny-ata-hdd-healthy.poh67236.derived.json": "b28cbbb7b628ef84dc0d8062e00c576611f9580b7ae2aefff1c5ffa724b2cac5",
+  "recovery-storage/scripts/tests/fixtures/smartctl/scrutiny-ata-hdd-healthy.poh67244.derived.json": "25372da641dace06258e4e332d5cd84d6a434cc5de20c5303d0c11ccde8c7a0f",
+  "recovery-storage/scripts/tests/fixtures/smartctl/scrutiny-ata-ssd-healthy.bytes0.derived.json": "40501f52f51ce42a38af24c77222a407972e95d17c5040d119da9d371134e42a",
+  "recovery-storage/scripts/tests/fixtures/smartctl/scrutiny-ata-ssd-healthy.satafirm.derived.json": "3cae55439e0c9821b9129645bcb33afd562f3278e50492af08b5e48f0dafb69b",
+  "recovery-storage/scripts/tests/fixtures/smartctl/scrutiny-scsi-no-smartctl-block.no-serial.derived.json": "3062c7677796184a67c5412c8ba66c19ec6b4d9d3ea907263ad1a027a884c843",
+  "recovery-storage/scripts/tests/fixtures/smartctl/scrutiny-usbjmicron-hdd-failing.p197-12.derived.json": "d21f41d186b24dbd1ba947416ef765ad0c58464c034182865012a5d425efc107",
+  "recovery-storage/scripts/tests/fixtures/smartctl/scrutiny-usbjmicron-hdd-failing.r5up-p197down.derived.json": "773df2f7ec93acf4ba235e5721d279764bd4a865c7ee5c4f05d03c5bc03094ed",
+  "recovery-storage/scripts/tests/fixtures/windows/baseline-nvme-only/smartctl-x-pd0.cw4.derived.json": "d34a4dff945f5913433424288301e44be239223457c74102d05973798d8dfa38",
+  "recovery-storage/scripts/tests/fixtures/windows/baseline-nvme-only/smartctl-x-pd0.eui-mismatch.derived.json": "c696aa6fc257c71f302db3ee072297255d04475f1b3699d3855747774570dc5a",
+  "recovery-storage/scripts/tests/fixtures/windows/baseline-nvme-only/smartctl-x-pd1.serial-swap.derived.json": "dbac23966b00d04fb9d4accc1b2966f2c85414eddb2ba36dded00d297f8fcf3d",
+  "recovery-storage/scripts/tests/fixtures/windows/baseline-nvme-only/win-events.ntfs55.derived.json": "46422d19f2b3120b36535ef01e432bfb3aa7231a527aa539576c774d14e0e4ea",
+  "recovery-storage/scripts/tests/fixtures/windows/sd-reader-empty/win-disks.media-online.derived.json": "017e8dbbe048662d0dbaa17b12a027f7e430acba6a9fef08fa5c19024276999d",
+  "recovery-storage/scripts/tests/fixtures/windows/usb-sd/smartctl-x-pd4.from-pd3.derived.json": "211eba57ad9d4088b25eb370fd1e3b47e29f0d957098babed059f2054a2aa0b2",
+  "recovery-storage/scripts/tests/fixtures/windows/usb-sd/smartctl-x-sat-pd4.from-pd3.derived.json": "140d78a843af9c1436cb295caff59a55fa5967f5f6291dd352d2ecd3d35111b3",
+  "recovery-storage/scripts/tests/fixtures/windows/usb-sd/win-disks.sd-twin.derived.json": "4d2804ecce654ba3ed742ff08cab30724544aa5993604de9651badd127890892",
+  "recovery-storage/scripts/tests/fixtures/windows/usb-sd/win-pnp-chain.sd-twin.derived.json": "4aea9aacc07072a70e48955fb07bea8658b0e575b72a7c442d3f6e587e0d7768",
+  "recovery-storage/scripts/tests/fixtures/windows/usb-stick/smartctl-x-pd3.from-pd2.derived.json": "356014b413350d42bf3187a1d06a3f0fa1a68f4f96a74b33b06e4eda4399a340",
+  "recovery-storage/scripts/tests/fixtures/windows/usb-stick/smartctl-x-sat-pd2.no-error.derived.json": "5e7228705de9fd75af682367bfbee61b95750b90768b77fbffd326bb8a8d4bc4",
+  "recovery-storage/scripts/tests/fixtures/windows/usb-stick/smartctl-x-sat-pd3.from-pd2.derived.json": "a7ea4fe78ce9d5cd59bdd079be13ae59895735bfc71fc7ef0316cb0de3771a83",
+  "recovery-storage/scripts/tests/fixtures/windows/usb-stick/win-disks.othersig.derived.json": "999832a46e7ddd8fe7f735d4dab0bddd265eff3299b6958d723b903311752d65",
+  "recovery-storage/scripts/tests/fixtures/windows/usb-stick/win-disks.renumber3.derived.json": "719ae25a53ebf06864b3bf35879100fe58c402fbef9000f3baa8b2e86182a915",
+  "recovery-storage/scripts/tests/fixtures/windows/usb-stick/win-disks.twin.derived.json": "271a37aaa01a737829c1cd572c5a4d9269bd30de2b3876ca71c770ddb489f854",
+  "recovery-storage/scripts/tests/fixtures/windows/usb-stick/win-pnp-chain.renumber3.derived.json": "a74cf82d37e044bad0d44f4c0d3f51fc7d004160a964399839b9c1fafb84767c",
+  "recovery-storage/scripts/tests/fixtures/windows/usb-stick/win-pnp-chain.twin.derived.json": "3c19d7c77b455469301441f7564f01c0bf50da934a2de035e8b378c059ab3d1d",
+  "recovery-storage/scripts/tests/scenarios/cause-bad-sectors-failing-hdd/expected.json": "35b1b2e1c9c65c6fbcae75a608ec45324fd29fd421b94458e6f42def29cacb0b",
+  "recovery-storage/scripts/tests/scenarios/cause-bad-sectors-failing-hdd/script.json": "0a6556920d6f49e64c7c2f56c77d64e26eb720462c10a81ceefae97aae0732e3",
+  "recovery-storage/scripts/tests/scenarios/cause-connection-crc199/expected.json": "d301ffd2fe892f2184d411aaa3ca50aed2a89fec82792ce5e6ccdfbb86f8df50",
+  "recovery-storage/scripts/tests/scenarios/cause-connection-crc199/script.json": "f015ddaf0f597b472620869802a95ade9904788e8079e3fbacdd101ce1645644",
+  "recovery-storage/scripts/tests/scenarios/cause-controller-satafirm/expected.json": "992d3f747d31ae9a4edd7a7f0f0727f83826517f1cb1962b85370e48e824f5d1",
+  "recovery-storage/scripts/tests/scenarios/cause-controller-satafirm/script.json": "7b77c80a5f3a9cd8524c7f44406ebc368d078bba2e9b8f299e966bff129ca95f",
+  "recovery-storage/scripts/tests/scenarios/cause-encryption-bridge/expected.json": "1dac926dfb2eab249e15937b7b0d51f57135d8446b5bdaadbfc7e37bc89be400",
+  "recovery-storage/scripts/tests/scenarios/cause-encryption-bridge/script.json": "0b2cae2bde4d73a1e0be368bf6b6e5df6576031a76cb74f3301255a39999527e",
+  "recovery-storage/scripts/tests/scenarios/cause-fake-f3probe-wraparound/expected.json": "b2a133cf10ef538158a89685da92739b944d4ed3596098c1f3af9a31291211c0",
+  "recovery-storage/scripts/tests/scenarios/cause-fake-f3probe-wraparound/script.json": "6fb75f846640a7d93827e440b167a133fb7ebcc6a8079b3d7720fcd72bd85c7b",
+  "recovery-storage/scripts/tests/scenarios/cause-nand-f3probe-damaged/expected.json": "0bfb2835d8616108a2ed580c28a3d3de2d0cd4eb75a2a1918411eedfe64dc0f9",
+  "recovery-storage/scripts/tests/scenarios/cause-nand-f3probe-damaged/script.json": "4b662905a5230258fa4c8ad6163e3380ef77a82d05c555b6539dbdc3d86ae68d",
+  "recovery-storage/scripts/tests/scenarios/cause-partition-fs-usb-stick/expected.json": "a3580743eb0079a234d8252fcd42679c1732aa65ba9fd8527d30db63ca061b71",
+  "recovery-storage/scripts/tests/scenarios/cause-partition-fs-usb-stick/script.json": "1c6387ce2edd1b796277710642a5539e80e9d2e56eaf7d0ffe205a5e5b3f4f93",
+  "recovery-storage/scripts/tests/scenarios/cause-physical-mechanical-noise/expected.json": "f447abaf674152e80f5a76a5fb196d0b00e492ac0c30bd614d62496648a53327",
+  "recovery-storage/scripts/tests/scenarios/cause-physical-mechanical-noise/script.json": "8f21fbf16a70995124285900a2639642ecfd6d8239cd1acc112101e232ce4f6c",
+  "recovery-storage/scripts/tests/scenarios/cause-write-locked-nvme-cw8/expected.json": "4ffe0978082fab08ae770e479a14a21a66220b410daaf8c9cd27a61f726244a9",
+  "recovery-storage/scripts/tests/scenarios/cause-write-locked-nvme-cw8/script.json": "1f9027673d3bed5c3a2b51b2a570cc593193c60f6a075ab1d31c65dd3b349ec7",
+  "recovery-storage/scripts/tests/scenarios/disconnect-between-open-and-confirm/expected.json": "a3580743eb0079a234d8252fcd42679c1732aa65ba9fd8527d30db63ca061b71",
+  "recovery-storage/scripts/tests/scenarios/disconnect-between-open-and-confirm/script.json": "c88d6d01f0f42c6f900cc733e0c5c2daa13623e4de15783ada6a4edb6fdecbd3",
+  "recovery-storage/scripts/tests/scenarios/disconnect-during-collect/expected.json": "3c3094ff4d24a91f92c353f8a91a488250947a4759e217b693552efcfdd297da",
+  "recovery-storage/scripts/tests/scenarios/disconnect-during-collect/script.json": "b8c513dadf8d25c9696f5ba38805fff741a316f4ba2094594823c7a1a5b3ba9f",
+  "recovery-storage/scripts/tests/scenarios/disconnect-swap-between-confirm-and-close/expected.json": "f52188affa4031748b444cdaa8cd9eeae510a323a164549ddc9eca417ca0cc98",
+  "recovery-storage/scripts/tests/scenarios/disconnect-swap-between-confirm-and-close/script.json": "2a058e61e2bd8cddd205a8fde713862331ef62aa18e940b18d7484c4988b85dc",
+  "recovery-storage/scripts/tests/scenarios/full-data-recovery-hdd/expected.json": "9749c633726d82f788e7b6453947ca648761857da695e29c5902afb9d6267c16",
+  "recovery-storage/scripts/tests/scenarios/full-data-recovery-hdd/script.json": "6dc762e837c8f27c2aa8e441be9e714ed688a311c000d98b463a44e02e74f34b",
+  "recovery-storage/scripts/tests/scenarios/full-data-recovery-nvme/expected.json": "b23dc70e3c439af8e05b25bc51a4aa5c4375be5bf5906031663fcecf98b9f17c",
+  "recovery-storage/scripts/tests/scenarios/full-data-recovery-nvme/script.json": "00eaf5e2ba7bf90828f24988780352dff2db85a24bcaa12fc37067d703f2ecfa",
+  "recovery-storage/scripts/tests/scenarios/hardware-not-detected-isolated/expected.json": "21dac1d4202cbbce2d03a4e5dacb8cd316bb9bc0914d8357671cc9192fec8e88",
+  "recovery-storage/scripts/tests/scenarios/hardware-not-detected-isolated/script.json": "e51e4a6a8f507affb574f8686eeaed08b028e4c21aa37b8c7c039de22054f11e",
+  "recovery-storage/scripts/tests/scenarios/q5-counters-rising-in-session-hardware/expected.json": "3d29d90948db0c3dd87c70c1ad343e9f7debee96fabd67cc29beaa3f595d2528",
+  "recovery-storage/scripts/tests/scenarios/q5-counters-rising-in-session-hardware/script.json": "be31895438e31b80010588122339e45cae54bf428ca334a7e31120f6e4390d08",
+  "recovery-storage/scripts/tests/scenarios/q5-failing-hdd-default-software/expected.json": "9749c633726d82f788e7b6453947ca648761857da695e29c5902afb9d6267c16",
+  "recovery-storage/scripts/tests/scenarios/q5-failing-hdd-default-software/script.json": "abb9899aabceb41561311618de460bfab24fe94e8d70684169f9328bb4ff0d92",
+  "recovery-storage/scripts/tests/scenarios/q5-irreplaceable-low-tolerance-hardware/expected.json": "f0f0872e8fca00f201fc408a676b9340e6ba883089043e9fb1b0c861ab185c9e",
+  "recovery-storage/scripts/tests/scenarios/q5-irreplaceable-low-tolerance-hardware/script.json": "6d2325013884fdc4300d077666b4cd5db957ca9594bb0cdfc9e25253d5f62d6d",
+  "recovery-storage/scripts/tests/scenarios/q5-not-spinning-stop/expected.json": "a64c6f7b8c4edbac97264326807e333a39fa3040d197ea674a7fd334429fef7d",
+  "recovery-storage/scripts/tests/scenarios/q5-not-spinning-stop/script.json": "9051f518bfbf92e0aa42ac224ed81aba8da89951080ac238b28b2e6cfa36c823",
+  "recovery-storage/scripts/tests/scenarios/undetermined-not-detected-no-isolation/expected.json": "3c3094ff4d24a91f92c353f8a91a488250947a4759e217b693552efcfdd297da",
+  "recovery-storage/scripts/tests/scenarios/undetermined-not-detected-no-isolation/script.json": "3c40c64ebcb24f59948cb42846214c867d8f18208832a3eac509224f0130d847",
+  "recovery-storage/scripts/tests/scenarios/undetermined-open-failed-ingest/expected.json": "3c3094ff4d24a91f92c353f8a91a488250947a4759e217b693552efcfdd297da",
+  "recovery-storage/scripts/tests/scenarios/undetermined-open-failed-ingest/script.json": "7dde1b5e5f2e1891dbd5192f1d5eaa7edc5e2e8c3712a77b325ea228d71a12cf",
+  "recovery-storage/scripts/tests/scenarios/usb-sd-end-to-end/expected.json": "60ab5d72e4631bdf9e698a256c22b84a97f6b35228fa1c148cca17981247eb63",
+  "recovery-storage/scripts/tests/scenarios/usb-sd-end-to-end/script.json": "5ed81cd6bc62c7238ecffe9aadf3d1b84d1b011d50264251a5e5c8caaf5e5a5f",
+  "recovery-storage/scripts/tests/scenarios/usb-stick-end-to-end/expected.json": "49f3bfdbcd11bbfcf7b6f7ec326bb915347b603fa01d2bb9b5ef56aa9f27d363",
+  "recovery-storage/scripts/tests/scenarios/usb-stick-end-to-end/script.json": "c3d016f63b12d695981409b1b40c36150dc66521b5fbfa9484a2bce61392f0b4",
+  "recovery-storage/scripts/tests/scenarios/wrong-device-lookalike-stick/expected.json": "d72261ebd4ae4cfabd425249351f6dbcf7aa5597fc3d33ef0e507d6ef3ea6ee9",
+  "recovery-storage/scripts/tests/scenarios/wrong-device-lookalike-stick/script.json": "4a64b92a861e75d102bc79f7594c1a32377edd97030ddfefcba08f84dc41c6c8",
+  "recovery-storage/scripts/tests/test_actions_catalog.py": "b64969d0146811708ca202c6d19cd4734a668a71d26265f1e628eac1a5011028",
+  "recovery-storage/scripts/tests/test_allowlist.py": "7ce22241b21f3f4b92dc6f3a7ccb02cc0c656fa8109966ebe6ec698be20bd801",
+  "recovery-storage/scripts/tests/test_assess_cli.py": "d76409bec8ab541827e5744db498af0514d302f87407d9a78e7cc3ed63d75fa8",
+  "recovery-storage/scripts/tests/test_bypass.py": "a4f5bec1c7f16d51626b3292850abe857710de608774ed5f09d68ac3e4473b68",
+  "recovery-storage/scripts/tests/test_collect_cli.py": "4cd6af07d7c27127c54abe3dd533b71fec2d01464fb645b8efa37b354ccb74e5",
+  "recovery-storage/scripts/tests/test_compare_cli.py": "d21bcec039caf67143e9872d82ce82819f32d2149c01f25150cb102955b6feb7",
+  "recovery-storage/scripts/tests/test_datastate.py": "ca606dd2bdef01ad92cc96f6a5e28f0eb6fd9cafe2920c7b4b4d2ad1dc10286f",
+  "recovery-storage/scripts/tests/test_delta.py": "973995e05fd7e56d46c7d7d3cb511564a1e6761505ab0b0eda8addde3be89b84",
+  "recovery-storage/scripts/tests/test_enum_linux.py": "865c40c4f649042249d35eca69d8576138b3353b1fcef0f30324b16909d7a9a1",
+  "recovery-storage/scripts/tests/test_enum_windows.py": "9fa80a47358a4cb736fee18c2cc7576930ea11da2c15e63340942a4ecfbd030e",
+  "recovery-storage/scripts/tests/test_exit_bits.py": "4ada39f32952f2d1850575dd52d5e1d2335e5f157b473cd25f4830cbe9ccde84",
+  "recovery-storage/scripts/tests/test_fixtures_sources.py": "aeca0fdb5acdd47972c5cfa6c3c5650bd49fa0a9ab67a99413a5a2da5f0d797b",
+  "recovery-storage/scripts/tests/test_fleet.py": "24c838b0b89eb9962f865c2e8c137b481b987658e070af3d5aac1456f90b3ba0",
+  "recovery-storage/scripts/tests/test_gate_confirm_close.py": "971b28e7400744bd42c90764832a1b3ddbefe56f1153fa6385a2386541c30dcd",
+  "recovery-storage/scripts/tests/test_gate_lock.py": "94f92051c40833ea1b902883234b101986f3f63b9fea64c345cad5f9fe6953c9",
+  "recovery-storage/scripts/tests/test_gate_open.py": "d3561628d78b9c9fd835ffbe19f269cd08961a692b742bc87ce5dcc827851325",
+  "recovery-storage/scripts/tests/test_guard_hook.py": "b7bb7d3966fc889c68d7e0404b3cfb30bc119c400a78cf2dc42db9f69b331dd3",
+  "recovery-storage/scripts/tests/test_guard_patterns.py": "348bc4d5b57734247c26a904e81f0de9df7e45684773c84abadd1b676cb2be2e",
+  "recovery-storage/scripts/tests/test_health_rules.py": "5dfd9ac9c2c158dbb5409c9307bdbb1d367e518d2dd8aeb88420f70d4cfce5e2",
+  "recovery-storage/scripts/tests/test_hypotheses.py": "8803b8247e5f66cd668dabd32eaf82064c7b7bf12b405ecdf59cd2f3192beed7",
+  "recovery-storage/scripts/tests/test_identity_drift.py": "3cbaeecf7ce59e088a8d3a1b20935e67ab3392dae09b8eabfe6db3cf7a88a2d0",
+  "recovery-storage/scripts/tests/test_identity_match.py": "f806eb053d4b03da59006d86c6c83d8f011dcdd27ee13df7a94d91e1d9a6ed0a",
+  "recovery-storage/scripts/tests/test_ingest_f3.py": "bae8fd469fc37dc96c2db0490c74fc174f63fb27f19567f0af7fbb5fe88b8cc1",
+  "recovery-storage/scripts/tests/test_ingest_mapfile.py": "e598a8d63b6eb351ed228ee9ec6bdbb7219536b027fbef8e31b4b62638d51b82",
+  "recovery-storage/scripts/tests/test_install.py": "9bd557ce884e0e05129378ca22f3a2d1339f610c9dca821bf00b49a1067fcdb5",
+  "recovery-storage/scripts/tests/test_live.py": "549c33e05c3905e9e773d508496f42fe8f96faf612f65a55d18c047a76cee7dd",
+  "recovery-storage/scripts/tests/test_no_subprocess_outside_runner.py": "4efc122d41c7f0e5e8d509d806a7bcb62e447a90f3004fafe14e137ab4ac800d",
+  "recovery-storage/scripts/tests/test_operator.py": "e3db17e4227307f43e9275a5fed8b6fa352d7735872c9bf1d490b6db507f9464",
+  "recovery-storage/scripts/tests/test_python_compat.py": "278c662148d8c3a698b67c7a81050fcea67bd792df1c175c71e1bf1a00e8cc35",
+  "recovery-storage/scripts/tests/test_report_check.py": "bd6ef1b57749fd5b99420de3e5803a6a0cd77b4956e5cea65a9fa48271bf243a",
+  "recovery-storage/scripts/tests/test_report_redact.py": "1c9bdb4def368f34a57328e0784337cc6807afaab327a2cf9217f2fa58e9c460",
+  "recovery-storage/scripts/tests/test_report_sections.py": "ec4e075fe8f2669e120adf33e1718e62e9a54b42648a237c45dd6686f8ee5eaa",
+  "recovery-storage/scripts/tests/test_rules_doc.py": "89679c16e9234b0df9a6fb34167f552b56d9801430ff2a2bf9d6a6b7dfdb8432",
+  "recovery-storage/scripts/tests/test_runner.py": "bac8133c46795cca04e4459fb7159f1e922a4447e1629561828bca4cd2ba7a49",
+  "recovery-storage/scripts/tests/test_scenarios.py": "7b7c52041826831bac2211b6b1625fa8e2a6ab0058568f4dcd914a20bc99035d",
+  "recovery-storage/scripts/tests/test_session.py": "a484a1f422f8096b61c64c42c807c8136ffa135b351a2d030d8e638640ea19d5",
+  "recovery-storage/scripts/tests/test_skill_docs.py": "4899b3582cf61be6b39dbeb43583f03e4b6c2de7e7d1b8532d008f00c937b077",
+  "recovery-storage/scripts/tests/test_smart_normalise.py": "27903ac6a2c27a8168b2656fe330a5b2a4e49cec19d2892fd6ce7648ec2c8ee8",
+  "recovery-storage/scripts/tests/test_store.py": "e9bbf1cc7cd81bbefcb18e8184ffbbd50a9b4ef0b102c7eecd9cc4312dfd6df0",
+  "recovery-storage/scripts/tests/test_tool_failures.py": "06d1d92ff11a261f5241b83af52971e036068e5e9d864b832fc78084f282e68d",
+  "recovery-storage/scripts/tests/test_triage.py": "4bfb8fad815bd3568023bf8c64590d29720bdb3e0896d99ebab5097a87defae5",
+  "recovery-storage/scripts/tests/test_verdict.py": "54e2d8df9a7e56f793d01c35c1af02084d35661d3c2c70c7549d698573f60be8",
+  "recovery-storage/scripts/tests/test_wear.py": "61415fa785d5a9051b954316b38ab792b419bcf049363484b0d316a4509617d7"
+ },
+ "criteria": {
+  "A1": [
+   "recovery-storage/scripts/tests/test_store.py::test_A1_rs_py_entry_point_runs_as_a_script",
+   "recovery-storage/scripts/tests/test_store.py::test_A1_session_list_on_empty_home_creates_store_and_says_no_sessions"
+  ],
+  "A10": [
+   "recovery-storage/scripts/tests/test_session.py::test_A10_set_ceiling_audit_line_with_timestamp",
+   "recovery-storage/scripts/tests/test_session.py::test_A10_unknown_session_exit_2[cmd0]",
+   "recovery-storage/scripts/tests/test_session.py::test_A10_unknown_session_exit_2[cmd1]"
+  ],
+  "A11": [
+   "recovery-storage/scripts/tests/test_session.py::test_A11_json_on_every_session_command_is_one_object"
+  ],
+  "A12": [
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A12_accepted_argv[lsblk--J -O -b]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A12_accepted_argv[smartctl---scan-open -j]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A12_accepted_argv[smartctl--j -i -n standby /dev/sda]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A12_accepted_argv[smartctl--j -x -d sat /dev/sdb]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A12_accepted_argv[smartctl--j -x /dev/nvme0n1]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A12_accepted_argv[smartctl--j -x /dev/pd1]"
+  ],
+  "A13": [
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_command_not_allowed_is_one_class",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_ps_env_bounds_cover_the_three_parameters",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[powershell arbitrary command]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[powershell one byte changed]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[smartctl -C]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[smartctl -S on]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[smartctl -T permissive]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[smartctl -X]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[smartctl -d sat,x]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[smartctl -g all]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[smartctl -o on]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[smartctl -r ataioctl]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[smartctl -s on]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[smartctl -t short]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[smartctl device with ;rm]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[smartctl git-bash rewritten path]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[smartctl no device]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[smartctl two devices]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[tool not in table]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[win-disks with env var]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[win-events extra env var]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[win-events lookback -1]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[win-events lookback 0]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[win-events lookback abc]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[win-events lookback above bound]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[win-events max events above bound]",
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13_validator_rejects[win-events message chars above bound]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[powershell arbitrary command]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[powershell one byte changed]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[smartctl -C]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[smartctl -S on]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[smartctl -T permissive]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[smartctl -X]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[smartctl -d sat,x]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[smartctl -g all]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[smartctl -o on]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[smartctl -r ataioctl]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[smartctl -s on]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[smartctl -t short]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[smartctl device with ;rm]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[smartctl git-bash rewritten path]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[smartctl no device]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[smartctl two devices]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[tool not in table]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[win-disks with env var]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[win-events extra env var]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[win-events lookback -1]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[win-events lookback 0]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[win-events lookback abc]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[win-events lookback above bound]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[win-events max events above bound]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A13_subprocess_runner_refuses_before_spawn_and_records[win-events message chars above bound]"
+  ],
+  "A13b": [
+   "recovery-storage/scripts/tests/test_allowlist.py::test_A13b_sha256_table_equals_shipped_scripts"
+  ],
+  "A14": [
+   "recovery-storage/scripts/tests/test_runner.py::test_A14_A15_recorded_missing_and_timeout_flags",
+   "recovery-storage/scripts/tests/test_runner.py::test_A14_tool_missing_is_data_not_exception"
+  ],
+  "A15": [
+   "recovery-storage/scripts/tests/test_runner.py::test_A14_A15_recorded_missing_and_timeout_flags",
+   "recovery-storage/scripts/tests/test_runner.py::test_A15_timeout_kills_and_next_call_works"
+  ],
+  "A16": [
+   "recovery-storage/scripts/tests/test_runner.py::test_A16_nonzero_exit_returned_as_data"
+  ],
+  "A17": [
+   "recovery-storage/scripts/tests/test_runner.py::test_A17_real_run_stdout_evidence_sha_matches_row",
+   "recovery-storage/scripts/tests/test_runner.py::test_A17_recorded_run_evidence_and_stderr_truncation"
+  ],
+  "A18": [
+   "recovery-storage/scripts/tests/test_no_subprocess_outside_runner.py::test_A18_entry_scripts_do_not_spawn[guard_hook.py]",
+   "recovery-storage/scripts/tests/test_no_subprocess_outside_runner.py::test_A18_entry_scripts_do_not_spawn[install_junction.py]",
+   "recovery-storage/scripts/tests/test_no_subprocess_outside_runner.py::test_A18_entry_scripts_do_not_spawn[rs.py]",
+   "recovery-storage/scripts/tests/test_no_subprocess_outside_runner.py::test_A18_runner_is_the_module_that_spawns",
+   "recovery-storage/scripts/tests/test_no_subprocess_outside_runner.py::test_A18_spawn_apis_only_in_runner",
+   "recovery-storage/scripts/tests/test_no_subprocess_outside_runner.py::test_G6_static_grep_still_holds"
+  ],
+  "A19": [
+   "recovery-storage/scripts/tests/test_runner.py::test_A19_recorded_runner_answers_recording",
+   "recovery-storage/scripts/tests/test_runner.py::test_A19_recorded_runner_raises_on_unrecorded_argv",
+   "recovery-storage/scripts/tests/test_runner.py::test_A19_recorded_runner_uses_same_validator",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenarios_no_unrecorded_commands"
+  ],
+  "A2": [
+   "recovery-storage/scripts/tests/test_store.py::test_A2_default_home_is_dot_recovery_storage_in_user_home",
+   "recovery-storage/scripts/tests/test_store.py::test_A2_env_used_when_no_flag",
+   "recovery-storage/scripts/tests/test_store.py::test_A2_home_flag_beats_env"
+  ],
+  "A20": [
+   "recovery-storage/scripts/tests/test_fixtures_sources.py::test_A20_redaction_check_passes"
+  ],
+  "A21": [
+   "recovery-storage/scripts/tests/test_fixtures_sources.py::test_A21_derived_rows_name_field_and_original_value",
+   "recovery-storage/scripts/tests/test_fixtures_sources.py::test_A21_every_fixture_file_is_named_in_sources",
+   "recovery-storage/scripts/tests/test_fixtures_sources.py::test_A21_verbatim_ingest_fixtures_cite_research_section"
+  ],
+  "A3": [
+   "recovery-storage/scripts/tests/test_store.py::test_A3_unwritable_home_exits_4_and_names_path"
+  ],
+  "A4": [
+   "recovery-storage/scripts/tests/test_store.py::test_A4_newer_schema_every_command_exit_4_db_unchanged[assess-S-unknown]",
+   "recovery-storage/scripts/tests/test_store.py::test_A4_newer_schema_every_command_exit_4_db_unchanged[device-list]",
+   "recovery-storage/scripts/tests/test_store.py::test_A4_newer_schema_every_command_exit_4_db_unchanged[gate-list]",
+   "recovery-storage/scripts/tests/test_store.py::test_A4_newer_schema_every_command_exit_4_db_unchanged[inventory]",
+   "recovery-storage/scripts/tests/test_store.py::test_A4_newer_schema_every_command_exit_4_db_unchanged[report-S-unknown]",
+   "recovery-storage/scripts/tests/test_store.py::test_A4_newer_schema_every_command_exit_4_db_unchanged[session-list]",
+   "recovery-storage/scripts/tests/test_store.py::test_A4_newer_schema_every_command_exit_4_db_unchanged[session-new]",
+   "recovery-storage/scripts/tests/test_store.py::test_A4_newer_schema_every_command_exit_4_db_unchanged[session-show]",
+   "recovery-storage/scripts/tests/test_store.py::test_A4_newer_schema_every_command_exit_4_db_unchanged[verdict-show]"
+  ],
+  "A5": [
+   "recovery-storage/scripts/tests/test_session.py::test_A5_text_mode_prints_new_session_id",
+   "recovery-storage/scripts/tests/test_session.py::test_A5_two_goals_default_ceiling_R0_preserve_yes"
+  ],
+  "A6": [
+   "recovery-storage/scripts/tests/test_session.py::test_A6_ceiling_R3_accepted",
+   "recovery-storage/scripts/tests/test_session.py::test_A6_ceiling_outside_R0_R3_exit_2[R4]",
+   "recovery-storage/scripts/tests/test_session.py::test_A6_ceiling_outside_R0_R3_exit_2[X]",
+   "recovery-storage/scripts/tests/test_session.py::test_A6_ceiling_outside_R0_R3_exit_2[r9]",
+   "recovery-storage/scripts/tests/test_session.py::test_A6_unknown_goal_exit_2_lists_all_six"
+  ],
+  "A7": [
+   "recovery-storage/scripts/tests/test_session.py::test_A7_data_recovery_forces_preserve_yes_with_reason_and_audit",
+   "recovery-storage/scripts/tests/test_session.py::test_A7_forensic_preservation_also_forces_preserve",
+   "recovery-storage/scripts/tests/test_session.py::test_A7_other_goal_keeps_preserve_no"
+  ],
+  "A8": [
+   "recovery-storage/scripts/tests/test_session.py::test_A8_nominal_capacity_parsed_to_bytes[1TB-1000000000000]",
+   "recovery-storage/scripts/tests/test_session.py::test_A8_nominal_capacity_parsed_to_bytes[500107862016-500107862016]",
+   "recovery-storage/scripts/tests/test_session.py::test_A8_nominal_capacity_parsed_to_bytes[64GB-64000000000]",
+   "recovery-storage/scripts/tests/test_session.py::test_A8_nominal_capacity_parsed_to_bytes[64GiB-68719476736]",
+   "recovery-storage/scripts/tests/test_session.py::test_A8_nominal_invalid_exit_2[0]",
+   "recovery-storage/scripts/tests/test_session.py::test_A8_nominal_invalid_exit_2[abc]"
+  ],
+  "A9": [
+   "recovery-storage/scripts/tests/test_session.py::test_A9_isolation_facts_repeatable_and_enumerated",
+   "recovery-storage/scripts/tests/test_session.py::test_A9_symptom_enum_is_exactly_the_frozen_list",
+   "recovery-storage/scripts/tests/test_session.py::test_A9_symptom_in_enum_accepted",
+   "recovery-storage/scripts/tests/test_session.py::test_A9_unknown_symptom_exit_2_lists_enum"
+  ],
+  "A9b": [
+   "recovery-storage/scripts/tests/test_session.py::test_A9b_defaults_unknown_and_medium",
+   "recovery-storage/scripts/tests/test_session.py::test_A9b_effective_data_value[no-replaceable]",
+   "recovery-storage/scripts/tests/test_session.py::test_A9b_effective_data_value[unknown-irreplaceable]",
+   "recovery-storage/scripts/tests/test_session.py::test_A9b_effective_data_value[yes-irreplaceable]",
+   "recovery-storage/scripts/tests/test_session.py::test_A9b_explicit_data_value_not_overridden",
+   "recovery-storage/scripts/tests/test_session.py::test_A9b_risk_fields_outside_enum_exit_2[--data-value-priceless]",
+   "recovery-storage/scripts/tests/test_session.py::test_A9b_risk_fields_outside_enum_exit_2[--risk-tolerance-extreme]",
+   "recovery-storage/scripts/tests/test_session.py::test_A9b_set_writes_audit_event[--data-value-important-data_value]",
+   "recovery-storage/scripts/tests/test_session.py::test_A9b_set_writes_audit_event[--risk-tolerance-low-risk_tolerance]",
+   "recovery-storage/scripts/tests/test_session.py::test_A9b_show_text_prints_stored_and_effective"
+  ],
+  "A9c": [
+   "recovery-storage/scripts/tests/test_session.py::test_A9c_all_six_isolation_values_together",
+   "recovery-storage/scripts/tests/test_session.py::test_A9c_removable_media_isolation_values_accepted",
+   "recovery-storage/scripts/tests/test_session.py::test_A9c_usage_lists_isolation_values_old_first_new_appended"
+  ],
+  "AM01-A": [
+   "recovery-storage/scripts/tests/test_operator.py::test_AM01A_console_operator_requires_a_tty",
+   "recovery-storage/scripts/tests/test_operator.py::test_AM01A_main_accepts_operator_keyword",
+   "recovery-storage/scripts/tests/test_operator.py::test_AM01A_no_console_is_an_exception_class",
+   "recovery-storage/scripts/tests/test_operator.py::test_AM01A_rs_py_never_passes_an_operator",
+   "recovery-storage/scripts/tests/test_operator.py::test_AM01A_scripted_operator_answers_in_order_then_no_console",
+   "recovery-storage/scripts/tests/test_operator.py::test_AM01A_scripted_operator_empty_raises_immediately",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenarios_operator_steps_use_the_console"
+  ],
+  "B1": [
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_classify_collection[0-messages0-ok]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_classify_collection[1-messages4-collection_failed]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_classify_collection[1-messages6-unsupported_bridge]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_classify_collection[1-messages7-unsupported_bridge]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_classify_collection[1-messages8-unsupported_bridge]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_classify_collection[2-messages5-needs_elevation]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_classify_collection[216-messages1-ok]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_classify_collection[32-messages2-ok]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_classify_collection[4-messages3-collection_failed]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_exit_flags[0-expected0]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_exit_flags[128-expected6]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_exit_flags[16-expected4]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_exit_flags[216-expected1]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_exit_flags[255-expected8]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_exit_flags[32-expected2]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_exit_flags[64-expected5]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_exit_flags[7-expected7]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_exit_flags[8-expected3]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_fixture_exit_status_to_collection[smartctl/missing-device.json-collection_failed-flags2-Unable to detect device type]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_fixture_exit_status_to_collection[smartctl/nvme-990pro-x.json-ok-flags5-None]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_fixture_exit_status_to_collection[smartctl/scrutiny-open-failed.json-needs_elevation-flags1-Open failed, Error=5]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_fixture_exit_status_to_collection[smartctl/scrutiny-usbjmicron-hdd-failing.json-ok-flags0-None]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_fixture_exit_status_to_collection[windows/usb-stick/smartctl-x-pd2.json-unsupported_bridge-flags3-Unknown USB bridge [0xabcd:0x1234]]",
+   "recovery-storage/scripts/tests/test_exit_bits.py::test_B1_fixture_exit_status_to_collection[windows/usb-stick/smartctl-x-sat-pd2.json-needs_elevation-flags4-Open failed, Error=5]"
+  ],
+  "B10": [
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B15_nvme_canonical_identity_from_smartctl",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B10_cli_observation_records_join_conflict",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B10_different_size_not_joined",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B10_same_size_different_eui_is_join_conflict",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B10_uniqueid_eui_joins_smartctl_eui64_case_insensitive",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B10_usb_uniqueid_not_applicable"
+  ],
+  "B11": [
+   "recovery-storage/scripts/tests/test_enum_windows.py::test_B11_bytes_from_get_disk_not_win32_diskdrive",
+   "recovery-storage/scripts/tests/test_enum_windows.py::test_B11_fingerprint_bytes_from_get_disk"
+  ],
+  "B12": [
+   "recovery-storage/scripts/tests/test_enum_windows.py::test_B12_baseline_two_nvme_disks_boot_system_flags",
+   "recovery-storage/scripts/tests/test_enum_windows.py::test_B12_bus_type_numeric_and_string[17-nvme]",
+   "recovery-storage/scripts/tests/test_enum_windows.py::test_B12_bus_type_numeric_and_string[7-usb]",
+   "recovery-storage/scripts/tests/test_enum_windows.py::test_B12_bus_type_numeric_and_string[NVMe-nvme]",
+   "recovery-storage/scripts/tests/test_enum_windows.py::test_B12_bus_type_numeric_and_string[USB-usb]",
+   "recovery-storage/scripts/tests/test_enum_windows.py::test_B12_nvme_disks_have_recognised_fs",
+   "recovery-storage/scripts/tests/test_enum_windows.py::test_B12_nvme_os_serial_is_eui_not_serial"
+  ],
+  "B12b": [
+   "recovery-storage/scripts/tests/test_enum_windows.py::test_B12b_usb_stick_disk2"
+  ],
+  "B12c": [
+   "recovery-storage/scripts/tests/test_enum_windows.py::test_B12c_usb_sd_disk3"
+  ],
+  "B13": [
+   "recovery-storage/scripts/tests/test_enum_windows.py::test_B13_nvme_chain_has_no_usb_node",
+   "recovery-storage/scripts/tests/test_enum_windows.py::test_B13_pnp_chain_sd_reader",
+   "recovery-storage/scripts/tests/test_enum_windows.py::test_B13_pnp_chain_usb_stick"
+  ],
+  "B14": [
+   "recovery-storage/scripts/tests/test_enum_linux.py::test_B14_lsblk_capture_mapped",
+   "recovery-storage/scripts/tests/test_enum_linux.py::test_B14_missing_sysfs_usb_chain_is_null",
+   "recovery-storage/scripts/tests/test_enum_linux.py::test_B14_no_mmc_dir_means_not_native_sd",
+   "recovery-storage/scripts/tests/test_enum_linux.py::test_B14_ptuuid_and_tran_mapped_when_present",
+   "recovery-storage/scripts/tests/test_enum_linux.py::test_B14_sizes_given_as_strings_become_integers"
+  ],
+  "B15": [
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B15_inventory_first_run_creates_then_reuses",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B15_nvme_canonical_identity_from_smartctl",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B15_text_lists_fingerprint_match_and_path"
+  ],
+  "B16": [
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B16_ambiguous_exit_5_no_link_then_device_link",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B16_ambiguous_text_shows_candidates"
+  ],
+  "B16b": [
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B16b_device_link_answer_not_YES_declined[-existing]",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B16b_device_link_answer_not_YES_declined[-new]",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B16b_device_link_answer_not_YES_declined[Y-existing]",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B16b_device_link_answer_not_YES_declined[Y-new]",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B16b_device_link_answer_not_YES_declined[no-existing]",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B16b_device_link_answer_not_YES_declined[no-new]",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B16b_device_link_answer_not_YES_declined[yes-existing]",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B16b_device_link_answer_not_YES_declined[yes-new]",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B16b_device_link_prompt_names_observation_model_bytes_path[existing]",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B16b_device_link_prompt_names_observation_model_bytes_path[new]",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B16b_device_link_without_console_refused[no-tty-console-existing]",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B16b_device_link_without_console_refused[no-tty-console-new]",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B16b_device_link_without_console_refused[operator-out-of-answers-existing]",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B16b_device_link_without_console_refused[operator-out-of-answers-new]"
+  ],
+  "B17": [
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B17_collect_runs_exactly_x_n_standby_and_stores_snapshot",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B17_device_absent_exit_3_nothing_stored"
+  ],
+  "B17b": [
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B17b_collect_answer_from_other_disk_identity_conflict_nothing_stored[other-model-and-bytes]",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B17b_collect_answer_from_other_disk_identity_conflict_nothing_stored[same-model-bytes-other-serial]",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B17b_sat_retry_answer_from_other_disk_identity_conflict"
+  ],
+  "B18": [
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B18_retry_without_smart_and_without_error_is_not_exposed",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B18_usb_unknown_bridge_one_sat_retry_needs_elevation"
+  ],
+  "B18b": [
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B18b_declared_hdd_vs_usb_flash_is_conflict_and_declared_kept",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B18b_declared_sd_vs_usb_flash_is_not_conflict",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B18b_usb_devices_detected_usb_flash_or_card[windows/usb-sd-/dev/pd3]",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B18b_usb_devices_detected_usb_flash_or_card[windows/usb-stick-/dev/pd2]"
+  ],
+  "B19": [
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B19_allow_spinup_drops_n_standby_and_records_spinup",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B19_standby_snapshot_not_spun_up"
+  ],
+  "B2": [
+   "recovery-storage/scripts/tests/test_smart_normalise.py::test_B2_nvme_990pro_health_fields",
+   "recovery-storage/scripts/tests/test_smart_normalise.py::test_B2_nvme_990pro_identity"
+  ],
+  "B20": [
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B20_smartctl_missing_or_timeout_exit_4[timed_out-timeout]",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B20_smartctl_missing_or_timeout_exit_4[tool_missing-tool_missing]",
+   "recovery-storage/scripts/tests/test_runner.py::test_A14_A15_recorded_missing_and_timeout_flags"
+  ],
+  "B21": [
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B21_collect_tags_ntfs55_exit_0",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B21_events_unavailable_still_exit_0",
+   "recovery-storage/scripts/tests/test_enum_windows.py::test_B21_errors_entry_is_partial_with_provider_and_id",
+   "recovery-storage/scripts/tests/test_enum_windows.py::test_B21_ntfs55_tagged_fs_corruption",
+   "recovery-storage/scripts/tests/test_enum_windows.py::test_B21_real_capture_empty_is_ok_without_warning",
+   "recovery-storage/scripts/tests/test_enum_windows.py::test_B21_same_id_other_provider_untagged"
+  ],
+  "B22": [
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B22_ingest_ambiguous_exit_5",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B22_ingest_matching_device_attaches_snapshot",
+   "recovery-storage/scripts/tests/test_collect_cli.py::test_B22_ingest_no_match_creates_device"
+  ],
+  "B3": [
+   "recovery-storage/scripts/tests/test_smart_normalise.py::test_B3_sat_partial_absent_fields_stay_absent"
+  ],
+  "B4": [
+   "recovery-storage/scripts/tests/test_smart_normalise.py::test_B4_scsi_without_smartctl_block_is_unknown_but_identity_parsed",
+   "recovery-storage/scripts/tests/test_smart_normalise.py::test_B6_json_without_format_version_is_malformed"
+  ],
+  "B5": [
+   "recovery-storage/scripts/tests/test_smart_normalise.py::test_B5_usbjmicron_bridge_type_and_external_hdd_class"
+  ],
+  "B6": [
+   "recovery-storage/scripts/tests/test_smart_normalise.py::test_B6_cli_ingest_of_malformed_file_keeps_raw_hash",
+   "recovery-storage/scripts/tests/test_smart_normalise.py::test_B6_invalid_json_is_malformed_with_sha256",
+   "recovery-storage/scripts/tests/test_smart_normalise.py::test_B6_json_without_format_version_is_malformed",
+   "recovery-storage/scripts/tests/test_smart_normalise.py::test_B6_sha256_is_of_raw_bytes",
+   "recovery-storage/scripts/tests/test_smart_normalise.py::test_B6_unknown_extra_keys_ignored"
+  ],
+  "B7": [
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B7_lowercase_serial_uppercased",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B7_serial_trimmed_uppercased_trailing_dot_dropped",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B7_windows_nvme_eui_form_is_eui64_not_serial"
+  ],
+  "B8": [
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B8_trust_absent[   ]",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B8_trust_absent[--]",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B8_trust_absent[None]",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B8_trust_absent[[]",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B8_trust_absent[\\t]",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B8_trust_absent[]",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B8_trust_high_alone",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B8_trust_low_repeated_char",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B8_trust_low_when_another_attached_device_shares_serial"
+  ],
+  "B9": [
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B9_conflict_when_eui_differs",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B9_conflict_when_high_serial_differs",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B9_conflict_when_wwn_differs",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B9_exact",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B9_exact_with_equal_eui64",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B9_no_candidates_none",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B9_nothing_matches_none",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B9_only_model_and_bytes_ambiguous",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B9_probable_by_mbr_signature",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B9_probable_by_ptuuid",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B9_probable_needs_vid_pid_equal",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B9_signature_zero_never_counts_weak",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B9_two_stored_probable_candidates_ambiguous",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B9_weak_with_second_attached_twin_is_ambiguous",
+   "recovery-storage/scripts/tests/test_identity_match.py::test_B9_weak_with_unrelated_attached_device_stays_weak"
+  ],
+  "C1": [
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C1_usbjmicron_failing_high_with_evidence"
+  ],
+  "C10": [
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C10_derived_boundaries[smartctl/nvme-990pro-x.cw1.derived.json-failing]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C10_derived_boundaries[smartctl/nvme-990pro-x.cw8.derived.json-failing]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C10_derived_boundaries[smartctl/nvme-990pro-x.pu100.derived.json-degraded]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C10_derived_boundaries[smartctl/nvme-990pro-x.pu79.derived.json-healthy]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C10_derived_boundaries[smartctl/nvme-990pro-x.pu80.derived.json-watch]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C10_derived_boundaries[smartctl/nvme-990pro-x.pu99.derived.json-watch]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C10_derived_boundaries[smartctl/nvme-990pro-x.spare5.derived.json-failing]"
+  ],
+  "C11": [
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/missing-device.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/nvme-980pro-x.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/nvme-990pro-i-standby.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/nvme-990pro-x.cw1.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/nvme-990pro-x.cw8.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/nvme-990pro-x.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/nvme-990pro-x.media3-poh10.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/nvme-990pro-x.no-media-errors.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/nvme-990pro-x.poh-back.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/nvme-990pro-x.pu100.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/nvme-990pro-x.pu79.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/nvme-990pro-x.pu80.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/nvme-990pro-x.pu99.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/nvme-990pro-x.spare5.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/nvme-990pro-x.temp85.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/scrutiny-ata-hdd-healthy.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/scrutiny-ata-hdd-healthy.p197-1.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/scrutiny-ata-ssd-crc199.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/scrutiny-ata-ssd-healthy.bytes0.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/scrutiny-ata-ssd-healthy.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/scrutiny-ata-ssd-healthy.satafirm.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/scrutiny-nvme-media-errors.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/scrutiny-open-failed.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/scrutiny-sat-partial.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/scrutiny-scsi-no-smartctl-block.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/scrutiny-scsi-no-smartctl-block.no-serial.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/scrutiny-usbjmicron-hdd-failing.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/scrutiny-usbjmicron-hdd-failing.p197-12.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[smartctl/scrutiny-usbjmicron-hdd-failing.r5up-p197down.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[windows/baseline-nvme-only/smartctl-x-pd0.cw4.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[windows/baseline-nvme-only/smartctl-x-pd0.eui-mismatch.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[windows/baseline-nvme-only/smartctl-x-pd0.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[windows/baseline-nvme-only/smartctl-x-pd1.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[windows/baseline-nvme-only/smartctl-x-pd1.serial-swap.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[windows/usb-sd/smartctl-x-pd0.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[windows/usb-sd/smartctl-x-pd1.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[windows/usb-sd/smartctl-x-pd2.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[windows/usb-sd/smartctl-x-pd3.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[windows/usb-sd/smartctl-x-pd4.from-pd3.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[windows/usb-sd/smartctl-x-sat-pd2.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[windows/usb-sd/smartctl-x-sat-pd3.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[windows/usb-sd/smartctl-x-sat-pd4.from-pd3.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[windows/usb-stick/smartctl-x-pd0.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[windows/usb-stick/smartctl-x-pd1.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[windows/usb-stick/smartctl-x-pd2.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[windows/usb-stick/smartctl-x-pd3.from-pd2.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[windows/usb-stick/smartctl-x-sat-pd2.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[windows/usb-stick/smartctl-x-sat-pd2.no-error.derived.json]",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C11_no_healthy_high_on_any_fixture[windows/usb-stick/smartctl-x-sat-pd3.from-pd2.derived.json]"
+  ],
+  "C12": [
+   "recovery-storage/scripts/tests/test_delta.py::test_C12_197_falling_exempt_and_5_rising_counted",
+   "recovery-storage/scripts/tests/test_delta.py::test_C12_different_identity_invalid",
+   "recovery-storage/scripts/tests/test_delta.py::test_C12_field_absent_one_side_is_na_not_zero",
+   "recovery-storage/scripts/tests/test_delta.py::test_C12_invalid_pair_not_used_by_health",
+   "recovery-storage/scripts/tests/test_delta.py::test_C12_media_errors_rise_valid_plus_3",
+   "recovery-storage/scripts/tests/test_delta.py::test_C12_other_counter_falling_invalid",
+   "recovery-storage/scripts/tests/test_delta.py::test_C12_power_on_hours_backwards_invalid",
+   "recovery-storage/scripts/tests/test_delta.py::test_C12_rising_counter_lifts_health_to_degraded"
+  ],
+  "C13": [
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[missing-device.json-mechanical-noise]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[missing-device.json-not-spinning]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[nvme-980pro-x.json-mechanical-noise]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[nvme-980pro-x.json-not-spinning]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[nvme-990pro-i-standby.json-mechanical-noise]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[nvme-990pro-i-standby.json-not-spinning]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[nvme-990pro-x.json-mechanical-noise]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[nvme-990pro-x.json-not-spinning]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[scrutiny-ata-hdd-healthy.json-mechanical-noise]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[scrutiny-ata-hdd-healthy.json-not-spinning]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[scrutiny-ata-ssd-crc199.json-mechanical-noise]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[scrutiny-ata-ssd-crc199.json-not-spinning]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[scrutiny-ata-ssd-healthy.json-mechanical-noise]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[scrutiny-ata-ssd-healthy.json-not-spinning]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[scrutiny-nvme-media-errors.json-mechanical-noise]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[scrutiny-nvme-media-errors.json-not-spinning]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[scrutiny-open-failed.json-mechanical-noise]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[scrutiny-open-failed.json-not-spinning]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[scrutiny-sat-partial.json-mechanical-noise]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[scrutiny-sat-partial.json-not-spinning]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[scrutiny-scsi-no-smartctl-block.json-mechanical-noise]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[scrutiny-scsi-no-smartctl-block.json-not-spinning]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[scrutiny-usbjmicron-hdd-failing.json-mechanical-noise]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_mechanical_symptom_stop_unsafe_regardless_of_smart[scrutiny-usbjmicron-hdd-failing.json-not-spinning]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_other_rule1_symptoms_stop_unsafe[burning-smell]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_other_rule1_symptoms_stop_unsafe[liquid-damage]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_other_rule1_symptoms_stop_unsafe[overheating]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_other_rule1_symptoms_stop_unsafe[physical-damage]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_temperature_at_critical_limit_stop_unsafe",
+   "recovery-storage/scripts/tests/test_triage.py::test_C13_temperature_below_critical_not_stop"
+  ],
+  "C14": [
+   "recovery-storage/scripts/tests/test_triage.py::test_C14_fewer_than_two_isolation_facts_undetermined[tried0]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C14_fewer_than_two_isolation_facts_undetermined[tried1]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C14_not_detected_with_two_isolation_facts_hardware[disconnects-repeatedly]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C14_not_detected_with_two_isolation_facts_hardware[not-detected]"
+  ],
+  "C14b": [
+   "recovery-storage/scripts/tests/test_triage.py::test_C14b_evidence_names_no_media_symptoms_and_tried",
+   "recovery-storage/scripts/tests/test_triage.py::test_C14b_next_test_names_the_card_no_software_tool_lab",
+   "recovery-storage/scripts/tests/test_triage.py::test_C14b_reader_present_no_media_isolated_is_hardware_branch_a[new-steps-only]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C14b_reader_present_no_media_isolated_is_hardware_branch_a[old-steps-no-device-type]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C14b_reader_present_no_media_isolated_is_hardware_branch_a[real-run]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C14b_stop_unsafe_still_wins_over_no_media_isolation"
+  ],
+  "C14c": [
+   "recovery-storage/scripts/tests/test_triage.py::test_C14c_absent_device_path_unchanged",
+   "recovery-storage/scripts/tests/test_triage.py::test_C14c_no_media_fewer_than_two_steps_stays_t5_with_reseat[none]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C14c_no_media_fewer_than_two_steps_stays_t5_with_reseat[one]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C14c_no_media_without_detect_symptom_stays_t5",
+   "recovery-storage/scripts/tests/test_triage.py::test_C14c_only_the_latest_observation_counts",
+   "recovery-storage/scripts/tests/test_triage.py::test_C14c_same_step_twice_counts_once"
+  ],
+  "C14d": [
+   "recovery-storage/scripts/tests/test_triage.py::test_C14d_no_media_lists_missing_isolation_steps[none]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C14d_no_media_lists_missing_isolation_steps[other-host]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C14d_no_media_lists_missing_isolation_steps[reseat-media]"
+  ],
+  "C15": [
+   "recovery-storage/scripts/tests/test_triage.py::test_C15_gross_capacity_mismatch_half_nominal_boundary[1TB-SOFTWARE_RECOVERY_CANDIDATE]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C15_gross_capacity_mismatch_half_nominal_boundary[2TB-CONTROLLER_RECOVERY_CANDIDATE]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C15_nvme_media_read_only_controller_and_write_locked",
+   "recovery-storage/scripts/tests/test_triage.py::test_C15_safe_mode_identity_or_zero_bytes_controller[smartctl/scrutiny-ata-ssd-healthy.bytes0.derived.json]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C15_safe_mode_identity_or_zero_bytes_controller[smartctl/scrutiny-ata-ssd-healthy.satafirm.derived.json]"
+  ],
+  "C16": [
+   "recovery-storage/scripts/tests/test_triage.py::test_C16_failing_hdd_default_software_with_image_first_constraints"
+  ],
+  "C16b": [
+   "recovery-storage/scripts/tests/test_triage.py::test_C16b_irreplaceable_and_low_tolerance_hardware_branch_b",
+   "recovery-storage/scripts/tests/test_triage.py::test_C16b_replaceable_data_low_tolerance_stays_software[flags0]",
+   "recovery-storage/scripts/tests/test_triage.py::test_C16b_replaceable_data_low_tolerance_stays_software[flags1]"
+  ],
+  "C16c": [
+   "recovery-storage/scripts/tests/test_triage.py::test_C16c_counters_rising_within_session_hardware_branch_c",
+   "recovery-storage/scripts/tests/test_triage.py::test_C16c_pair_split_across_sessions_no_branch_c_but_health_sees_delta"
+  ],
+  "C16d": [
+   "recovery-storage/scripts/tests/test_triage.py::test_C16d_healthy_disk_low_tolerance_irreplaceable_software"
+  ],
+  "C17": [
+   "recovery-storage/scripts/tests/test_triage.py::test_C17_open_failed_without_os_identity_undetermined"
+  ],
+  "C17b": [
+   "recovery-storage/scripts/tests/test_triage.py::test_C17b_usb_stick_software_unknown_partition_hypothesis"
+  ],
+  "C17c": [
+   "recovery-storage/scripts/tests/test_triage.py::test_C17c_usb_sd_software_unknown_no_partition_hypothesis"
+  ],
+  "C18": [
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C18_corpus_is_not_vacuous",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C18_every_hypothesis_complete"
+  ],
+  "C19": [
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C19_no_counterfeit_above_low_without_f3",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C22_good_f3probe_no_counterfeit_above_low"
+  ],
+  "C2": [
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C2_nvme_media_errors_degraded_medium",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C2_media_errors_bad_sectors_hypothesis"
+  ],
+  "C20": [
+   "recovery-storage/scripts/tests/test_ingest_mapfile.py::test_C20_comment_after_whitespace_is_comment",
+   "recovery-storage/scripts/tests/test_ingest_mapfile.py::test_C20_finished_derived_mapfile",
+   "recovery-storage/scripts/tests/test_ingest_mapfile.py::test_C20_verbatim_manual_example"
+  ],
+  "C20b": [
+   "recovery-storage/scripts/tests/test_ingest_mapfile.py::test_C20b_derived_full_coverage_maps_end_at_device_bytes[ingest/ddrescue-finished.980pro.derived.map-2000398934016]",
+   "recovery-storage/scripts/tests/test_ingest_mapfile.py::test_C20b_derived_full_coverage_maps_end_at_device_bytes[ingest/ddrescue-finished.990pro.derived.map-1000204886016]",
+   "recovery-storage/scripts/tests/test_ingest_mapfile.py::test_C20b_derived_full_coverage_maps_end_at_device_bytes[ingest/ddrescue-finished.hitachi500.derived.map-500107862016]",
+   "recovery-storage/scripts/tests/test_ingest_mapfile.py::test_C20b_gap_is_not_contiguous",
+   "recovery-storage/scripts/tests/test_ingest_mapfile.py::test_C20b_shifted_start",
+   "recovery-storage/scripts/tests/test_ingest_mapfile.py::test_C20b_verbatim_map_start_end_contiguous"
+  ],
+  "C21": [
+   "recovery-storage/scripts/tests/test_ingest_mapfile.py::test_C21_cpp_integer_syntax[010-8]",
+   "recovery-storage/scripts/tests/test_ingest_mapfile.py::test_C21_cpp_integer_syntax[0x200-512]",
+   "recovery-storage/scripts/tests/test_ingest_mapfile.py::test_C21_cpp_integer_syntax[512-512]",
+   "recovery-storage/scripts/tests/test_ingest_mapfile.py::test_C21_empty_file_malformed[# only comments\\n# Mapfile.\\n]",
+   "recovery-storage/scripts/tests/test_ingest_mapfile.py::test_C21_empty_file_malformed[\\n\\n]",
+   "recovery-storage/scripts/tests/test_ingest_mapfile.py::test_C21_empty_file_malformed[]",
+   "recovery-storage/scripts/tests/test_ingest_mapfile.py::test_C21_malformed_number_reports_line[-0x200]",
+   "recovery-storage/scripts/tests/test_ingest_mapfile.py::test_C21_malformed_number_reports_line[-512]",
+   "recovery-storage/scripts/tests/test_ingest_mapfile.py::test_C21_malformed_number_reports_line[0o10]",
+   "recovery-storage/scripts/tests/test_ingest_mapfile.py::test_C21_malformed_number_reports_line[12z]",
+   "recovery-storage/scripts/tests/test_ingest_mapfile.py::test_C21_malformed_number_reports_line[abc]",
+   "recovery-storage/scripts/tests/test_ingest_mapfile.py::test_C21_unknown_status_char_malformed"
+  ],
+  "C22": [
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C22_code_text_disagree_inconclusive",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C22_exit_0_good_news_is_good",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C22_exit_101_damaged",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C22_exit_103_wraparound_is_fake",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C22_f3probe_ingest_drives_hypothesis[ingest/f3probe-damaged.verbatim.txt-101-nand-degradation-medium]",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C22_f3probe_ingest_drives_hypothesis[ingest/f3probe-wraparound.verbatim.txt-103-fake-capacity-or-counterfeit-high]",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C22_good_f3probe_no_counterfeit_above_low",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C22_other_nonzero_is_inconclusive[105]",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C22_other_nonzero_is_inconclusive[1]",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C22_other_nonzero_is_inconclusive[255]",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C22_other_nonzero_is_inconclusive[2]",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C22_wraparound_text_with_limbo_code_disagree"
+  ],
+  "C23": [
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23_f3read_exit0_data_lost_zero_pass",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23_f3read_exit1_overwritten_fail_and_fake_capacity_medium",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23_f3write_no_space_inconclusive"
+  ],
+  "C24": [
+   "recovery-storage/scripts/tests/test_assess_cli.py::test_C24_attested_without_file_exit_2",
+   "recovery-storage/scripts/tests/test_assess_cli.py::test_C24_same_file_twice_one_evidence_id"
+  ],
+  "C24b": [
+   "recovery-storage/scripts/tests/test_assess_cli.py::test_C24b_attested_without_console_refused_store_unchanged[no-tty-console]",
+   "recovery-storage/scripts/tests/test_assess_cli.py::test_C24b_attested_without_console_refused_store_unchanged[operator-out-of-answers]"
+  ],
+  "C24c": [
+   "recovery-storage/scripts/tests/test_assess_cli.py::test_C24c_attested_answer_other_than_YES_declined[]",
+   "recovery-storage/scripts/tests/test_assess_cli.py::test_C24c_attested_answer_other_than_YES_declined[no]",
+   "recovery-storage/scripts/tests/test_assess_cli.py::test_C24c_attested_answer_other_than_YES_declined[yes]"
+  ],
+  "C24d": [
+   "recovery-storage/scripts/tests/test_assess_cli.py::test_C24d_attested_prompt_names_tool_result_and_audit_who[h2testw-pass]",
+   "recovery-storage/scripts/tests/test_assess_cli.py::test_C24d_attested_prompt_names_tool_result_and_audit_who[other-fail]",
+   "recovery-storage/scripts/tests/test_assess_cli.py::test_C24d_tool_ingest_needs_no_operator"
+  ],
+  "C25": [
+   "recovery-storage/scripts/tests/test_assess_cli.py::test_C25_assess_twice_identical_output",
+   "recovery-storage/scripts/tests/test_assess_cli.py::test_C25_assessment_stores_rules_version_and_inputs",
+   "recovery-storage/scripts/tests/test_assess_cli.py::test_C25_ingested_snapshot_feeds_assess"
+  ],
+  "C3": [
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C3_crc199_is_watch_not_media_verdict",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C3_crc199_connection_hypothesis",
+   "recovery-storage/scripts/tests/test_wear.py::test_C3_wear_leveling_count_not_whitelisted_is_unknown"
+  ],
+  "C4": [
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C4_wd_hdd_clean_is_healthy_medium_never_high"
+  ],
+  "C5": [
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C5_860evo_healthy_medium",
+   "recovery-storage/scripts/tests/test_wear.py::test_C5_devstat_endurance_preferred"
+  ],
+  "C6": [
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C6_990pro_healthy_medium",
+   "recovery-storage/scripts/tests/test_wear.py::test_C6_nvme_host_writes_units_of_512000",
+   "recovery-storage/scripts/tests/test_wear.py::test_C6_nvme_percentage_used"
+  ],
+  "C7": [
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C7_sat_partial_unknown_lists_missing"
+  ],
+  "C8": [
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C8_scsi_unknown_status_as_evidence_only"
+  ],
+  "C9": [
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C9_missing_device_unknown_collection_failed",
+   "recovery-storage/scripts/tests/test_health_rules.py::test_C9_open_failed_unknown_needs_elevation",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C9_environment_failures_raise_no_hardware_hypothesis[smartctl/missing-device.json]",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C9_environment_failures_raise_no_hardware_hypothesis[smartctl/scrutiny-open-failed.json]",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C9_needs_elevation_usb_no_hardware_hypothesis"
+  ],
+  "D1": [
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D1_unknown_action_lists_kinds"
+  ],
+  "D10": [
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D10_dest_equal_source_refused",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D10_f3probe_on_hdd_class_not_allowed",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D10_f3probe_on_nvme_class_not_allowed",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D10_image_requires_dest_device",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D10_mptool_needs_controller_and_provenance[extra0]",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D10_mptool_needs_controller_and_provenance[extra1]",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D10_mptool_needs_controller_and_provenance[extra2]"
+  ],
+  "D11": [
+   "recovery-storage/scripts/tests/test_actions_catalog.py::test_catalog_every_kind_has_stop_criteria",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D11_confirmation_block_high_trust",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D11_confirmation_json_fields",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D11_junk_usb_serial_phrase_is_byte_count"
+  ],
+  "D12": [
+   "recovery-storage/scripts/tests/test_gate_confirm_close.py::test_D12_right_phrase_opens_and_prints_path",
+   "recovery-storage/scripts/tests/test_gate_confirm_close.py::test_D12_text_confirm_prints_path",
+   "recovery-storage/scripts/tests/test_gate_confirm_close.py::test_D12_wrong_phrase_stays_pending"
+  ],
+  "D12b": [
+   "recovery-storage/scripts/tests/test_gate_confirm_close.py::test_D12b_phrase_argument_removed_exit_2"
+  ],
+  "D12c": [
+   "recovery-storage/scripts/tests/test_gate_confirm_close.py::test_D12c_no_console_refused_with_command_line_store_unchanged[no-tty-console]",
+   "recovery-storage/scripts/tests/test_gate_confirm_close.py::test_D12c_no_console_refused_with_command_line_store_unchanged[operator-out-of-answers]"
+  ],
+  "D12d": [
+   "recovery-storage/scripts/tests/test_gate_confirm_close.py::test_D12d_prompt_asks_for_phrase_and_audit_names_operator"
+  ],
+  "D12e": [
+   "recovery-storage/scripts/tests/test_gate_confirm_close.py::test_D12e_wrong_phrase_store_keeps_gate_pending_unconfirmed"
+  ],
+  "D13": [
+   "recovery-storage/scripts/tests/test_gate_confirm_close.py::test_D13_device_disappears_before_confirm_aborted",
+   "recovery-storage/scripts/tests/test_gate_confirm_close.py::test_D13_replaced_by_same_model_size_other_serial_aborted"
+  ],
+  "D14": [
+   "recovery-storage/scripts/tests/test_gate_confirm_close.py::test_D14_renumbered_device_confirm_prints_new_path"
+  ],
+  "D15": [
+   "recovery-storage/scripts/tests/test_gate_confirm_close.py::test_D15_swap_between_confirm_and_close_identity_drift",
+   "recovery-storage/scripts/tests/test_gate_confirm_close.py::test_D15_unchanged_close_no_drift"
+  ],
+  "D15b": [
+   "recovery-storage/scripts/tests/test_identity_drift.py::test_D15b_ambiguous_at_close_is_drift",
+   "recovery-storage/scripts/tests/test_identity_drift.py::test_D15b_close_never_changes_the_fingerprint",
+   "recovery-storage/scripts/tests/test_identity_drift.py::test_D15b_media_id_changed_at_close_is_drift_with_operator_command",
+   "recovery-storage/scripts/tests/test_identity_drift.py::test_D15b_not_attached_at_close_is_device_changed",
+   "recovery-storage/scripts/tests/test_identity_drift.py::test_D15b_other_hardware_at_close_is_device_changed",
+   "recovery-storage/scripts/tests/test_identity_drift.py::test_D15b_unchanged_close_has_no_drift_reason"
+  ],
+  "D15c": [
+   "recovery-storage/scripts/tests/test_identity_drift.py::test_D15c_link_does_not_clear_a_gate_closed_after_the_observation",
+   "recovery-storage/scripts/tests/test_identity_drift.py::test_D15c_link_of_a_later_observation_clears_drift",
+   "recovery-storage/scripts/tests/test_identity_drift.py::test_D15c_printed_link_command_clears_drift_and_learns_media_id"
+  ],
+  "D15d": [
+   "recovery-storage/scripts/tests/test_identity_drift.py::test_D15d_link_to_device_with_other_hardware_refused"
+  ],
+  "D16": [
+   "recovery-storage/scripts/tests/test_gate_confirm_close.py::test_D16_abort_from_pending_and_open_not_closed",
+   "recovery-storage/scripts/tests/test_gate_confirm_close.py::test_D16_abort_requires_reason",
+   "recovery-storage/scripts/tests/test_gate_confirm_close.py::test_D16_close_only_from_open"
+  ],
+  "D17": [
+   "recovery-storage/scripts/tests/test_gate_lock.py::test_D17_global_r2_lock_names_holder",
+   "recovery-storage/scripts/tests/test_gate_lock.py::test_D17_r1_elsewhere_allowed_while_r2_held",
+   "recovery-storage/scripts/tests/test_gate_lock.py::test_D17_second_gate_same_device_busy[disk-offline]",
+   "recovery-storage/scripts/tests/test_gate_lock.py::test_D17_second_gate_same_device_busy[format]"
+  ],
+  "D18": [
+   "recovery-storage/scripts/tests/test_gate_lock.py::test_D18_db_constraint_enforces_single_live_gate_per_device",
+   "recovery-storage/scripts/tests/test_gate_lock.py::test_D18_db_constraint_enforces_single_r2_holder"
+  ],
+  "D19": [
+   "recovery-storage/scripts/tests/test_gate_lock.py::test_D19_next_r2_after_close_or_abort[abort]",
+   "recovery-storage/scripts/tests/test_gate_lock.py::test_D19_next_r2_after_close_or_abort[close]"
+  ],
+  "D2": [
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D2_ceiling_R1_opens_pending_with_phrase",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D2_r1_kind_above_ceiling_R0_refused"
+  ],
+  "D20": [
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20_complete_mapfile_secures",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20_incomplete_mapfile_refused_with_hint",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20_mapfile_of_another_device_refused",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20_not_needed_only_when_preserve_no",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20_secured_attested_needs_reason",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20_secured_without_evidence_or_attested_exit_2",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20_waived_without_reason_exit_2"
+  ],
+  "D20b": [
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20b_floppy_finished_map_on_nvme_does_not_cover_device",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20b_gap_map_not_contiguous",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20b_map_ending_past_device_does_not_cover",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20b_map_not_starting_at_zero_does_not_cover",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20b_mapfile_complete_reasons[980-bytes-unknown-want1]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20b_mapfile_complete_reasons[980-device-512-larger-want2]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20b_mapfile_complete_reasons[980-device-512-smaller-want3]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20b_mapfile_complete_reasons[980-on-980-want0]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20b_mapfile_complete_reasons[floppy-finished-on-980-want4]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20b_mapfile_complete_reasons[floppy-finished-on-floppy-want5]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20b_mapfile_complete_reasons[floppy-partial-on-floppy-want6]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20b_mapfile_complete_reasons[gap-on-980-want7]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20b_mapfile_complete_reasons[shifted-start-on-980-want8]"
+  ],
+  "D20c": [
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20c_operator_states_without_console_refused_store_unchanged[no-tty-console-not-needed]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20c_operator_states_without_console_refused_store_unchanged[no-tty-console-secured-attested]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20c_operator_states_without_console_refused_store_unchanged[no-tty-console-waived]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20c_operator_states_without_console_refused_store_unchanged[operator-out-of-answers-not-needed]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20c_operator_states_without_console_refused_store_unchanged[operator-out-of-answers-secured-attested]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20c_operator_states_without_console_refused_store_unchanged[operator-out-of-answers-waived]"
+  ],
+  "D20d": [
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20d_operator_answer_other_than_YES_declined[-not-needed]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20d_operator_answer_other_than_YES_declined[-secured-attested]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20d_operator_answer_other_than_YES_declined[-waived]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20d_operator_answer_other_than_YES_declined[Y-not-needed]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20d_operator_answer_other_than_YES_declined[Y-secured-attested]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20d_operator_answer_other_than_YES_declined[Y-waived]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20d_operator_answer_other_than_YES_declined[no-not-needed]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20d_operator_answer_other_than_YES_declined[no-secured-attested]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20d_operator_answer_other_than_YES_declined[no-waived]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20d_operator_answer_other_than_YES_declined[yes-not-needed]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20d_operator_answer_other_than_YES_declined[yes-secured-attested]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20d_operator_answer_other_than_YES_declined[yes-waived]"
+  ],
+  "D20e": [
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20e_prompt_names_state_model_bytes_and_audit_who_operator[not-needed]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20e_prompt_names_state_model_bytes_and_audit_who_operator[secured-attested]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20e_prompt_names_state_model_bytes_and_audit_who_operator[waived]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20e_secured_with_evidence_needs_no_operator"
+  ],
+  "D20f": [
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20f_attested_and_waived_need_no_image_gate",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20f_evidence_ingested_before_the_image_gate_confirm_refused",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20f_image_gate_of_another_device_does_not_count",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20f_secured_without_qualifying_image_gate_refused[image-gate-aborted-after-confirm]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20f_secured_without_qualifying_image_gate_refused[image-gate-closed-failed]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20f_secured_without_qualifying_image_gate_refused[image-gate-in-other-session]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20f_secured_without_qualifying_image_gate_refused[image-gate-still-open]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20f_secured_without_qualifying_image_gate_refused[no-image-gate]",
+   "recovery-storage/scripts/tests/test_datastate.py::test_D20f_secured_without_qualifying_image_gate_refused[other-kind-gate-closed]"
+  ],
+  "D21": [
+   "recovery-storage/scripts/tests/test_verdict.py::test_D21_format_success_is_not_evidence"
+  ],
+  "D22": [
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22_attested_fail_is_not_pass_evidence",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22_attested_h2testw_after_gate_and_replug_pass",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22_evidence_before_last_r2_gate_refused",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22_f3read_before_gate_evidence_before_recovery",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22_f3read_pass_covering_90pct_after_gate_pass",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22_replug_observation_required"
+  ],
+  "D22b": [
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22b_write_gate_aborted_after_confirm_moves_the_window",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22b_write_gate_aborted_while_pending_leaves_the_window"
+  ],
+  "D22c": [
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22c_capacity_evidence_ingested_inside_the_verification_gate_passes[f3probe-destructive]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22c_capacity_evidence_ingested_inside_the_verification_gate_passes[f3probe]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22c_capacity_evidence_ingested_inside_the_verification_gate_passes[f3write-f3read]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22c_capacity_evidence_ingested_inside_the_verification_gate_passes[h2testw]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22c_evidence_before_the_verification_confirm_does_not_count[before-open]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22c_evidence_before_the_verification_confirm_does_not_count[between-open-and-confirm]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22c_later_format_moves_the_window_past_f3_evidence",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22c_other_write_gate_close_still_starts_the_window[clear-disk]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22c_other_write_gate_close_still_starts_the_window[firmware-update]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22c_other_write_gate_close_still_starts_the_window[format]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22c_other_write_gate_close_still_starts_the_window[fs-repair-on-source]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22c_other_write_gate_close_still_starts_the_window[mptool-reflash]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22c_other_write_gate_close_still_starts_the_window[partition-write]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22c_unsuccessful_verification_gate_gives_no_credit[abort]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22c_unsuccessful_verification_gate_gives_no_credit[failed]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22c_unsuccessful_verification_gate_gives_no_credit[interrupted]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22c_verification_after_an_earlier_format_passes"
+  ],
+  "D23": [
+   "recovery-storage/scripts/tests/test_verdict.py::test_D23_hdd_counters_rising_refused",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D23_hdd_without_new_selftest_refused"
+  ],
+  "D23b": [
+   "recovery-storage/scripts/tests/test_verdict.py::test_D23b_selftest_window_on_real_wrapped_log[65540-True]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D23b_selftest_window_on_real_wrapped_log[65578-True]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D23b_selftest_window_on_real_wrapped_log[65579-False]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D23b_selftest_window_wraps_at_65536[E1-stale-60000h]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D23b_selftest_window_wraps_at_65536[E2-fail-after-pass]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D23b_selftest_window_wraps_at_65536[boundary-equal-in]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D23b_selftest_window_wraps_at_65536[boundary-one-hour-out]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D23b_selftest_window_wraps_at_65536[pass-in-wrapped-window]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D23b_selftest_window_wraps_at_65536[wrap-order-fail-newer]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D23b_selftest_window_wraps_at_65536[wrap-order-pass-newer]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D23b_verdict_set_uses_the_wrapped_window[poh-67236-newest-test-65528h-old]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D23b_verdict_set_uses_the_wrapped_window[poh-67244-newest-test-0h-old]"
+  ],
+  "D24": [
+   "recovery-storage/scripts/tests/test_verdict.py::test_D24_nvme_critical_warning_post_snapshot_refused",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D24_nvme_full_read_and_replug_pass",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D24_nvme_without_read_verify_refused"
+  ],
+  "D24b": [
+   "recovery-storage/scripts/tests/test_verdict.py::test_D24b_nvme_floppy_mapfile_is_not_a_read_verify"
+  ],
+  "D24c": [
+   "recovery-storage/scripts/tests/test_verdict.py::test_D24c_coverage_parameter_is_exposed",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D24c_ssd_f3read_below_flash_coverage_is_not_read_verify[external-ssd]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D24c_ssd_f3read_below_flash_coverage_is_not_read_verify[nvme]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D24c_ssd_f3read_below_flash_coverage_is_not_read_verify[ssd-sata]"
+  ],
+  "D25": [
+   "recovery-storage/scripts/tests/test_verdict.py::test_D25_class_conflicting_with_declared_classify_first",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D25_class_unknown_classify_first"
+  ],
+  "D26": [
+   "recovery-storage/scripts/tests/test_verdict.py::test_D26_other_statuses_require_reason[FAIL]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D26_other_statuses_require_reason[REPAIR_REQUIRED]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D26_other_statuses_require_reason[RETIRED]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D26_other_statuses_require_reason[UNRESOLVED]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D26_pass_limited_refused_when_latest_health_failing",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D26_pass_limited_requires_limitation"
+  ],
+  "D27": [
+   "recovery-storage/scripts/tests/test_verdict.py::test_D27_show_history_newest_first_latest_effective"
+  ],
+  "D3": [
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D3_boot_system_disk_refused_any_kind_any_ceiling[format]",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D3_boot_system_disk_refused_any_kind_any_ceiling[image-ddrescue]",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D3_boot_system_disk_refused_any_kind_any_ceiling[smart-selftest-short]"
+  ],
+  "D4": [
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D4_data_recovery_format_needs_secured_data"
+  ],
+  "D4b": [
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D4b_data_state_from_before_the_last_write_is_stale[secured]",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D4b_data_state_from_before_the_last_write_is_stale[waived]",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D4b_stale_secured_across_sessions_refused",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D4b_unconfirmed_or_read_only_gates_are_not_writes",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D4b_write_gate_aborted_after_confirm_is_a_write"
+  ],
+  "D4c": [
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D4c_verification_gate_close_is_still_the_last_write_for_data_state"
+  ],
+  "D5": [
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D5_forensic_goal_allows_imaging",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D5_forensic_goal_never_writes_source"
+  ],
+  "D6": [
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D6_stop_unsafe_refuses_r1_allows_r3"
+  ],
+  "D7": [
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D7_no_assessment_refused"
+  ],
+  "D8": [
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D10_f3probe_on_hdd_class_not_allowed",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D8_all_failing_reasons_listed"
+  ],
+  "D9": [
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D9_device_absent_not_found",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D9_two_probable_candidates_ambiguous_exit_5"
+  ],
+  "D9b": [
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D9b_sd_weak_single_opens_with_warning_and_byte_phrase",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D9b_weak_warning_line_in_text_block",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D9b_weak_with_twin_reader_card_ambiguous"
+  ],
+  "D9c": [
+   "recovery-storage/scripts/tests/test_gate_confirm_close.py::test_D9c_needs_elevation_after_state_does_not_block_close",
+   "recovery-storage/scripts/tests/test_gate_open.py::test_D9c_needs_elevation_before_state_recorded_not_blocking"
+  ],
+  "E1": [
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E1_check_lists_sections_8_and_9",
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E1_eleven_headings_in_order",
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E1_model_numbers_and_headings",
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E1_section_9_unresolved_without_verdict"
+  ],
+  "E10": [
+   "recovery-storage/scripts/tests/test_compare_cli.py::test_E10_backwards_hours_invalid_header_no_fields",
+   "recovery-storage/scripts/tests/test_compare_cli.py::test_E10_media_errors_plus3_poh_plus10",
+   "recovery-storage/scripts/tests/test_compare_cli.py::test_E10_missing_field_na"
+  ],
+  "E11": [
+   "recovery-storage/scripts/tests/test_compare_cli.py::test_E11_compare_json_parseable",
+   "recovery-storage/scripts/tests/test_fleet.py::test_E11_list_and_show_json_parseable",
+   "recovery-storage/scripts/tests/test_report_redact.py::test_E6_redact_applies_to_json_model"
+  ],
+  "E2": [
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E2_inferred_items_carry_rule_and_confidence",
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E2_missing_field_undetermined_not_reported",
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E2_verified_smart_values_carry_tool_version_and_evidence"
+  ],
+  "E3": [
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E3_attested_tagged_attested_with_sha"
+  ],
+  "E4": [
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E4_closed_format_gate_in_5_and_7_section_8_still_missing_verify"
+  ],
+  "E5": [
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E5_pass_limited_sentence_and_limitation"
+  ],
+  "E6": [
+   "recovery-storage/scripts/tests/test_report_redact.py::test_E6_redact_applies_to_json_model",
+   "recovery-storage/scripts/tests/test_report_redact.py::test_E6_redact_removes_serial_eui_wwn_and_username"
+  ],
+  "E7": [
+   "recovery-storage/scripts/tests/test_report_check.py::test_E7_existing_file_not_overwritten_without_force",
+   "recovery-storage/scripts/tests/test_report_check.py::test_E7_out_writes_utf8_markdown"
+  ],
+  "E8": [
+   "recovery-storage/scripts/tests/test_fleet.py::test_E8_group_by_triage",
+   "recovery-storage/scripts/tests/test_fleet.py::test_E8_ordering_stable_and_byte_identical"
+  ],
+  "E9": [
+   "recovery-storage/scripts/tests/test_fleet.py::test_E9_device_show_chronological_across_sessions"
+  ],
+  "F1": [
+   "recovery-storage/scripts/tests/test_skill_docs.py::test_F1_frontmatter_name_and_description_triggers"
+  ],
+  "F10": [
+   "recovery-storage/scripts/tests/test_skill_docs.py::test_F10_skill_md_states_hard_rules"
+  ],
+  "F2": [
+   "recovery-storage/scripts/tests/test_skill_docs.py::test_F2_relative_links_resolve"
+  ],
+  "F3": [
+   "recovery-storage/scripts/tests/test_fixtures_sources.py::test_A21_verbatim_ingest_fixtures_cite_research_section",
+   "recovery-storage/scripts/tests/test_skill_docs.py::test_F3_every_argparse_subcommand_mentioned_in_skill_md",
+   "recovery-storage/scripts/tests/test_skill_docs.py::test_F3_every_documented_subcommand_exists"
+  ],
+  "F4": [
+   "recovery-storage/scripts/tests/test_skill_docs.py::test_F4_method_blocks_have_five_fields_and_valid_risk"
+  ],
+  "F5": [
+   "recovery-storage/scripts/tests/test_skill_docs.py::test_F5_every_catalog_kind_documented_with_same_risk"
+  ],
+  "F6": [
+   "recovery-storage/scripts/tests/test_skill_docs.py::test_F6_no_thresholds_restated_in_references"
+  ],
+  "F7": [
+   "recovery-storage/scripts/tests/test_skill_docs.py::test_F7_reviewer_check_all_unverified_items",
+   "recovery-storage/scripts/tests/test_skill_docs.py::test_F7_unverified_items_labelled"
+  ],
+  "F8": [
+   "recovery-storage/scripts/tests/test_health_rules.py::test_health_rule_ids_come_from_rules_table",
+   "recovery-storage/scripts/tests/test_rules_doc.py::test_F8_outcomes_match_rule_tables",
+   "recovery-storage/scripts/tests/test_rules_doc.py::test_F8_parameters_carry_endurance_constants_with_source",
+   "recovery-storage/scripts/tests/test_rules_doc.py::test_F8_rules_json_lists_every_health_and_triage_rule",
+   "recovery-storage/scripts/tests/test_rules_doc.py::test_F8_rules_text_mode",
+   "recovery-storage/scripts/tests/test_rules_doc.py::test_F8_wear_whitelist_exported"
+  ],
+  "F9": [
+   "recovery-storage/scripts/tests/test_skill_docs.py::test_F9_trigger_eval_with_skill_creator"
+  ],
+  "G1": [
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_physical_hardware_from_mechanical_symptom",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_G1_nine_cause_groups_each_have_a_scenario",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[cause-bad-sectors-failing-hdd]",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[cause-connection-crc199]",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[cause-controller-satafirm]",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[cause-encryption-bridge]",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[cause-fake-f3probe-wraparound]",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[cause-nand-f3probe-damaged]",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[cause-partition-fs-usb-stick]",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[cause-physical-mechanical-noise]",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[cause-write-locked-nvme-cw8]"
+  ],
+  "G10": [
+   "recovery-storage/scripts/tests/test_live.py::test_G10_suite_green_on_python[3.10]",
+   "recovery-storage/scripts/tests/test_live.py::test_G10_suite_green_on_python[3.12]",
+   "recovery-storage/scripts/tests/test_python_compat.py::test_no_python_311_plus_apis"
+  ],
+  "G11": [
+   "recovery-storage/scripts/tests/test_live.py::test_G11_live_r0_smoke_on_this_machine"
+  ],
+  "G12": [
+   "recovery-storage/scripts/tests/test_install.py::test_G12_existing_regular_dir_refused_untouched",
+   "recovery-storage/scripts/tests/test_install.py::test_G12_install_creates_link_to_repo_skill",
+   "recovery-storage/scripts/tests/test_install.py::test_G12_link_to_other_folder_refused",
+   "recovery-storage/scripts/tests/test_install.py::test_G12_rerun_is_noop"
+  ],
+  "G2": [
+   "recovery-storage/scripts/tests/test_scenarios.py::test_G2_each_triage_class_is_a_final_class",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[cause-bad-sectors-failing-hdd]",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[cause-controller-satafirm]",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[cause-physical-mechanical-noise]",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[hardware-not-detected-isolated]",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[q5-counters-rising-in-session-hardware]",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[q5-failing-hdd-default-software]",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[q5-irreplaceable-low-tolerance-hardware]",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[q5-not-spinning-stop]",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[undetermined-not-detected-no-isolation]",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[undetermined-open-failed-ingest]"
+  ],
+  "G3": [
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[wrong-device-lookalike-stick]"
+  ],
+  "G4": [
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[disconnect-between-open-and-confirm]",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[disconnect-during-collect]",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[disconnect-swap-between-confirm-and-close]"
+  ],
+  "G5": [
+   "recovery-storage/scripts/tests/test_runner.py::test_A14_A15_recorded_missing_and_timeout_flags",
+   "recovery-storage/scripts/tests/test_tool_failures.py::test_G5_lsblk_inventory_failure_cells[empty]",
+   "recovery-storage/scripts/tests/test_tool_failures.py::test_G5_lsblk_inventory_failure_cells[malformed]",
+   "recovery-storage/scripts/tests/test_tool_failures.py::test_G5_lsblk_inventory_failure_cells[missing]",
+   "recovery-storage/scripts/tests/test_tool_failures.py::test_G5_lsblk_inventory_failure_cells[nonzero]",
+   "recovery-storage/scripts/tests/test_tool_failures.py::test_G5_lsblk_inventory_failure_cells[timeout]",
+   "recovery-storage/scripts/tests/test_tool_failures.py::test_G5_powershell_inventory_failure_cells[empty]",
+   "recovery-storage/scripts/tests/test_tool_failures.py::test_G5_powershell_inventory_failure_cells[malformed]",
+   "recovery-storage/scripts/tests/test_tool_failures.py::test_G5_powershell_inventory_failure_cells[missing]",
+   "recovery-storage/scripts/tests/test_tool_failures.py::test_G5_powershell_inventory_failure_cells[nonzero]",
+   "recovery-storage/scripts/tests/test_tool_failures.py::test_G5_powershell_inventory_failure_cells[timeout]",
+   "recovery-storage/scripts/tests/test_tool_failures.py::test_G5_smartctl_collect_failure_cells[empty]",
+   "recovery-storage/scripts/tests/test_tool_failures.py::test_G5_smartctl_collect_failure_cells[malformed]",
+   "recovery-storage/scripts/tests/test_tool_failures.py::test_G5_smartctl_collect_failure_cells[missing]",
+   "recovery-storage/scripts/tests/test_tool_failures.py::test_G5_smartctl_collect_failure_cells[nonzero]",
+   "recovery-storage/scripts/tests/test_tool_failures.py::test_G5_smartctl_collect_failure_cells[timeout]"
+  ],
+  "G6": [
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6_confirm_on_open_gate_does_not_reconfirm_other_device",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6_device_path_with_semicolon_refused",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6_dtype_forbidden_refused_before_spawn[-t]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6_dtype_forbidden_refused_before_spawn[]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6_dtype_forbidden_refused_before_spawn[auto,x]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6_dtype_forbidden_refused_before_spawn[nvme /dev/sda]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6_dtype_forbidden_refused_before_spawn[sat,x]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6_dtype_forbidden_refused_before_spawn[sat;rm]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6_dtype_forbidden_refused_before_spawn[usbcypress,0x24]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6_extra_args_rejected[extra0]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6_extra_args_rejected[extra1]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6_extra_args_rejected[extra2]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6_gate_subcommands_have_no_state_shortcut",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6_no_flag_bypasses_pass_matrix[--force]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6_no_flag_bypasses_pass_matrix[--no-matrix]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6_no_flag_bypasses_pass_matrix[--skip-checks]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6_pending_gate_cannot_close",
+   "recovery-storage/scripts/tests/test_no_subprocess_outside_runner.py::test_G6_static_grep_still_holds"
+  ],
+  "G6b": [
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_file_with_unsafe_character_exit_2[amp-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_file_with_unsafe_character_exit_2[amp-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_file_with_unsafe_character_exit_2[backtick-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_file_with_unsafe_character_exit_2[backtick-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_file_with_unsafe_character_exit_2[dollar-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_file_with_unsafe_character_exit_2[dollar-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_file_with_unsafe_character_exit_2[dquote-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_file_with_unsafe_character_exit_2[dquote-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_file_with_unsafe_character_exit_2[gt-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_file_with_unsafe_character_exit_2[gt-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_file_with_unsafe_character_exit_2[lt-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_file_with_unsafe_character_exit_2[lt-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_file_with_unsafe_character_exit_2[newline-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_file_with_unsafe_character_exit_2[newline-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_file_with_unsafe_character_exit_2[pipe-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_file_with_unsafe_character_exit_2[pipe-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_file_with_unsafe_character_exit_2[semicolon-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_file_with_unsafe_character_exit_2[semicolon-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_note_with_unsafe_character_exit_2[amp]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_note_with_unsafe_character_exit_2[backtick]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_note_with_unsafe_character_exit_2[dollar]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_note_with_unsafe_character_exit_2[dquote]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_note_with_unsafe_character_exit_2[gt]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_note_with_unsafe_character_exit_2[lt]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_note_with_unsafe_character_exit_2[newline]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_note_with_unsafe_character_exit_2[pipe]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_note_with_unsafe_character_exit_2[semicolon]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[amp-secured-attested-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[amp-secured-attested-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[amp-waived-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[amp-waived-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[backtick-secured-attested-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[backtick-secured-attested-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[backtick-waived-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[backtick-waived-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[dollar-secured-attested-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[dollar-secured-attested-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[dollar-waived-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[dollar-waived-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[dquote-secured-attested-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[dquote-secured-attested-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[dquote-waived-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[dquote-waived-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[gt-secured-attested-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[gt-secured-attested-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[gt-waived-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[gt-waived-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[lt-secured-attested-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[lt-secured-attested-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[lt-waived-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[lt-waived-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[newline-secured-attested-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[newline-secured-attested-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[newline-waived-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[newline-waived-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[pipe-secured-attested-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[pipe-secured-attested-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[pipe-waived-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[pipe-waived-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[semicolon-secured-attested-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[semicolon-secured-attested-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[semicolon-waived-no-console]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_reason_with_unsafe_character_exit_2[semicolon-waived-operator-yes]",
+   "recovery-storage/scripts/tests/test_bypass.py::test_G6b_safe_text_still_accepted"
+  ],
+  "G7": [
+   "recovery-storage/scripts/tests/test_scenarios.py::test_G7_confidence_properties"
+  ],
+  "G8": [
+   "recovery-storage/scripts/tests/test_scenarios.py::test_G8_report_check_matches_verdict_presence"
+  ],
+  "G9": [
+   "recovery-storage/scripts/tests/test_scenarios.py::test_G9_full_flow_scenarios_exist",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[full-data-recovery-hdd]",
+   "recovery-storage/scripts/tests/test_scenarios.py::test_scenario_end_state[full-data-recovery-nvme]"
+  ],
+  "H1": [
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H1_unparseable_input_exit_1"
+  ],
+  "H10": [
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H10_one_open_gate_unlocks_matched_commands"
+  ],
+  "H11": [
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H11_closed_or_aborted_gates_block[aborted]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H11_closed_or_aborted_gates_block[closed]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H11_pending_gate_still_blocks_and_names_it"
+  ],
+  "H12": [
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H12_locked_store_fails_closed_for_matched",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H12_unreadable_store_fails_closed_for_matched[corrupt]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H12_unreadable_store_fails_closed_for_matched[newer-schema]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[/usr/sbin/mkfs -t vfat /dev/sdc1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[Clear-Disk -Number 2 -RemoveData]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[Format-Volume -DriveLetter E -FileSystem FAT32]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[Get-Disk 2 | Clear-Disk -RemoveData -Confirm:$false]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[Initialize-Disk -Number 2]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[Repair-Volume -DriveLetter E -OfflineScanAndFix]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[Set-Disk -Number 2 -IsOffline $true]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[Set-Disk 2 -IsReadOnly $false]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[badblocks -n /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[badblocks -wsv /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[bash -c \"wipefs -a /dev/sdb\"]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[blkdiscard /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[chkdsk E: /f]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[chkdsk E: /r]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[chkdsk E: /x]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[cmd /c format E: /FS:FAT32 /Q]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[dd if=/dev/zero of=/dev/sdb bs=1M]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[dd if=img of=\\\\\\\\.\\\\PhysicalDrive2]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[ddrescue -f -n /dev/sdb img.dd map]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[diskpart /s script.txt]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[e2fsck -f -y /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[echo ok && mkfs.vfat /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[f3brew /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[f3fix --last-sec=123 /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[f3probe --destructive /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[f3write /media/usb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[fdisk /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[format-volume -driveletter e]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[fsck /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[hdparm --security-erase pw /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[hdparm --write-sector 100 /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[ls; diskpart /s s.txt]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[mkfs.ext4 /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[ntfsfix /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[nvme format /dev/nvme0n1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[nvme sanitize /dev/nvme0]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[parted -s /dev/sdb mklabel gpt]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[powershell -EncodedCommand !!!not-base64!!!]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[powershell -EncodedCommand //79]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[powershell -EncodedCommand RgBvAHIAbQBhAHQALQBWAG8AbAB1AG0AZQAgAC0ARAByAGkAdgBlAEwAZQB0AHQAZQByACAARQA=]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[powershell -NoProfile -Command \"Clear-Disk -Number 2 -RemoveData\"]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[pwsh -enc !!!not-base64!!!]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[pwsh -enc //79]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[sfdisk /dev/sdb < layout.txt]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[sgdisk --zap-all /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[smartctl --smart=off /dev/sda]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[smartctl -S on /dev/sda]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[smartctl -o on /dev/sda]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[smartctl -s on /dev/sda]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[smartctl -t short /dev/sda]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[sudo -u root dd of=/dev/sdb if=x]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[sudo wipefs -a /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[testdisk /cmd /dev/sdb analyze,quicksearch,write]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[wipefs --all /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[wsl -e sudo ddrescue /dev/sdb img map]"
+  ],
+  "H13": [
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H13_default_home_when_env_unset",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H13_env_home_is_read"
+  ],
+  "H14": [
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H14_audit_line_has_rule_decision_gate_hash_not_text",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H14_logging_failure_keeps_decision"
+  ],
+  "H15": [
+   "recovery-storage/scripts/tests/test_skill_docs.py::test_H15_frontmatter_hooks_registration"
+  ],
+  "H16": [
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H16_frontmatter_command_with_missing_script_exit_1"
+  ],
+  "H17": [
+   "recovery-storage/scripts/tests/test_live.py::test_H17_live_guard_hook_behaviour"
+  ],
+  "H18": [
+   "recovery-storage/scripts/tests/test_skill_docs.py::test_H18_guard_limits_section_lists_every_leak"
+  ],
+  "H2": [
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H2_other_tools_pass_silently"
+  ],
+  "H3": [
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H3_non_matching_command_never_opens_store"
+  ],
+  "H4": [
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[/usr/sbin/mkfs -t vfat /dev/sdc1]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[badblocks -n /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[badblocks -wsv /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[blkdiscard /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[chkdsk E: /f]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[chkdsk E: /r]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[chkdsk E: /x]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[cmd /c format E: /FS:FAT32 /Q]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[dd if=/dev/zero of=/dev/sdb bs=1M]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[dd if=img of=\\\\\\\\.\\\\PhysicalDrive2]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[ddrescue -f -n /dev/sdb img.dd map]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[e2fsck -f -y /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[f3brew /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[f3fix --last-sec=123 /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[f3probe --destructive /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[f3write /media/usb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[fdisk /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[fsck /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[hdparm --security-erase pw /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[hdparm --write-sector 100 /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[mkfs.ext4 /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[ntfsfix /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[nvme format /dev/nvme0n1]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[nvme sanitize /dev/nvme0]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[parted -s /dev/sdb mklabel gpt]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[sfdisk /dev/sdb < layout.txt]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[sgdisk --zap-all /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[smartctl --smart=off /dev/sda]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[smartctl -S on /dev/sda]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[smartctl -o on /dev/sda]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[smartctl -s on /dev/sda]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[smartctl -t short /dev/sda]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[sudo wipefs -a /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[testdisk /cmd /dev/sdb analyze,quicksearch,write]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H4_destructive_commands_match[wipefs --all /dev/sdb]"
+  ],
+  "H5": [
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5_wrapped_and_compound_match[bash -c \"wipefs -a /dev/sdb\"]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5_wrapped_and_compound_match[echo ok && mkfs.vfat /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5_wrapped_and_compound_match[ls; diskpart /s s.txt]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5_wrapped_and_compound_match[powershell -EncodedCommand RgBvAHIAbQBhAHQALQBWAG8AbAB1AG0AZQAgAC0ARAByAGkAdgBlAEwAZQB0AHQAZQByACAARQA=]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5_wrapped_and_compound_match[powershell -NoProfile -Command \"Clear-Disk -Number 2 -RemoveData\"]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5_wrapped_and_compound_match[sudo -u root dd of=/dev/sdb if=x]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5_wrapped_and_compound_match[wsl -e sudo ddrescue /dev/sdb img map]"
+  ],
+  "H5b": [
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5b_decodable_read_only_encoded_command_allowed[powershell -EncodedCommand RwBlAHQALQBEAGkAcwBrAA==]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5b_undecodable_encoded_command_is_destructive_class[powershell -EncodedCommand !!!not-base64!!!]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5b_undecodable_encoded_command_is_destructive_class[powershell -EncodedCommand //79]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5b_undecodable_encoded_command_is_destructive_class[pwsh -enc !!!not-base64!!!]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5b_undecodable_encoded_command_is_destructive_class[pwsh -enc //79]"
+  ],
+  "H5c": [
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H10b_amendment02_open_gate_unlocks_new_block_list",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7b_amendment02_blocked_through_hook[$null = Clear-Disk -Number 2 -RemoveData -Confirm:$false]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7b_amendment02_blocked_through_hook[$r = Format-Volume -DriveLetter E]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7b_amendment02_blocked_through_hook[cat img > /dev/disk/by-id/usb-X]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7b_amendment02_blocked_through_hook[cat img > /dev/dm-0]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7b_amendment02_blocked_through_hook[cat img > /dev/loop0]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7b_amendment02_blocked_through_hook[cat img > /dev/md0]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7b_amendment02_blocked_through_hook[cp img /dev/mapper/vg-lv]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7b_amendment02_blocked_through_hook[echo x &> /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7b_amendment02_blocked_through_hook[env -i wipefs -a /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7b_amendment02_blocked_through_hook[sudo -E wipefs -a /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7b_amendment02_blocked_through_hook[sudo -S dd if=x of=/dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7b_amendment02_blocked_through_hook[sudo -n mkfs.ext4 /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7b_amendment02_blocked_through_hook[sudo -u root -E mkfs.vfat /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7b_amendment02_blocked_through_hook[xargs -t mkfs.ext4]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5c_amendment02_wrapped_and_redirected_writes_match[$null = Clear-Disk -Number 2 -RemoveData -Confirm:$false]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5c_amendment02_wrapped_and_redirected_writes_match[$r = Format-Volume -DriveLetter E]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5c_amendment02_wrapped_and_redirected_writes_match[cat img > /dev/disk/by-id/usb-X]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5c_amendment02_wrapped_and_redirected_writes_match[cat img > /dev/dm-0]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5c_amendment02_wrapped_and_redirected_writes_match[cat img > /dev/loop0]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5c_amendment02_wrapped_and_redirected_writes_match[cat img > /dev/md0]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5c_amendment02_wrapped_and_redirected_writes_match[cp img /dev/mapper/vg-lv]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5c_amendment02_wrapped_and_redirected_writes_match[echo x &> /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5c_amendment02_wrapped_and_redirected_writes_match[env -i wipefs -a /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5c_amendment02_wrapped_and_redirected_writes_match[sudo -E wipefs -a /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5c_amendment02_wrapped_and_redirected_writes_match[sudo -S dd if=x of=/dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5c_amendment02_wrapped_and_redirected_writes_match[sudo -n mkfs.ext4 /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5c_amendment02_wrapped_and_redirected_writes_match[sudo -u root -E mkfs.vfat /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H5c_amendment02_wrapped_and_redirected_writes_match[xargs -t mkfs.ext4]"
+  ],
+  "H6": [
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H6_powershell_destructive_cmdlets_match[Clear-Disk -Number 2 -RemoveData]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H6_powershell_destructive_cmdlets_match[Format-Volume -DriveLetter E -FileSystem FAT32]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H6_powershell_destructive_cmdlets_match[Get-Disk 2 | Clear-Disk -RemoveData -Confirm:$false]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H6_powershell_destructive_cmdlets_match[Initialize-Disk -Number 2]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H6_powershell_destructive_cmdlets_match[Repair-Volume -DriveLetter E -OfflineScanAndFix]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H6_powershell_destructive_cmdlets_match[Set-Disk -Number 2 -IsOffline $true]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H6_powershell_destructive_cmdlets_match[Set-Disk 2 -IsReadOnly $false]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H6_powershell_destructive_cmdlets_match[diskpart /s script.txt]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H6_powershell_destructive_cmdlets_match[format-volume -driveletter e]"
+  ],
+  "H7": [
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[/usr/sbin/mkfs -t vfat /dev/sdc1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[Clear-Disk -Number 2 -RemoveData]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[Format-Volume -DriveLetter E -FileSystem FAT32]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[Get-Disk 2 | Clear-Disk -RemoveData -Confirm:$false]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[Initialize-Disk -Number 2]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[Repair-Volume -DriveLetter E -OfflineScanAndFix]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[Set-Disk -Number 2 -IsOffline $true]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[Set-Disk 2 -IsReadOnly $false]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[badblocks -n /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[badblocks -wsv /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[bash -c \"wipefs -a /dev/sdb\"]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[blkdiscard /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[chkdsk E: /f]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[chkdsk E: /r]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[chkdsk E: /x]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[cmd /c format E: /FS:FAT32 /Q]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[dd if=/dev/zero of=/dev/sdb bs=1M]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[dd if=img of=\\\\\\\\.\\\\PhysicalDrive2]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[ddrescue -f -n /dev/sdb img.dd map]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[diskpart /s script.txt]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[e2fsck -f -y /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[echo ok && mkfs.vfat /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[f3brew /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[f3fix --last-sec=123 /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[f3probe --destructive /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[f3write /media/usb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[fdisk /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[format-volume -driveletter e]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[fsck /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[hdparm --security-erase pw /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[hdparm --write-sector 100 /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[ls; diskpart /s s.txt]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[mkfs.ext4 /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[ntfsfix /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[nvme format /dev/nvme0n1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[nvme sanitize /dev/nvme0]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[parted -s /dev/sdb mklabel gpt]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[powershell -EncodedCommand !!!not-base64!!!]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[powershell -EncodedCommand //79]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[powershell -EncodedCommand RgBvAHIAbQBhAHQALQBWAG8AbAB1AG0AZQAgAC0ARAByAGkAdgBlAEwAZQB0AHQAZQByACAARQA=]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[powershell -NoProfile -Command \"Clear-Disk -Number 2 -RemoveData\"]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[pwsh -enc !!!not-base64!!!]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[pwsh -enc //79]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[sfdisk /dev/sdb < layout.txt]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[sgdisk --zap-all /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[smartctl --smart=off /dev/sda]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[smartctl -S on /dev/sda]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[smartctl -o on /dev/sda]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[smartctl -s on /dev/sda]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[smartctl -t short /dev/sda]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[sudo -u root dd of=/dev/sdb if=x]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[sudo wipefs -a /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[testdisk /cmd /dev/sdb analyze,quicksearch,write]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[wipefs --all /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H7_blocked_without_gate_message[wsl -e sudo ddrescue /dev/sdb img map]"
+  ],
+  "H8": [
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[Get-Disk | Format-Table -AutoSize]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[Get-Disk]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[Get-Process | Format-Wide]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[Get-Volume | Format-List]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[Repair-Volume -DriveLetter E -Scan]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[Write-Host \"Format-Volume\"]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[badblocks -sv /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[chkdsk E:]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[chkdsk]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[dd if=/dev/sdb of=image.img bs=1M]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[ddrescue --version]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[ddrescuelog -t map]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[e2fsck -n /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[echo \"run mkfs.ext4 later\"]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[f3probe --help]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[f3read /media/usb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[fdisk -l]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[fsck -n /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[git commit -m \"docs: mkfs and Clear-Disk notes\"]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[grep -r Clear-Disk docs/]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[hdparm -I /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[lsblk -J -O -b]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[ntfsfix -n /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[nvme list]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[nvme smart-log /dev/nvme0]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[parted -l]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[parted /dev/sdb print]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[powershell -EncodedCommand RwBlAHQALQBEAGkAcwBrAA==]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[python rs.py gate open s1 d1 format]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[rg \"dd of=/dev\"]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[sfdisk -d /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[sfdisk -l /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[sgdisk -p /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[smartctl --scan-open -j]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[smartctl -a /dev/sda]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[smartctl -j -x /dev/sda]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[wipefs -n -a /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[wipefs /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[badblocks -sv /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[chkdsk E:]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[chkdsk]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[dd if=/dev/sdb of=image.img bs=1M]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[ddrescue --version]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[ddrescuelog -t map]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[e2fsck -n /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[echo \"run mkfs.ext4 later\"]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[f3probe --help]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[f3read /media/usb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[fdisk -l]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[fsck -n /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[git commit -m \"docs: mkfs and Clear-Disk notes\"]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[grep -r Clear-Disk docs/]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[hdparm -I /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[lsblk -J -O -b]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[ntfsfix -n /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[nvme list]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[nvme smart-log /dev/nvme0]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[parted -l]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[parted /dev/sdb print]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[python rs.py gate open s1 d1 format]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[rg \"dd of=/dev\"]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[sfdisk -d /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[sfdisk -l /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[sgdisk -p /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[smartctl --scan-open -j]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[smartctl -a /dev/sda]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[smartctl -j -x /dev/sda]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[wipefs -n -a /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8_read_only_and_text_mentions_never_match[wipefs /dev/sdb]"
+  ],
+  "H8b": [
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8c_amendment02_allowed_through_hook[cat <<'EOF' > notes.md\\nrun `mkfs.ext4` later\\nEOF]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8c_amendment02_allowed_through_hook[command -v ddrescue f3probe]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8c_amendment02_allowed_through_hook[command -v mkfs.ext4]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8c_amendment02_allowed_through_hook[cp /dev/sdb disk.img]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8c_amendment02_allowed_through_hook[fsck -N /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8c_amendment02_allowed_through_hook[git commit -m \"guard: tighten rules\\n\\nmkfs and Clear-Disk are matched as commands only\"]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8c_amendment02_allowed_through_hook[parted -s /dev/sdb unit B print]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8c_amendment02_allowed_through_hook[parted /dev/sdb print free]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8c_amendment02_allowed_through_hook[pv /dev/sdb > disk.img]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8b_amendment02_lookups_text_and_reads_never_match[cat <<'EOF' > notes.md\\nrun `mkfs.ext4` later\\nEOF]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8b_amendment02_lookups_text_and_reads_never_match[command -v ddrescue f3probe]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8b_amendment02_lookups_text_and_reads_never_match[command -v mkfs.ext4]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8b_amendment02_lookups_text_and_reads_never_match[cp /dev/sdb disk.img]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8b_amendment02_lookups_text_and_reads_never_match[fsck -N /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8b_amendment02_lookups_text_and_reads_never_match[git commit -m \"guard: tighten rules\\n\\nmkfs and Clear-Disk are matched as commands only\"]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8b_amendment02_lookups_text_and_reads_never_match[parted -s /dev/sdb unit B print]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8b_amendment02_lookups_text_and_reads_never_match[parted /dev/sdb print free]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H8b_amendment02_lookups_text_and_reads_never_match[pv /dev/sdb > disk.img]"
+  ],
+  "H9": [
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[Get-Disk | Format-Table -AutoSize]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[Get-Disk]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[Get-Process | Format-Wide]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[Get-Volume | Format-List]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[Repair-Volume -DriveLetter E -Scan]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[Write-Host \"Format-Volume\"]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[badblocks -sv /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[chkdsk E:]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[chkdsk]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[dd if=/dev/sdb of=image.img bs=1M]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[ddrescue --version]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[ddrescuelog -t map]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[e2fsck -n /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[echo \"run mkfs.ext4 later\"]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[f3probe --help]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[f3read /media/usb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[fdisk -l]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[fsck -n /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[git commit -m \"docs: mkfs and Clear-Disk notes\"]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[grep -r Clear-Disk docs/]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[hdparm -I /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[lsblk -J -O -b]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[ntfsfix -n /dev/sdb1]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[nvme list]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[nvme smart-log /dev/nvme0]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[parted -l]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[parted /dev/sdb print]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[powershell -EncodedCommand RwBlAHQALQBEAGkAcwBrAA==]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[python rs.py gate open s1 d1 format]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[rg \"dd of=/dev\"]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[sfdisk -d /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[sfdisk -l /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[sgdisk -p /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[smartctl --scan-open -j]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[smartctl -a /dev/sda]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[smartctl -j -x /dev/sda]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[wipefs -n -a /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H8_H9_allowed_without_gate[wipefs /dev/sdb]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H9_powershell_read_only_never_match[Get-Disk | Format-Table -AutoSize]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H9_powershell_read_only_never_match[Get-Disk]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H9_powershell_read_only_never_match[Get-Process | Format-Wide]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H9_powershell_read_only_never_match[Get-Volume | Format-List]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H9_powershell_read_only_never_match[Repair-Volume -DriveLetter E -Scan]",
+   "recovery-storage/scripts/tests/test_guard_patterns.py::test_H9_powershell_read_only_never_match[Write-Host \"Format-Volume\"]"
+  ]
+ },
+ "uncovered": [
+  {
+   "id": "B19",
+   "coverage": "partial",
+   "reason": "standby half skipped (BLOCKED): no real/sourced smartctl -n standby output; power_mode JSON shape unsourced. --allow-spinup half tested."
+  },
+  {
+   "id": "C23",
+   "coverage": "partial",
+   "reason": "f3read pass/fail cases skipped (BLOCKED): research quotes f3read labels without values; f3write 'No space!' tested."
+  },
+  {
+   "id": "D22",
+   "coverage": "partial",
+   "reason": "f3read coverage >= 0.9 x bytes and f3read-before-gate skipped (BLOCKED, no numeric f3read sample); PASS path and evidence-before-recovery tested via attested H2testw (Q3)."
+  },
+  {
+   "id": "F7",
+   "coverage": "partial",
+   "reason": "automatable subset only (VID ABCD, usbipd mass storage, PhysicalDrive, Seagate packed raw, temperature bands); full reviewer pass is a live/manual test."
+  },
+  {
+   "id": "F9",
+   "coverage": "manual",
+   "reason": "skill-creator trigger eval needs a live Claude session (live test fails until recorded)."
+  },
+  {
+   "id": "G10",
+   "coverage": "partial",
+   "reason": "3.10/3.12 runs are live (uv interpreters); static 3.10-compat checks run in the default suite."
+  },
+  {
+   "id": "G11",
+   "coverage": "manual",
+   "reason": "live R0 smoke on this machine with real devices (live test)."
+  },
+  {
+   "id": "H17",
+   "coverage": "manual",
+   "reason": "live Claude Code session in bypassPermissions (live test fails until recorded)."
+  },
+  {
+   "id": "phase-02 step 6",
+   "coverage": "manual",
+   "reason": "WSL bare-mount identity spike, admin + disk offline (live test)."
+  },
+  {
+   "id": "phase-08 step 1",
+   "coverage": "manual",
+   "reason": "hook spike: CLAUDE_SKILL_DIR substitution + deny enforced in bypassPermissions; gates phase 08 (live test)."
+  },
+  {
+   "id": "AM01-A summary",
+   "coverage": "none",
+   "reason": "'CLI prints the confirmation summary' before the ask: content and stream (stdout breaks --json A11) not specified; not asserted."
+  },
+  {
+   "id": "AM01-A real console",
+   "coverage": "manual",
+   "reason": "ConsoleOperator on a real TTY (human types the phrase) needs a live terminal; only the non-TTY refusal is automated."
+  },
+  {
+   "id": "AM01-A known leak",
+   "coverage": "none",
+   "reason": "injected operator / pseudo-terminal wrapper defeats the console rule by design (amendment 01 'Known leak'); documented, not testable."
+  },
+  {
+   "id": "AM03-Q1",
+   "coverage": "none",
+   "reason": "disconnects-repeatedly as a DETECT symptom on the no_media path not decided (A2 names only not-detected); test_C14b_open_disconnects_repeatedly_with_no_media skipped."
+  },
+  {
+   "id": "AM03-Q2",
+   "coverage": "none",
+   "reason": "reseat-media / other-reader on the absent-device T2a path not decided (A3 'unchanged'); test_C14c_open_new_steps_on_absent_device_path skipped."
+  },
+  {
+   "id": "AM03-Q3",
+   "coverage": "none",
+   "reason": "T5 no_media next_test wording when reseat-media is already the one recorded step not decided; only the missing-steps list (C14d) is asserted for that case."
+  },
+  {
+   "id": "AM03-Q4",
+   "coverage": "none",
+   "reason": "--tried only on session new (session set has none); amendment 'wherever TRIED is accepted' covers session new only."
+  },
+  {
+   "id": "AM03-Q5",
+   "coverage": "partial",
+   "reason": "next_test wording per device type (monolithic card lab read) unspecified; only 'card', 'no software tool', 'lab' and absence of 'insert or reseat' asserted."
+  },
+  {
+   "id": "AM04-Q1",
+   "coverage": "none",
+   "reason": "observation window (>= 2 observations, one --after-replug) vs a replug inside the verification gate not decided; test_D22c_open_replug_inside_the_verification_gate skipped."
+  },
+  {
+   "id": "AM04-Q2",
+   "coverage": "none",
+   "reason": "f3probe named a capacity kind by B1 but not a USB PASS matrix item; f3probe-good alone as PASS evidence not asserted."
+  },
+  {
+   "id": "AM04-Q3",
+   "coverage": "none",
+   "reason": "two successive successful verification gates (later confirm wins) not asserted."
+  },
+  {
+   "id": "AM04-Q4",
+   "coverage": "partial",
+   "reason": "B2 asserted on format, partition-write, fs-repair-on-source, clear-disk, firmware-update, mptool-reflash; badblocks-write is hdd-only and not exercised (stick fixtures)."
+  },
+  {
+   "id": "AM04-Q5",
+   "coverage": "partial",
+   "reason": "B1 with f3read evidence BLOCKED (no real f3read output with Data OK amounts as a fixture); test_D22c_f3read_ingested_inside_the_verification_gate_passes skipped; attested H2testw used instead."
+  }
+ ],
+ "amendments": [
+  {
+   "id": "01",
+   "date": "2026-10-19",
+   "doc": "plans/20261019-1726-recovery-storage-skill/amendment-01-operator-console-and-mapfile-coverage.md",
+   "refrozen_at": "2026-10-19T13:29:21+00:00",
+   "reason": "user-approved amendment 01 (code review C1 operator console, H7 full-coverage mapfiles); contract in tests/CONTRACT.md section 'Amendment 01'",
+   "files_changed": [
+    "recovery-storage/scripts/tests/CONTRACT.md",
+    "recovery-storage/scripts/tests/conftest.py",
+    "recovery-storage/scripts/tests/scenarios/disconnect-between-open-and-confirm/script.json",
+    "recovery-storage/scripts/tests/scenarios/disconnect-swap-between-confirm-and-close/script.json",
+    "recovery-storage/scripts/tests/scenarios/full-data-recovery-hdd/script.json",
+    "recovery-storage/scripts/tests/scenarios/full-data-recovery-nvme/script.json",
+    "recovery-storage/scripts/tests/scenarios/usb-sd-end-to-end/script.json",
+    "recovery-storage/scripts/tests/scenarios/usb-stick-end-to-end/script.json",
+    "recovery-storage/scripts/tests/scenarios/wrong-device-lookalike-stick/script.json",
+    "recovery-storage/scripts/tests/test_assess_cli.py",
+    "recovery-storage/scripts/tests/test_bypass.py",
+    "recovery-storage/scripts/tests/test_datastate.py",
+    "recovery-storage/scripts/tests/test_gate_confirm_close.py",
+    "recovery-storage/scripts/tests/test_ingest_mapfile.py",
+    "recovery-storage/scripts/tests/test_report_sections.py",
+    "recovery-storage/scripts/tests/test_scenarios.py",
+    "recovery-storage/scripts/tests/test_verdict.py"
+   ],
+   "files_added": [
+    "recovery-storage/scripts/tests/fixtures/ingest/ddrescue-finished.980pro.derived.map",
+    "recovery-storage/scripts/tests/fixtures/ingest/ddrescue-finished.990pro.derived.map",
+    "recovery-storage/scripts/tests/fixtures/ingest/ddrescue-finished.hitachi500.derived.map",
+    "recovery-storage/scripts/tests/test_operator.py"
+   ],
+   "also_changed_not_frozen": [
+    "recovery-storage/scripts/tests/fixtures/SOURCES.md"
+   ],
+   "criteria_added": [
+    "AM01-A",
+    "C20b",
+    "C24b",
+    "C24c",
+    "C24d",
+    "D12b",
+    "D12c",
+    "D12d",
+    "D12e",
+    "D20b",
+    "D20c",
+    "D20d",
+    "D20e",
+    "D24b"
+   ]
+  },
+  {
+   "id": "02",
+   "date": "2026-10-19",
+   "doc": "plans/20261019-1726-recovery-storage-skill/amendment-02-review-round-2.md",
+   "refrozen_at": "2026-10-19T14:37:40+00:00",
+   "reason": "user-approved amendment 02 (code review round 2, N1-N16: identity by operator, last write, image gate, snapshot identity, self-test wrap, SSD read verify, operator command text, guard tokenizer); contract in tests/CONTRACT.md section 'Amendment 02'",
+   "files_changed": [
+    "recovery-storage/scripts/tests/CONTRACT.md",
+    "recovery-storage/scripts/tests/conftest.py",
+    "recovery-storage/scripts/tests/scenarios/full-data-recovery-hdd/script.json",
+    "recovery-storage/scripts/tests/scenarios/full-data-recovery-nvme/script.json",
+    "recovery-storage/scripts/tests/scenarios/wrong-device-lookalike-stick/script.json",
+    "recovery-storage/scripts/tests/test_bypass.py",
+    "recovery-storage/scripts/tests/test_collect_cli.py",
+    "recovery-storage/scripts/tests/test_datastate.py",
+    "recovery-storage/scripts/tests/test_gate_open.py",
+    "recovery-storage/scripts/tests/test_guard_hook.py",
+    "recovery-storage/scripts/tests/test_guard_patterns.py",
+    "recovery-storage/scripts/tests/test_scenarios.py",
+    "recovery-storage/scripts/tests/test_verdict.py"
+   ],
+   "files_added": [
+    "recovery-storage/scripts/tests/fixtures/smartctl/scrutiny-ata-hdd-healthy.poh67236.derived.json",
+    "recovery-storage/scripts/tests/fixtures/smartctl/scrutiny-ata-hdd-healthy.poh67244.derived.json",
+    "recovery-storage/scripts/tests/test_identity_drift.py"
+   ],
+   "also_changed_not_frozen": [
+    "recovery-storage/scripts/tests/fixtures/SOURCES.md"
+   ],
+   "criteria_added": [
+    "B16b",
+    "B17b",
+    "D15b",
+    "D15c",
+    "D15d",
+    "D20f",
+    "D22b",
+    "D23b",
+    "D24c",
+    "D4b",
+    "G6b",
+    "H5c",
+    "H8b"
+   ]
+  },
+  {
+   "id": "03",
+   "date": "2026-10-19",
+   "doc": "plans/20261019-1726-recovery-storage-skill/amendment-03-real-run-card-reader.md",
+   "refrozen_at": "2026-10-19T16:05:08+00:00",
+   "reason": "amendment 03 requested by the orchestrator after the 2026-10-19 real run (microSD in USB reader, No Media, never detected after reseat / other reader / other host): --tried reseat-media|other-reader, T2a for reader present + no_media + 2 distinct steps; user-approved 2026-10-19; contract in tests/CONTRACT.md section 'Amendment 03'",
+   "files_changed": [
+    "recovery-storage/scripts/tests/CONTRACT.md",
+    "recovery-storage/scripts/tests/test_session.py",
+    "recovery-storage/scripts/tests/test_triage.py"
+   ],
+   "files_added": [
+    "recovery-storage/scripts/tests/fixtures/windows/sd-reader-empty/win-disks.media-online.derived.json"
+   ],
+   "also_changed_not_frozen": [
+    "recovery-storage/scripts/tests/fixtures/SOURCES.md"
+   ],
+   "criteria_added": [
+    "A9c",
+    "C14b",
+    "C14c",
+    "C14d"
+   ]
+  },
+  {
+   "id": "04",
+   "date": "2026-10-19",
+   "doc": "plans/20261019-1726-recovery-storage-skill/amendment-04-verification-gate-window.md",
+   "refrozen_at": "2026-10-19T16:27:04+00:00",
+   "reason": "amendment 04 requested by the orchestrator after the 2026-10-19 real run (stick, f3write-f3read gate, f3read ingested before close -> PASS refused evidence-before-recovery): a successful verification gate (f3write-f3read, h2testw, f3probe, f3probe-destructive) starts the PASS evidence window at its confirm; data-state last write unchanged; user-approved 2026-10-19; contract in tests/CONTRACT.md section 'Amendment 04'",
+   "files_changed": [
+    "recovery-storage/scripts/tests/CONTRACT.md",
+    "recovery-storage/scripts/tests/test_gate_open.py",
+    "recovery-storage/scripts/tests/test_verdict.py"
+   ],
+   "files_added": [],
+   "also_changed_not_frozen": [],
+   "criteria_added": [
+    "D22c",
+    "D4c"
+   ]
+  }
+ ]
+}

@@ -5,12 +5,13 @@ missing item by name. History is kept; the latest verdict is the effective one.
 from . import session as sess
 from . import store as st
 from .collect import class_conflict, device_row, load_snapshot_record
-from .datastate import last_write_ts, mapfile_complete
+from .datastate import mapfile_complete
 from .delta import delta
 from .errors import Refused, UsageError
 from .health import verdict as health_verdict
 
 CAPACITY_COVERAGE = 0.9  # f3read verified bytes / device bytes needed for a flash PASS (parameter)
+VERIFY_KINDS = ("f3write-f3read", "h2testw", "f3probe", "f3probe-destructive")  # writes = the test (amendment 04)
 HDD = ("hdd", "external-hdd")
 SSD = ("ssd-sata", "nvme", "external-ssd")
 FLASH = ("usb-flash-or-card", "sd")
@@ -18,10 +19,26 @@ HDD_COUNTERS = ("attr_5", "attr_187", "attr_197", "attr_198")
 SSD_COUNTERS = HDD_COUNTERS + ("media_errors",)
 
 
+def _pass_window_ts(store, device_id):
+    """Like last_write_ts, but a successful verification gate counts from its confirm: its writes are the capacity
+    test, so evidence ingested inside it counts (amendment 04 B1-B3). Data-state rules keep last_write_ts."""
+    from .actions import CATALOG
+
+    kinds = [k for k, act in CATALOG.items() if act.writes_source]
+    marks = ",".join("?" * len(kinds))
+    rows = store.query(f"SELECT kind, state, outcome, confirmed_ts, closed_ts FROM gates WHERE device_id = ? AND "
+                       f"kind IN ({marks}) AND (state = 'closed' OR (state = 'aborted' AND confirmed_ts IS NOT NULL))",
+                       (device_id, *kinds))
+    ts = [r["confirmed_ts"] if (r["kind"] in VERIFY_KINDS and r["state"] == "closed" and r["outcome"] == "success"
+                                and r["confirmed_ts"]) else r["closed_ts"] for r in rows]
+    ts = [t for t in ts if t]
+    return max(ts) if ts else None
+
+
 def _window_start(store, s, device_id):
-    """Post-recovery window: after the last closed R2 gate on this device in ANY session, never before this
-    session started."""
-    lw = last_write_ts(store, device_id)  # closed write gates + write gates aborted after confirm (amendment 02)
+    """Post-recovery window: after the last write on this device in ANY session (verification gates: their
+    confirm), never before this session started."""
+    lw = _pass_window_ts(store, device_id)
     if lw and lw > s["created_ts"]:
         return lw, True
     return s["created_ts"], bool(lw)

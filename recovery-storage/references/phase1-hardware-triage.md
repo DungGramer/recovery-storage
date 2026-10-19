@@ -33,8 +33,12 @@ Record operator observations with `rs.py session new ... --symptom <code>` (repe
 
 ## Isolation methods
 
-Record each finished step with `--tried other-port|other-cable|other-host|other-os` (session new or a new session).
-Two or more recorded steps plus a device still absent from the latest inventory make "not detected" a hardware case.
+Record each finished step with `--tried other-port|other-cable|other-host|other-os|reseat-media|other-reader`
+(session new or a new session; the last two are for cards and removable media).
+Two or more distinct recorded steps make "not detected" a hardware case when the device is still absent from the
+latest inventory, or when a card reader is present but reports no medium (`no_media`: Size 0, "No Media") with
+symptom `not-detected`. A card seen by no reader or host has a dead controller: no software tool applies, data only
+through a lab.
 
 ### Method: Change port and cable
 - Preconditions: device not detected, disconnecting, or CRC/link errors in SMART.

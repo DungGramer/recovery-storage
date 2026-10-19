@@ -18,7 +18,8 @@ DEFAULT_RISK_TOLERANCE = "medium"  # plan R1: keeps the approved default (softwa
 SYMPTOMS = ["mechanical-noise", "burning-smell", "physical-damage", "liquid-damage", "overheating", "not-detected",
             "disconnects-repeatedly", "slow-io", "read-only", "wrong-capacity", "raw-or-unreadable-fs",
             "missing-partition", "deleted-files", "io-errors", "encrypted-locked", "not-spinning"]
-TRIED = ["other-port", "other-cable", "other-host", "other-os"]
+TRIED = ["other-port", "other-cable", "other-host", "other-os", "reseat-media", "other-reader"]  # amendment 03 A1
+TRIED_CONNECTION = TRIED[:4]  # absent-device path lists only these (amendment 03 A3)
 WHO = ["agent", "operator"]
 
 _UNITS = {"": 1, "B": 1, "KB": 10 ** 3, "MB": 10 ** 6, "GB": 10 ** 9, "TB": 10 ** 12, "PB": 10 ** 15,

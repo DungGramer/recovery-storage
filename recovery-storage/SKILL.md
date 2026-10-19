@@ -118,8 +118,10 @@ attachment), `[INFERRED]` (rule id + confidence) or `[UNDETERMINED]`. `--check` 
 
 ## Guard hook and its limits
 
-Invoking this skill registers a PreToolUse hook (frontmatter) for Bash and PowerShell; verified 2026-10-19 on
-Windows 11 + Git Bash in bypass-permissions mode (a matched `f3probe --destructive` was denied, `smartctl -j` passed).
+Invoking this skill registers a PreToolUse hook (frontmatter) for Bash and PowerShell. Checked 2026-10-19 on
+Windows 11 + Git Bash: a first version of this wrapper, registered in a live session in bypass-permissions mode,
+denied a matched `f3probe --destructive` and let `smartctl -j` pass; the current wrapper (cygpath, deny code 3) was
+run through `bash -c` with and without `MSYS_NO_PATHCONV=1`, not yet as a hook in a fresh session (open item).
 It reads the case store from `RECOVERY_STORAGE_HOME` or `~/.recovery-storage` only: a session using another `--home`
 is invisible to it. It blocks commands that write
 to a device or change its state (disk/partition/format cmdlets, diskpart, mkfs, wipefs, partitioners, dd to a device,

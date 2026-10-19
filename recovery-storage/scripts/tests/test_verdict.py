@@ -2,8 +2,8 @@
 spec §2 Phase 5 + §8 'format success is not recovery' + D21-D27."""
 import pytest
 
-from conftest import (BASELINE, MAP_990, MAP_FINISHED, USB_STICK, close, collect, confirm, fx, fx_json, gate_ok,
-                      ingest_smart, inventory, new_session, ok, prepared)
+from conftest import (BASELINE, MAP_990, MAP_FINISHED, STICK_PHRASE, USB_STICK, close, collect, confirm, fx,
+                      fx_json, gate_ok, ingest_smart, inventory, new_session, ok, prepared)
 
 DEVREC = ("--goal", "device-recovery", "--preserve-data", "no", "--ceiling", "R2")
 
@@ -241,6 +241,137 @@ def test_D22b_write_gate_aborted_while_pending_leaves_the_window(cli, tmp_path):
     replug(cli, sid)
     res = cli("verdict", "set", sid, dev, "PASS")
     assert res.code == 0, res
+
+
+# ---------------- D22c (amendment 04): a verification gate's writes ARE the capacity test
+# Spec: plans/.../amendment-04-verification-gate-window.md, CONTRACT.md "Amendment 04". Capacity evidence = attested
+# H2testw (the f3read cases stay BLOCKED: no real f3read output with Data OK amounts is a fixture yet).
+VERIFY_KINDS = ["f3write-f3read", "h2testw", "f3probe", "f3probe-destructive"]
+OTHER_WRITE_KINDS = [("format", ()), ("partition-write", ()), ("fs-repair-on-source", ()), ("clear-disk", ()),
+                     ("firmware-update", ("--controller-id", "vendor-ctrl-1", "--tool-source", "vendor site")),
+                     ("mptool-reflash", ("--controller-id", "vendor-ctrl-1", "--tool-source", "vendor site"))]
+
+
+def _confirmed(cli, sid, dev, kind, *extra):
+    g, _ = gate_ok(cli, USB_STICK, sid, dev, kind, *extra)
+    res = confirm(cli, USB_STICK, g, STICK_PHRASE)
+    assert res.code == 0 and res.data["gate"]["state"] == "open", res
+    return g
+
+
+def _closed(cli, g, outcome="success", *extra):
+    res = close(cli, USB_STICK, g, outcome, *extra)
+    assert res.code == 0 and res.data["gate"]["state"] == "closed", res
+    return res
+
+
+def _pass(cli, sid, dev):
+    replug(cli, sid)
+    return cli("verdict", "set", sid, dev, "PASS")
+
+
+@pytest.mark.parametrize("kind", VERIFY_KINDS)
+def test_D22c_capacity_evidence_ingested_inside_the_verification_gate_passes(cli, tmp_path, kind):
+    """Amendment 04 B1 (real run 2026-10-19, stick, gate f3write-f3read): open -> confirm -> run tool -> ingest -> close
+    success [--evidence id] -> replug -> PASS. Window start = the gate's confirmed_ts, not its close.
+    Mutation: window start stays the close of every writes-source gate (pre-amendment) -> evidence-before-recovery
+    -> red; credit given to f3write-f3read only -> other kinds red."""
+    sid, dev, _ = prepared(cli, USB_STICK, "/dev/pd2", *DEVREC)
+    g = _confirmed(cli, sid, dev, kind)
+    ev = attest(cli, sid, dev, tmp_path, name=f"h2testw-{kind}.txt")["evidence"]["id"]
+    _closed(cli, g, "success", "--evidence", ev)
+    res = _pass(cli, sid, dev)
+    assert res.code == 0, res
+    assert ok(cli("verdict", "show", sid, dev))["effective"] == "PASS"
+
+
+def test_D22c_verification_after_an_earlier_format_passes(cli, tmp_path):
+    """Amendment 04 B1 + B2: format closed (write), then a verification gate with evidence after its confirm. The
+    window start is the max over writes; the verification gate contributes its confirmed_ts (later than the format
+    close). Mutation: confirm credit only when the verification gate is the device's only write -> red."""
+    sid, dev = formatted_stick(cli)
+    g = _confirmed(cli, sid, dev, "f3write-f3read")
+    attest(cli, sid, dev, tmp_path)
+    _closed(cli, g)
+    res = _pass(cli, sid, dev)
+    assert res.code == 0, res
+
+
+@pytest.mark.parametrize("kind,extra", OTHER_WRITE_KINDS, ids=[k for k, _ in OTHER_WRITE_KINDS])
+def test_D22c_other_write_gate_close_still_starts_the_window(cli, tmp_path, kind, extra):
+    """Amendment 04 B2: any other writes-source gate keeps today's rule (its close is the window start); evidence
+    ingested between its confirm and close -> evidence-before-recovery. Mutation: confirm credit applied to every
+    writes-source kind -> PASS -> red."""
+    sid, dev, _ = prepared(cli, USB_STICK, "/dev/pd2", *DEVREC)
+    g = _confirmed(cli, sid, dev, kind, *extra)
+    attest(cli, sid, dev, tmp_path)
+    _closed(cli, g)
+    res = _pass(cli, sid, dev)
+    assert res.code == 3, res
+    assert "evidence-before-recovery" in res.reasons, res
+
+
+@pytest.mark.parametrize("end", ["failed", "interrupted", "abort"])
+def test_D22c_unsuccessful_verification_gate_gives_no_credit(cli, tmp_path, end):
+    """Amendment 04 B3: verification gate closed failed / interrupted, or aborted after confirm -> its close / abort is
+    the window start; evidence ingested after the confirm -> evidence-before-recovery. Mutation: credit for any
+    confirmed verification gate regardless of outcome -> PASS -> red."""
+    sid, dev, _ = prepared(cli, USB_STICK, "/dev/pd2", *DEVREC)
+    g = _confirmed(cli, sid, dev, "f3write-f3read")
+    attest(cli, sid, dev, tmp_path)
+    if end == "abort":
+        assert ok(cli("gate", "abort", g, "--reason", "f3write stopped midway"))["gate"]["state"] == "aborted"
+    else:
+        _closed(cli, g, end)
+    res = _pass(cli, sid, dev)
+    assert res.code == 3, res
+    assert "evidence-before-recovery" in res.reasons, res
+
+
+def test_D22c_later_format_moves_the_window_past_f3_evidence(cli, tmp_path):
+    """Amendment 04 B5: verification gate success with evidence, then a format gate closed -> the format close is the
+    window start again -> evidence-before-recovery. Mutation: window start = latest verification confirm, ignoring
+    later writes -> PASS -> red."""
+    sid, dev, _ = prepared(cli, USB_STICK, "/dev/pd2", *DEVREC)
+    g = _confirmed(cli, sid, dev, "f3write-f3read")
+    attest(cli, sid, dev, tmp_path)
+    _closed(cli, g)
+    f = _confirmed(cli, sid, dev, "format")
+    _closed(cli, f)
+    res = _pass(cli, sid, dev)
+    assert res.code == 3, res
+    assert "evidence-before-recovery" in res.reasons, res
+
+
+@pytest.mark.parametrize("when", ["before-open", "between-open-and-confirm"])
+def test_D22c_evidence_before_the_verification_confirm_does_not_count(cli, tmp_path, when):
+    """Amendment 04 B6: evidence ingested before the verification gate was confirmed does not count.
+    Mutation: window start = the gate's open (created) time -> between-open-and-confirm PASS -> red; window start =
+    session start / no window for verification gates -> both red."""
+    sid, dev, _ = prepared(cli, USB_STICK, "/dev/pd2", *DEVREC)
+    if when == "before-open":
+        attest(cli, sid, dev, tmp_path)
+    g, _ = gate_ok(cli, USB_STICK, sid, dev, "f3write-f3read")
+    if when == "between-open-and-confirm":
+        attest(cli, sid, dev, tmp_path)
+    res = confirm(cli, USB_STICK, g, STICK_PHRASE)
+    assert res.code == 0 and res.data["gate"]["state"] == "open", res
+    _closed(cli, g)
+    res = _pass(cli, sid, dev)
+    assert res.code == 3, res
+    assert "evidence-before-recovery" in res.reasons, res
+
+
+@pytest.mark.skip(reason="BLOCKED (open question F3-numbers): the real-run f3read pass (Data OK 8050743296 of 8054112256 B) "
+                         "ingested inside the f3write-f3read gate needs the raw redacted f3read output as a fixture.")
+def test_D22c_f3read_ingested_inside_the_verification_gate_passes():
+    """Amendment 04 B1 with f3read evidence (the exact 2026-10-19 flow)."""
+
+
+@pytest.mark.skip(reason="OPEN QUESTION (amendment 04 Q1): does B1 also move the OBSERVATION window (>= 2 observations, one "
+                         "--after-replug) to the confirm? F3 guidance replugs between f3write and f3read, inside the gate.")
+def test_D22c_open_replug_inside_the_verification_gate():
+    """Would assert PASS (or replug-observation-missing) for a replug taken between confirm and close once decided."""
 
 
 # ---------------- D23b (amendment 02 E, N8): ATA self-test lifetime hours are 16-bit

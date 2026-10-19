@@ -1,6 +1,6 @@
 # Plan: recovery-storage skill (GĐ 1-4)
 
-Status: Approved - 2026-10-19
+Status: Done - 2026-10-19 (review amendments: [01](amendment-01-operator-console-and-mapfile-coverage.md), [02](amendment-02-review-round-2.md), [03](amendment-03-real-run-card-reader.md), [04](amendment-04-verification-gate-window.md))
 Spec: [requirements.md](requirements.md) (verbatim spec, settled decisions, verified facts). Research: `research/researcher-0{1..5}-*.md`. Fixtures (built): `recovery-storage/scripts/tests/fixtures/SOURCES.md`.
 
 ## Goal
@@ -12,14 +12,14 @@ Claude Code skill `./recovery-storage/` that orchestrates storage diagnosis and 
 ## Phases (sequential, single implementer)
 | # | Phase | Goal | Status |
 |---|---|---|---|
-| 01 | [foundation](phase-01-foundation-runner-store-session.md) | CLI skeleton, guarded runner, SQLite store, sessions (incl. data value, risk tolerance) | Todo (fixtures done) |
-| 02 | [identity + collection](phase-02-device-identity-and-collection.md) | Windows/Linux parsers, smartctl normaliser, fingerprint match (exact/probable/weak/ambiguous), `inventory`, `collect`, `ingest smartctl` | Todo |
-| 03 | [evidence interpretation](phase-03-health-triage-hypotheses-ingest.md) | health verdict, delta, risk-based triage, hypotheses, ddrescue/F3 parsers, `assess`, `ingest` | Todo |
-| 04 | [gate + verdict](phase-04-gate-and-verdict.md) | action catalog, gate open/confirm/close/abort, R2 lock, data-rescue state, `verdict` evidence rules | Todo |
-| 05 | [report + fleet](phase-05-report-and-fleet-history.md) | §7 report + `--check`, `device list/show`, `compare` (GĐ3) | Todo |
-| 06 | [SKILL.md + references](phase-06-skill-md-and-references.md) | lean orchestrator + playbooks (5 fields per method), `rs.py rules` | Todo |
-| 07 | [GĐ4 scenarios + install](phase-07-scenarios-hardening-install.md) | cross-phase scenarios, live R0 smoke (NVMe + USB + SD), junction, py3.10 + 3.12 | Todo |
-| 08 | [guard hook](phase-08-guard-hook.md) | PreToolUse deny of matched destructive commands unless a gate is `open`; spike-gated | Todo |
+| 01 | [foundation](phase-01-foundation-runner-store-session.md) | CLI skeleton, guarded runner, SQLite store, sessions (incl. data value, risk tolerance) | Done |
+| 02 | [identity + collection](phase-02-device-identity-and-collection.md) | Windows/Linux parsers, smartctl normaliser, fingerprint match (exact/probable/weak/ambiguous), `inventory`, `collect`, `ingest smartctl` | Done |
+| 03 | [evidence interpretation](phase-03-health-triage-hypotheses-ingest.md) | health verdict, delta, risk-based triage, hypotheses, ddrescue/F3 parsers, `assess`, `ingest` | Done |
+| 04 | [gate + verdict](phase-04-gate-and-verdict.md) | action catalog, gate open/confirm/close/abort, R2 lock, data-rescue state, `verdict` evidence rules | Done |
+| 05 | [report + fleet](phase-05-report-and-fleet-history.md) | §7 report + `--check`, `device list/show`, `compare` (GĐ3) | Done |
+| 06 | [SKILL.md + references](phase-06-skill-md-and-references.md) | lean orchestrator + playbooks (5 fields per method), `rs.py rules` | Done |
+| 07 | [GĐ4 scenarios + install](phase-07-scenarios-hardening-install.md) | cross-phase scenarios, live R0 smoke (NVMe + USB + SD), junction, py3.10 + 3.12 | Done, live checks pending |
+| 08 | [guard hook](phase-08-guard-hook.md) | PreToolUse deny of matched destructive commands unless a gate is `open`; spike-gated | Done, leaky by design |
 
 Dependencies: strictly 01 -> 08. Each phase's acceptance criteria are the frozen spec for its tests; phase 07 adds only cross-phase scenarios. Phase 08 is separate from 07: it adds a new mechanism with its own corpus and a live test whose outcome (deny enforced in bypassPermissions?) can cancel it.
 

@@ -11,8 +11,13 @@ Verified on Windows 11 (build 26200) with smartmontools 7.5, non-admin, 2026-10-
 - `Get-StorageReliabilityCounter` needs admin ("Access to a CIM resource was not available").
 - USB `UniqueId` contains the host name; USB serials are often a single junk character.
 - PowerShell 5.1 `>` writes UTF-16LE; the CLI captures output through its runner instead.
-- Git Bash rewrites `/dev/sda` into a Windows path unless `MSYS_NO_PATHCONV=1`; call tools through the CLI or with
-  that variable set.
+- Git Bash rewrites `/dev/sda` (and any `/root/...` argument, e.g. `wsl -- sh /root/x.sh`) into a Windows path
+  unless `MSYS_NO_PATHCONV=1`; call tools through the CLI or with that variable set.
+- `Format-Volume` needs an MSFT_Volume: a RAW partition gets one only with an access path (drive letter); when the
+  letter does not stick, the partition has no volume (see device-usb-flash-sd, re-create method).
+- F3 through WSL (verified 2026-10-19, Ubuntu 22.04, f3 8.0): `wsl -d <distro> -u root -- apt-get install -y f3`
+  needs no sudo password; a drive letter assigned after WSL started is not automounted: as root
+  `mount -t drvfs G: /mnt/g`, check `df -B1 /mnt/g` shows the volume size, then `f3write /mnt/g`, `f3read /mnt/g`.
 - Event log: the CLI queries the System log per provider (disk, Ntfs, volmgr, partmgr, storahci, stornvme, UASPStor,
   Kernel-PnP and others) for errors and warnings in a window; providers missing on a host are normal.
 - Disk Management / diskpart / Format-Volume write the disk: only inside an open gate, on the confirmed number.

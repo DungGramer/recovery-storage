@@ -3,7 +3,7 @@ import pytest
 
 from conftest import (BASELINE, USB_SD, USB_STICK, assess, close, collect, device_at, gate_ok,
                       gate_open_state, ingested_assessment, new_session, nvme1, ok, open_gate, phrase_980, prepared,
-                      secure, serial_980, stick)
+                      secure, serial_980, stick, STICK_PHRASE)
 from test_actions_catalog import R1, R2, R3
 
 TWIN = {"win-disks": f"{USB_STICK}/win-disks.twin.derived.json",
@@ -298,6 +298,22 @@ def test_D4b_write_gate_aborted_after_confirm_is_a_write(cli):
     assert ok(cli("gate", "abort", g, "--reason", "format stopped midway"))["gate"]["state"] == "aborted"
     res = open_gate(cli, BASELINE, sid, dev, "format")
     assert res.code == 3 and "data-not-secured" in res.reasons, res
+
+
+def test_D4c_verification_gate_close_is_still_the_last_write_for_data_state(cli):
+    """Amendment 04 B4: only the PASS evidence window moves to a verification gate's confirm; for data state the last
+    write of a verification gate is still its close. Stick, preserve yes: waived (to open the gate) -> f3write-f3read
+    confirmed -> waived recorded AGAIN between confirm and close -> close success -> format -> data-not-secured.
+    Mutation: last_write_ts uses confirmed_ts for verification kinds (the second waived counts) -> format opens -> red."""
+    sid, dev = stick(cli, *DATAREC)
+    _record(cli, sid, dev, "waived")
+    g = gate_open_state(cli, USB_STICK, sid, dev, "f3write-f3read", STICK_PHRASE)
+    _record(cli, sid, dev, "waived")   # after confirm, before close
+    res = close(cli, USB_STICK, g, "success")
+    assert res.code == 0 and res.data["gate"]["state"] == "closed", res
+    res = open_gate(cli, USB_STICK, sid, dev, "format")
+    assert res.code == 3, res
+    assert "data-not-secured" in res.reasons, res
 
 
 def test_D4b_unconfirmed_or_read_only_gates_are_not_writes(cli):

@@ -69,7 +69,9 @@ the drift of earlier gates on that device. Linking different hardware is refused
 
 The last write to a device is the close of a source-writing gate, or the abort of one that had been confirmed, in
 any session. A secured / waived data state only counts if recorded after it, and the PASS evidence window starts at
-it (or at the session start, whichever is later). `secured --evidence` also needs a closed, successful
+it (or at the session start, whichever is later). Exception for the PASS window only: a successful verification
+gate (`f3write-f3read`, `h2testw`, `f3probe`, `f3probe-destructive`) counts from its confirm, so capacity evidence
+ingested inside it counts; a failed, interrupted or aborted one counts from its close. `secured --evidence` also needs a closed, successful
 `image-ddrescue` gate on the device in the session, confirmed before the mapfile was ingested.
 
 ## Locks

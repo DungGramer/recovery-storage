@@ -37,8 +37,9 @@ RULES = (
                                                   "temperature.critical_limit_max"),
          "spec §4 rule 9 (mechanical signs: stop early); device-reported critical temperature limit"),
     Rule("T2a-not-detected-isolated", "HARDWARE_DIAGNOSIS_REQUIRED", "a",
-         ("session.symptoms", "session.tried", "inventory_runs"),
-         "spec Phase 1: not recognised after port/cable/host/OS isolation"),
+         ("session.symptoms", "session.tried", "inventory_runs", "observation.no_media"),
+         "spec Phase 1: not recognised after port/cable/host/OS isolation; card reader present with no medium "
+         "after reseat/reader/host isolation (amendment 03)"),
     Rule("T2b-irreplaceable-low-tolerance", "HARDWARE_DIAGNOSIS_REQUIRED", "b",
          ("health.verdict", "session.effective_data_value", "session.risk_tolerance"),
          "decision Q5 2026-10-19: failing/degraded + irreplaceable data + low risk tolerance -> lab"),
@@ -117,6 +118,14 @@ def classify(inp):
         return out("T2a-not-detected-isolated", "hardware diagnosis: power, PCB/bridge, connector (lab)",
                    [_ev("session.symptoms", det, "strong"), _ev("session.tried", tried, "strong"),
                     _ev("observation.absent_in_latest_inventory", True, "strong")])
+    no_media = bool((inp.obs or {}).get("no_media")) and not inp.absent
+    if no_media and "not-detected" in symptoms and len(set(tried)) >= ISOLATION_MIN:
+        # reader present, medium never seen after isolation (amendment 03 A2, real run 2026-10-19)
+        return out("T2a-not-detected-isolated",
+                   "the card itself is not detected in any reader or host: card electronics/controller fault; no "
+                   "software tool applies; data only through a lab (monolithic card: lab read)",
+                   [_ev("observation.no_media", True, "strong"), _ev("session.symptoms", det, "strong"),
+                    _ev("session.tried", tried, "strong")])
     if health in ("failing", "degraded") and readable and sess.effective_data_value(s) == "irreplaceable" \
             and s.get("risk_tolerance") == "low":
         return out("T2b-irreplaceable-low-tolerance",
@@ -130,11 +139,14 @@ def classify(inp):
                                                 "lab - counters are rising while the device is handled",
                        [_ev(f"delta.{f}", d.fields[f], "strong") for f in d.rising])
 
-    if (inp.obs or {}).get("no_media") and not inp.absent:
+    if no_media:
         # an empty card reader (or a removable drive without medium) reports 0 bytes: not a controller fault
-        return out("T5-undetermined", "the reader reports no media: insert or reseat the card (check the "
-                   "adapter and its lock switch), then re-run inventory",
-                   [_ev("observation.no_media", True, "strong")])
+        nt = ("the reader reports no media: insert or reseat the card (check the adapter and its lock switch), then "
+              "re-run inventory")
+        missing = [t for t in sess.TRIED if t not in tried]
+        if "not-detected" in symptoms and missing:
+            nt += "; isolation steps not yet recorded: " + ", ".join(missing) + " (record with session --tried)"
+        return out("T5-undetermined", nt, [_ev("observation.no_media", True, "strong")])
     if readable and not inp.absent:
         nominal = s.get("nominal_bytes")
         cw = _cw(inp)
@@ -158,7 +170,7 @@ def classify(inp):
             return out("T4-software", nt, [_ev("identity.model", model), _ev("identity.bytes", nbytes),
                                            _ev("collection_status", status)])
 
-    missing = [t for t in sess.TRIED if t not in tried]
+    missing = [t for t in sess.TRIED_CONNECTION if t not in tried]
     if det or inp.absent:
         nt = ("device not attached at the latest inventory; isolation steps not yet recorded: " +
               ", ".join(missing) + " (record with session --tried), then re-run inventory") if missing else \

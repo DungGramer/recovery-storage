@@ -129,6 +129,37 @@ def test_A9_isolation_facts_repeatable_and_enumerated(cli):
     assert res.code == 2, res
 
 
+TRIED_ORDER = ["other-port", "other-cable", "other-host", "other-os", "reseat-media", "other-reader"]  # amendment 03 A1
+
+
+def test_A9c_removable_media_isolation_values_accepted(cli):
+    """Amendment 03 A1: --tried reseat-media / other-reader accepted, stored and shown. Mutation: values missing from
+    the enum (exit 2), or dropped on store -> red."""
+    d = ok(cli("session", "new", "--goal", "diagnosis-only", "--device-type", "sd", "--symptom", "not-detected",
+               "--tried", "other-host", "--tried", "reseat-media", "--tried", "other-reader"))
+    assert sorted(d["session"]["tried"]) == ["other-host", "other-reader", "reseat-media"]
+    assert sorted(show(cli, d["session"]["id"])["session"]["tried"]) == ["other-host", "other-reader", "reseat-media"]
+
+
+def test_A9c_all_six_isolation_values_together(cli):
+    """Amendment 03 A1: the four old values keep working next to the two new ones. Mutation: replace an old value
+    by a new one -> red."""
+    args = ["session", "new", "--goal", "diagnosis-only"]
+    for t in TRIED_ORDER:
+        args += ["--tried", t]
+    assert sorted(ok(cli(*args))["session"]["tried"]) == sorted(TRIED_ORDER)
+
+
+def test_A9c_usage_lists_isolation_values_old_first_new_appended(cli):
+    """Amendment 03 A1 'existing values unchanged and keep their order; the new ones are appended' (exit-2 text lists
+    the valid values, CONTRACT sec. 2). Mutation: new values prepended / inserted, or an old value renamed -> red."""
+    res = cli("session", "new", "--goal", "diagnosis-only", "--tried", "other-planet", json_out=False)
+    assert res.code == 2, res
+    idx = [res.text.find(v) for v in TRIED_ORDER]
+    assert all(i >= 0 for i in idx), dict(zip(TRIED_ORDER, idx))
+    assert idx == sorted(idx), dict(zip(TRIED_ORDER, idx))
+
+
 @pytest.mark.parametrize("flag,bad", [("--data-value", "priceless"), ("--risk-tolerance", "extreme")])
 def test_A9b_risk_fields_outside_enum_exit_2(cli, flag, bad):
     """A9b. Mutation: accept any string -> red."""

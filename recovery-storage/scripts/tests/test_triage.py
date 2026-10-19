@@ -2,8 +2,8 @@
 'Constraints', decision Q5, C13-C17c."""
 import pytest
 
-from conftest import (BASELINE, REAL_SMART, USB_SD, USB_STICK, assess, device_at, ev_text, ingest_smart,
-                      ingested_assessment, inventory, new_session, prepared)
+from conftest import (BASELINE, REAL_SMART, USB_SD, USB_STICK, assess, collect, device_at, ev_text, ingest_smart,
+                      ingested_assessment, inventory, new_session, obs_for, prepared)
 
 FAIL_HDD = "smartctl/scrutiny-usbjmicron-hdd-failing.json"
 
@@ -221,3 +221,161 @@ def test_triage_class_enum(cli):
 
     _, _, a = ingested_assessment(cli, "smartctl/nvme-990pro-x.json")
     assert tri(a)["class"] in TRIAGE_CLASSES
+
+
+# ---------------- Amendment 03: card reader present, medium never detected (C14b, C14c, C14d)
+# Spec: plans/.../amendment-03-real-run-card-reader.md, CONTRACT.md "Amendment 03".
+SD_EMPTY = "windows/sd-reader-empty"   # real capture: reader Disk 3 Size 0, OperationalStatus "No Media"
+SD_MEDIA_ONLINE = {"win-disks": f"{SD_EMPTY}/win-disks.media-online.derived.json"}   # same reader, status Online
+ISOLATION_STEPS = ["other-port", "other-cable", "other-host", "other-os", "reseat-media", "other-reader"]
+STOP_RULE = "T1-stop-unsafe"
+T2A = "T2a-not-detected-isolated"
+T5 = "T5-undetermined"
+
+
+def _flags(symptoms=("not-detected",), tried=(), device_type="sd"):
+    flags = ["--goal", "diagnosis-only"]
+    if device_type:
+        flags += ["--device-type", device_type]
+    for s in symptoms:
+        flags += ["--symptom", s]
+    for t in tried:
+        flags += ["--tried", t]
+    return flags
+
+
+def _empty_reader(cli, flags, collect_too=False, then=None):
+    """session new -> inventory SD_EMPTY (-> collect) (-> inventory `then` override) -> assess the reader at /dev/pd3.
+    Precondition asserted: the reader is present with `no_media` true (amendment 03 contract key)."""
+    sid = new_session(cli, *flags)
+    o = obs_for(inventory(cli, cli.runner(SD_EMPTY), sid), "/dev/pd3")
+    assert o["device_id"] and o["no_media"] is True, o
+    dev = o["device_id"]
+    if collect_too:
+        collect(cli, SD_EMPTY, sid, dev)
+    if then is not None:
+        o2 = obs_for(inventory(cli, cli.runner(SD_EMPTY, then), sid), "/dev/pd3")
+        assert o2["device_id"] == dev and o2["no_media"] is False, o2
+    return assess(cli, sid, dev)
+
+
+def _ev(t, path):
+    items = [e for e in t["evidence"] if e.get("path") == path]
+    assert items, (path, t["evidence"])
+    return items[0]
+
+
+def _all_next_tests(a):
+    return " ".join([tri(a)["next_test"] or ""] + [h["next_test"] or "" for h in a["hypotheses"]]).lower()
+
+
+@pytest.mark.parametrize("tried,device_type,collect_too", [
+    (["other-host", "reseat-media", "other-reader"], "sd", True),   # the 2026-10-19 real run
+    (["reseat-media", "other-reader"], "sd", False),                # only the new removable-media steps
+    (["other-host", "other-port"], None, False),                    # old steps only, no device type
+], ids=["real-run", "new-steps-only", "old-steps-no-device-type"])
+def test_C14b_reader_present_no_media_isolated_is_hardware_branch_a(cli, tried, device_type, collect_too):
+    """Amendment 03 A2. Mutation: T2a keeps requiring the device ABSENT from inventory (reader present -> T5) -> red;
+    new --tried values not counted as isolation steps -> red (new-steps-only); rule gated on --device-type -> red."""
+    a = _empty_reader(cli, _flags(tried=tried, device_type=device_type), collect_too)
+    t = tri(a)
+    assert t["class"] == "HARDWARE_DIAGNOSIS_REQUIRED", t
+    assert t["branch"] == "a"
+    assert t["rule_id"] == T2A
+
+
+def test_C14b_evidence_names_no_media_symptoms_and_tried(cli):
+    """Amendment 03 A2 evidence. Mutation: T2a evidence without observation.no_media, or session facts dropped -> red."""
+    tried = ["other-host", "other-port"]   # old values: red today for the triage reason, not for argparse
+    t = tri(_empty_reader(cli, _flags(tried=tried)))
+    assert t["rule_id"] == T2A, t
+    assert _ev(t, "observation.no_media")["value"] is True
+    assert "not-detected" in ev_text(_ev(t, "session.symptoms")["value"])
+    tried_val = ev_text(_ev(t, "session.tried")["value"])
+    for step in tried:
+        assert step in tried_val, (step, tried_val)
+
+
+def test_C14b_next_test_names_the_card_no_software_tool_lab(cli):
+    """Amendment 03 A2 next_test (literals fixed in CONTRACT Amendment 03). Mutation: keep the T5 'insert or reseat'
+    instruction after the steps were recorded, or point at software recovery -> red."""
+    t = tri(_empty_reader(cli, _flags(tried=["other-host", "other-port"])))
+    assert t["rule_id"] == T2A, t
+    nt = (t["next_test"] or "").lower()
+    assert "card" in nt, nt
+    assert "no software tool" in nt, nt
+    assert "lab" in nt, nt
+    assert "insert or reseat" not in nt, nt
+
+
+def test_C14b_stop_unsafe_still_wins_over_no_media_isolation(cli):
+    """Amendment 03 A2 'STOP_UNSAFE (T1) still takes precedence'. Mutation: no_media T2a evaluated before T1 -> red."""
+    t = tri(_empty_reader(cli, _flags(symptoms=("not-detected", "liquid-damage"), tried=["other-host", "other-port"])))
+    assert t["class"] == "STOP_UNSAFE", t
+    assert t["rule_id"] == STOP_RULE
+
+
+@pytest.mark.parametrize("tried", [[], ["other-host"]], ids=["none", "one"])
+def test_C14c_no_media_fewer_than_two_steps_stays_t5_with_reseat(cli, tried):
+    """Amendment 03 A3. Mutation: ISOLATION_MIN not applied on the no_media path (one step -> HARDWARE), or the T5
+    insert/reseat next test dropped -> red."""
+    t = tri(_empty_reader(cli, _flags(tried=tried)))
+    assert t["class"] == "UNDETERMINED", t
+    assert t["rule_id"] == T5
+    assert "reseat" in (t["next_test"] or "").lower(), t["next_test"]
+
+
+def test_C14c_same_step_twice_counts_once(cli):
+    """Amendment 03 A2 'distinct isolation steps'. Mutation: count len(tried) instead of distinct steps -> red."""
+    t = tri(_empty_reader(cli, _flags(tried=["other-host", "other-host"])))
+    assert t["class"] == "UNDETERMINED", t
+    assert t["rule_id"] == T5
+
+
+def test_C14c_no_media_without_detect_symptom_stays_t5(cli):
+    """Amendment 03 A3 'no_media without a detect symptom -> T5 as today'. Mutation: no_media + 2 steps -> HARDWARE
+    whatever the symptom, or no_media dropped so 0 bytes reads as a controller fault (T3) -> red."""
+    t = tri(_empty_reader(cli, _flags(symptoms=("raw-or-unreadable-fs",), tried=["other-host", "other-port"])))
+    assert t["class"] == "UNDETERMINED", t
+    assert t["rule_id"] == T5
+    assert "reseat" in (t["next_test"] or "").lower(), t["next_test"]
+
+
+def test_C14c_only_the_latest_observation_counts(cli):
+    """Amendment 03 A2 'the LATEST observation has no_media true' (derived: same reader, OperationalStatus Online).
+    Mutation: any earlier no_media observation of the device triggers T2a -> red."""
+    a = _empty_reader(cli, _flags(tried=["other-host", "other-port"]), then=SD_MEDIA_ONLINE)
+    assert tri(a)["class"] != "HARDWARE_DIAGNOSIS_REQUIRED", tri(a)
+    assert tri(a)["rule_id"] != T2A
+
+
+def test_C14c_absent_device_path_unchanged(cli):
+    """Amendment 03 A3 'absent-device T2a path unchanged' (C14 setup, rule id now asserted).
+    Mutation: T2a rewritten to need no_media, losing the absent-device trigger -> red."""
+    sid, dev = _absent_device(cli, "--symptom", "not-detected", "--tried", "other-port", "--tried", "other-cable")
+    t = tri(assess(cli, sid, dev))
+    assert t["class"] == "HARDWARE_DIAGNOSIS_REQUIRED", t
+    assert t["branch"] == "a" and t["rule_id"] == T2A
+
+
+@pytest.mark.parametrize("tried", [[], ["other-host"], ["reseat-media"]], ids=["none", "other-host", "reseat-media"])
+def test_C14d_no_media_lists_missing_isolation_steps(cli, tried):
+    """Amendment 03 A4: with no_media and < 2 steps, the triage next_test or a hypothesis next_test lists every missing
+    isolation step, the new values included. Mutation: list only the four old steps, or nothing -> red."""
+    a = _empty_reader(cli, _flags(tried=tried))
+    assert tri(a)["class"] == "UNDETERMINED", tri(a)
+    text = _all_next_tests(a)
+    for missing in [s for s in ISOLATION_STEPS if s not in tried]:
+        assert missing in text, (missing, text)
+
+
+@pytest.mark.skip(reason="OPEN QUESTION (amendment 03 Q1): is `disconnects-repeatedly` a DETECT symptom for the no_media "
+                         "path? A2 names only `not-detected`; the absent-device T2a accepts both.")
+def test_C14b_open_disconnects_repeatedly_with_no_media():
+    """Would assert HARDWARE/T2a (or T5) for disconnects-repeatedly + no_media + 2 steps once decided."""
+
+
+@pytest.mark.skip(reason="OPEN QUESTION (amendment 03 Q2): do `reseat-media` / `other-reader` count as isolation steps "
+                         "on the ABSENT-device T2a path? A3 says that path is unchanged; A2 counts them for no_media.")
+def test_C14c_open_new_steps_on_absent_device_path():
+    """Would assert the class for an absent USB stick with only reseat-media + other-reader recorded once decided."""

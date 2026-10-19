@@ -14,7 +14,7 @@ from .ingest import evidence_rows
 from .triage import Inputs, classify, constraints, hypotheses
 from .wear import assess as wear_assess, host_writes_bytes
 
-RULES_VERSION = "2026.10.19-1"
+RULES_VERSION = "2026.10.19-3"  # -2: amendment 03 (no-media T2a); -3: amendment 04 (verification window)
 
 
 def _snapshots(store, device_id, session_id=None):
