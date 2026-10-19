@@ -4,7 +4,7 @@
  "reason": "spec-first acceptance + unit suite for phases 01-08 (test-designer); contract in tests/CONTRACT.md",
  "files": {
   "pytest.ini": "b0cdc0191afb27a3ef8f41d4c25ea016a7c379913f8986d863ac871b3d50be67",
-  "recovery-storage/scripts/tests/CONTRACT.md": "6f50289ddd43fdaa4d3bf54a5154bcbc2ae9fc9b29612cf5689c703657379d49",
+  "recovery-storage/scripts/tests/CONTRACT.md": "1a51d761dd74a267355dc147a9f6f77a838a46beb26feb68365bc78aba3ecfbc",
   "recovery-storage/scripts/tests/conftest.py": "5204aae1530225c8bf042cbabdcff58140c642baefe59d9563c18eba45559625",
   "recovery-storage/scripts/tests/fixtures/f3/f3probe-card-limbo.txt": "a406e94fe1c9d4ac19ae56c15e033520fdfed2bf4803b694c71f90a11d719198",
   "recovery-storage/scripts/tests/fixtures/f3/f3read-card-lost.txt": "a597018215fc652d6bcc9a4928e8261514c2e4729cd51eeb6650012a2b8cf3c5",
@@ -132,7 +132,7 @@
   "recovery-storage/scripts/tests/test_hypotheses.py": "5efba6a5fe50b0c84437f450e2ff31e278c39b93e2e35ebfe7da08e9419f80ce",
   "recovery-storage/scripts/tests/test_identity_drift.py": "3cbaeecf7ce59e088a8d3a1b20935e67ab3392dae09b8eabfe6db3cf7a88a2d0",
   "recovery-storage/scripts/tests/test_identity_match.py": "f806eb053d4b03da59006d86c6c83d8f011dcdd27ee13df7a94d91e1d9a6ed0a",
-  "recovery-storage/scripts/tests/test_ingest_f3.py": "c310c03b493b9ac446fcfbc7ab284d20c4309b7afe6f9dace583ed18abdb577c",
+  "recovery-storage/scripts/tests/test_ingest_f3.py": "c63acd8b05c107e0379563540dc3e5cefd676a589afb9fbdef0e049551f1a3d7",
   "recovery-storage/scripts/tests/test_ingest_mapfile.py": "e598a8d63b6eb351ed228ee9ec6bdbb7219536b027fbef8e31b4b62638d51b82",
   "recovery-storage/scripts/tests/test_install.py": "9bd557ce884e0e05129378ca22f3a2d1339f610c9dca821bf00b49a1067fcdb5",
   "recovery-storage/scripts/tests/test_live.py": "549c33e05c3905e9e773d508496f42fe8f96faf612f65a55d18c047a76cee7dd",
@@ -151,7 +151,7 @@
   "recovery-storage/scripts/tests/test_store.py": "e9bbf1cc7cd81bbefcb18e8184ffbbd50a9b4ef0b102c7eecd9cc4312dfd6df0",
   "recovery-storage/scripts/tests/test_tool_failures.py": "06d1d92ff11a261f5241b83af52971e036068e5e9d864b832fc78084f282e68d",
   "recovery-storage/scripts/tests/test_triage.py": "4bfb8fad815bd3568023bf8c64590d29720bdb3e0896d99ebab5097a87defae5",
-  "recovery-storage/scripts/tests/test_verdict.py": "9efefa0bf8f62788df1fd31cb300de968ba9afe53245e4d2be91413b28f03008",
+  "recovery-storage/scripts/tests/test_verdict.py": "ea6ba6fd0c7e20b31d5f03a0ed87c21c8356ce3be04583d8cf16587a86dbaeca",
   "recovery-storage/scripts/tests/test_wear.py": "61415fa785d5a9051b954316b38ab792b419bcf049363484b0d316a4509617d7"
  },
  "criteria": {
@@ -779,6 +779,10 @@
    "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23d_f3write_full_volume_below_one_block_inconclusive",
    "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23d_report_shows_the_read_rate"
   ],
+  "C23e": [
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23e_ingest_records_output_mtime[f3read-f3/f3read-stick-pass.txt]",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23e_ingest_records_output_mtime[f3write-f3/f3write-stick-volume-full.txt]"
+  ],
   "C24": [
    "recovery-storage/scripts/tests/test_assess_cli.py::test_C24_attested_without_file_exit_2",
    "recovery-storage/scripts/tests/test_assess_cli.py::test_C24_same_file_twice_one_evidence_id"
@@ -1031,6 +1035,11 @@
    "recovery-storage/scripts/tests/test_verdict.py::test_D22f_real_run_without_replug_between_write_and_read_refused",
    "recovery-storage/scripts/tests/test_verdict.py::test_D22f_replug_before_the_last_f3write_does_not_count",
    "recovery-storage/scripts/tests/test_verdict.py::test_D22f_second_f3write_after_the_replug_moves_the_anchor"
+  ],
+  "D22g": [
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22g_f3read_log_written_after_the_replug_passes",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22g_f3read_log_written_before_the_replug_refused",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22g_row_without_output_mtime_keeps_the_ingest_ts"
   ],
   "D23": [
    "recovery-storage/scripts/tests/test_verdict.py::test_D23_hdd_counters_rising_refused",
@@ -1959,8 +1968,8 @@
   },
   {
    "id": "AM07-Q2",
-   "coverage": "none",
-   "reason": "G1 judged by ingest / observation times; when f3read actually ran is invisible to the tool."
+   "coverage": "partial",
+   "reason": "amendment 08: the f3read moment uses the log's output_mtime (min with the ingest ts); residual: a log copied without preserving mtime or touched after the run (docs: cp -p)."
   },
   {
    "id": "AM07-Q3",
@@ -1971,6 +1980,11 @@
    "id": "AM07-Q4",
    "coverage": "none",
    "reason": "G1 on the SSD read-verify path: no attached SSD fixture reaches the coverage; only the flash path asserted."
+  },
+  {
+   "id": "AM08-Q1",
+   "coverage": "none",
+   "reason": "f3write output_mtime recorded but not used as the G1 anchor (anchor stays the f3write ingest ts)."
   }
  ],
  "amendments": [
@@ -2212,6 +2226,27 @@
    ],
    "removed_tests": [
     "test_D22c_open_replug_inside_the_verification_gate (skipped open question, resolved)"
+   ]
+  },
+  {
+   "id": "08",
+   "date": "2026-10-20",
+   "doc": "plans/20261019-1726-recovery-storage-skill/amendment-08-f3read-run-time.md",
+   "refrozen_at": "2026-10-19T20:01:08+00:00",
+   "reason": "user-approved amendment 08 (2026-10-20, 'L\u00e0m n\u1ed1t Amendment 07 Q2'): ingest f3read/f3write records output_mtime; G1 f3read moment = min(ingest ts, output_mtime); old rows keep the ingest ts; contract in tests/CONTRACT.md section 'Amendment 08'",
+   "files_changed": [
+    "recovery-storage/scripts/tests/CONTRACT.md",
+    "recovery-storage/scripts/tests/test_ingest_f3.py",
+    "recovery-storage/scripts/tests/test_verdict.py"
+   ],
+   "files_added": [],
+   "also_changed_not_frozen": [],
+   "criteria_added": [
+    "C23e",
+    "D22g"
+   ],
+   "amended_tests": [
+    "test_verdict.py ingest_f3 helper: ingests a temp copy with the current test-clock mtime (fixes test_D22_f3read_pass_covering_90pct_after_gate_pass, test_D22e_verdict_uses_the_current_parser_not_the_stored_parse, test_D22c_f3read_ingested_inside_the_verification_gate_passes, test_D22f_no_f3write_ingested_anchor_is_the_gate_confirm[replug-then-f3read-True])"
    ]
   }
  ]

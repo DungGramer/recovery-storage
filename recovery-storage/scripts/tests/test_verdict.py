@@ -1,5 +1,9 @@
 """Phase 04 verdict evidence matrix (D21-D27). Spec: phase-04 Requirements 'Verdict', 'PASS requires', decision Q3,
 spec §2 Phase 5 + §8 'format success is not recovery' + D21-D27."""
+import datetime as dt
+import json
+import pathlib
+
 import pytest
 
 from conftest import (BASELINE, MAP_990, MAP_FINISHED, STICK_PHRASE, USB_STICK, close, collect, confirm, fx,
@@ -86,7 +90,19 @@ F3WRITE_FULL = "f3/f3write-stick-volume-full.txt"
 
 
 def ingest_f3(cli, sid, dev, kind, rel, code=0):
-    return ok(cli("ingest", kind, sid, dev, fx(rel), "--exit-code", code))["evidence"]
+    """Amendment 08: the log is written when the run ends, i.e. now on the test clock. Ingest a temp copy (bytes
+    unchanged) whose mtime is the current FakeClock time, so the f3read moment (min(ingest ts, output_mtime)) equals
+    the ingest order the test scripts; the frozen fixture's checkout mtime never decides."""
+    import os
+    import shutil
+
+    d = pathlib.Path(cli.home).parent / "f3-logs"
+    d.mkdir(parents=True, exist_ok=True)
+    p = d / pathlib.Path(rel).name
+    shutil.copyfile(fx(rel), p)
+    ts = cli.clock.now.timestamp()
+    os.utime(p, (ts, ts))
+    return ok(cli("ingest", kind, sid, dev, p, "--exit-code", code))["evidence"]
 
 
 def test_D22_f3read_pass_covering_90pct_after_gate_pass(cli):
@@ -499,6 +515,82 @@ def test_D22f_no_f3write_ingested_anchor_is_the_gate_confirm(cli, order, passes)
         assert res.code == 0, res
     else:
         _refused_f3(res)
+
+
+# ---------------- D22g (amendment 08 H1-H3): the f3read moment = min(ingest ts, output_mtime)
+def copy_with_mtime(tmp_path, rel, when):
+    """Temp copy of a frozen fixture (bytes unchanged) whose mtime is `when` (aware datetime, whole seconds)."""
+    import os
+    import shutil
+
+    p = tmp_path / pathlib.Path(rel).name
+    shutil.copyfile(fx(rel), p)
+    ts = when.timestamp()
+    os.utime(p, (ts, ts))
+    return p
+
+
+def _ingest_path(cli, sid, dev, kind, path, code=0):
+    return ok(cli("ingest", kind, sid, dev, path, "--exit-code", code))["evidence"]
+
+
+def _f3read_log_written(cli, tmp_path, before_replug):
+    """confirm -> ingest f3write -> [log written] -> replug -> [log written] -> ingest f3read (always after the replug)."""
+    sid, dev, g = _f3_gate(cli)
+    ingest_f3(cli, sid, dev, "f3write", F3WRITE_FULL)
+    if before_replug:
+        when = cli.clock.now + dt.timedelta(seconds=1)
+        cli.clock.advance(seconds=2)
+        replug(cli, sid)
+    else:
+        replug(cli, sid)
+        cli.clock.advance(seconds=2)
+        when = cli.clock.now
+    p = copy_with_mtime(tmp_path, F3READ_PASS, when.replace(microsecond=0))
+    ev = _ingest_path(cli, sid, dev, "f3read", p)
+    _closed(cli, g, "success", "--evidence", ev["id"])
+    return sid, dev, ev
+
+
+def test_D22g_f3read_log_written_before_the_replug_refused(cli, tmp_path):
+    """Amendment 08 H2 (amendment 07 Q2): the f3read log's mtime is before the replug, the ingest after it ->
+    refused `f3read-not-after-replug`. Mutation: G1 keeps using the ingest ts only (today: PASS) -> red."""
+    sid, dev, _ = _f3read_log_written(cli, tmp_path, before_replug=True)
+    _refused_f3(cli("verdict", "set", sid, dev, "PASS"))
+
+
+def test_D22g_f3read_log_written_after_the_replug_passes(cli, tmp_path):
+    """Amendment 08 H2 counter-case: mtime after the replug and before the ingest -> PASS. Mutation: the mtime replaces
+    the anchor / any mtime refuses -> red."""
+    sid, dev, _ = _f3read_log_written(cli, tmp_path, before_replug=False)
+    res = cli("verdict", "set", sid, dev, "PASS")
+    assert res.code == 0, res
+
+
+def test_D22g_row_without_output_mtime_keeps_the_ingest_ts(cli, tmp_path, home):
+    """Amendment 08 H3: a row ingested before this amendment (no `output_mtime`; simulated by removing the key from the
+    row's JSON) keeps amendment 07 behaviour: ingest ts after the replug -> PASS even though the file's mtime was
+    earlier. Mutation: a missing output_mtime refuses, or the file is re-stat'ed at verdict time -> red."""
+    import sqlite3
+
+    sid, dev, ev = _f3read_log_written(cli, tmp_path, before_replug=True)
+    con = sqlite3.connect(pathlib.Path(home) / "rs.sqlite")
+    try:
+        cols = [r[1] for r in con.execute("PRAGMA table_info(evidence)")]
+        row = con.execute("SELECT * FROM evidence WHERE id = ?", (ev["id"],)).fetchone()
+        for col, val in zip(cols, row):
+            try:
+                doc = json.loads(val) if isinstance(val, str) else None
+            except ValueError:
+                doc = None
+            if isinstance(doc, dict) and "output_mtime" in doc:
+                doc.pop("output_mtime")
+                con.execute(f"UPDATE evidence SET {col} = ? WHERE id = ?", (json.dumps(doc), ev["id"]))
+        con.commit()
+    finally:
+        con.close()
+    res = cli("verdict", "set", sid, dev, "PASS")
+    assert res.code == 0, res
 
 
 def test_D22f_plain_inventory_is_not_a_replug(cli):

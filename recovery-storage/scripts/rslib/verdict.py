@@ -206,9 +206,12 @@ def _f3read_after_replug(store, s, dev, e, evidence, start):
                       "NOT NULL AND confirmed_ts <= ? AND (closed_ts IS NULL OR closed_ts >= ?) "
                       "ORDER BY confirmed_ts DESC LIMIT 1", (dev["id"], *VERIFY_KINDS, e["ts"], e["ts"]))
         anchor = g["confirmed_ts"] if g else start
+    # the run ended when its log was written: a log older than the ingest dates the f3read (amendment 08 H2/H3)
+    mtime = (st.loads(e["data"]) or {}).get("output_mtime")
+    moment = min(e["ts"], mtime) if mtime else e["ts"]
     rows = store.query("SELECT data FROM observations WHERE device_id = ? AND session_id = ? AND after_replug = 1 AND "
                        "match IN ('exact', 'probable', 'linked') AND ts > ? AND ts < ?",
-                       (dev["id"], s["id"], anchor, e["ts"]))
+                       (dev["id"], s["id"], anchor, moment))
     return any(st.loads(r["data"]).get("bytes") == dev["fingerprint"].get("bytes") for r in rows)
 
 

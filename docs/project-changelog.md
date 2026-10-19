@@ -2,6 +2,13 @@
 
 Format: newest first. Versions are semantic and assigned retroactively (no version is declared in the skill). Roadmap: [project-roadmap.md](project-roadmap.md).
 
+## [0.8.0] - 2026-10-20 - Amendment 08 (f3read run time)
+
+Spec: [amendment-08](../plans/20261019-1726-recovery-storage-skill/amendment-08-f3read-run-time.md). Rules version `2026.10.20-7`.
+
+### Fixed
+- `ingest f3read` / `f3write` record the log file's modification time (`output_mtime`); the replug rule dates the f3read by the earlier of ingest and log mtime, so a log written before the replug but ingested after it no longer passes. Rows without `output_mtime` keep the ingest time. Residual limitation: a log copied without keeping its mtime carries the copy time (playbook: write the log to the ingested path or `cp -p`).
+
 ## [0.7.0] - 2026-10-20 - Amendment 07 (f3read after replug)
 
 Spec: [amendment-07](../plans/20261019-1726-recovery-storage-skill/amendment-07-f3read-after-replug.md). Rules version `2026.10.20-6`.

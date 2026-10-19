@@ -609,3 +609,19 @@ Source: `plans/20261019-1726-recovery-storage-skill/amendment-07-f3read-after-re
   the line is tab-indented.
 - Fixtures (real, verbatim, frozen): `fixtures/f3/f3write-card-partition-full4k.txt`,
   `f3read-card-partition-cached.txt`, `f3read-card-partition-after-replug.txt`, `f3probe-card-limbo.txt`.
+
+## Amendment 08 (2026-10-20): f3read run time from the log's mtime
+
+Source: `plans/20261019-1726-recovery-storage-skill/amendment-08-f3read-run-time.md` (approved by the user 2026-10-20,
+"Làm nốt Amendment 07 Q2").
+
+- H1. `ingest f3read|f3write`: JSON `evidence.output_mtime` = the input file's mtime, UTC, `YYYY-MM-DDTHH:MM:SS.ffffffZ`
+  (store timestamp format); stored as key `output_mtime` in the evidence row's JSON document next to `parsed` (not in
+  `parsed`, which is re-parsed from the blob, amendment 06 F5). Test-designer reading: tests simulate an old row by
+  removing that key from every JSON text column of the row.
+- H2. G1 (amendment 07) f3read moment = min(ingest ts, output_mtime) when output_mtime is present; the after-replug
+  observation must be after the anchor and before that moment, else `f3read-not-after-replug`. A future output_mtime
+  is ignored (min() already yields the ingest ts). Anchor unchanged.
+- H3. No output_mtime (rows from before this amendment) -> ingest ts as in amendment 07; the file is never re-read after
+  ingest.
+- Tests set mtimes with `os.utime` on temp copies of the frozen fixtures (bytes unchanged); clock = conftest FakeClock.

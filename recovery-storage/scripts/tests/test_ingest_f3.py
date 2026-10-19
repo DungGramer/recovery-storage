@@ -1,5 +1,7 @@
 """Phase 03 F3 parsers (C22, C23) + their hypotheses via `assess`. Spec: phase-03 Requirements 'f3probe', 'f3write',
 'f3read' + C22/C23. Inputs: only lines quoted verbatim in researcher-03 §1 (fixtures/ingest/*.verbatim.txt)."""
+import pathlib
+
 import pytest
 
 from conftest import USB_STICK, assess, collect, device_at, fx, fx_text, new_session
@@ -242,6 +244,26 @@ def test_C23d_f3probe_real_limbo_drives_counterfeit_high(cli):
     assert res.code == 0, res
     h = {x["category"]: x for x in assess(cli, sid, dev)["hypotheses"]}
     assert h["fake-capacity-or-counterfeit"]["confidence"] == "high"
+
+
+# ---------------- C23e (amendment 08 H1): output_mtime recorded at ingest
+@pytest.mark.parametrize("kind,rel", [("f3read", STICK_PASS), ("f3write", W_FULL)])
+def test_C23e_ingest_records_output_mtime(cli, tmp_path, kind, rel):
+    """Amendment 08 H1: `ingest f3read|f3write` records the file's mtime as `evidence.output_mtime`, UTC ISO in the store
+    timestamp format (`YYYY-MM-DDTHH:MM:SS.ffffffZ`). Temp copy, fixture untouched. Mutation: mtime not recorded, or
+    local time / another format -> red."""
+    import datetime as dt
+    import os
+    import shutil
+
+    sid, dev = _stick(cli)
+    when = dt.datetime(2026, 10, 19, 23, 21, 7, tzinfo=dt.timezone.utc)
+    p = tmp_path / pathlib.Path(rel).name
+    shutil.copyfile(fx(rel), p)
+    os.utime(p, (when.timestamp(), when.timestamp()))
+    res = cli("ingest", kind, sid, dev, p, "--exit-code", 0)
+    assert res.code == 0, res
+    assert res.data["evidence"]["output_mtime"] == "2026-10-19T23:21:07.000000Z", res.data["evidence"]
 
 
 def test_C23b_ingest_f3read_cli_records_the_summary_result(cli):

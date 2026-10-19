@@ -58,7 +58,9 @@ Stored F3 evidence is re-parsed with the current parser whenever it is read.
 - Risk: R2 (gate kind: f3write-f3read)
 - Tool: `f3write <mountpoint>`, `rs.py ingest f3write`, operator unplugs and replugs, `rs.py inventory --session
   <sid> --after-replug`, then `f3read <mountpoint>` and `rs.py ingest f3read` (Linux, macOS, Cygwin, WSL drvfs).
-  PASS refuses an f3read without that replug in between (`f3read-not-after-replug`). If the last file is partial and
+  PASS refuses an f3read without that replug in between (`f3read-not-after-replug`); the f3read moment is the log
+  file's modification time when it is earlier than the ingest, so write the log straight to the ingested path (or
+  copy with `cp -p`): a plain copy moves the mtime to the copy time. If the last file is partial and
   f3read aborts (exit 134), truncate it to a multiple of 512 and rerun.
 - Expected result: f3read summary with Data LOST 0 at the device's real read rate; delete the .h2w files afterwards.
 - Stop criteria: write failure messages (often heat: slow down with `--max-write-rate`), disconnects.

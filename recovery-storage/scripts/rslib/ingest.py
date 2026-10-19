@@ -207,7 +207,8 @@ def save_evidence(ctx, session_id, device_id, kind, level, data, parsed, extra=N
                         (session_id, device_id, kind, digest))
     if row is not None:
         return {"id": row["id"], "kind": kind, "sha256": digest, "level": row["level"],
-                "parsed": current_parsed(ctx.store, row), "existing": True}
+                "parsed": current_parsed(ctx.store, row), "existing": True,
+                "output_mtime": (st.loads(row["data"]) or {}).get("output_mtime")}
     _, path = ctx.store.write_blob(data, ctx.store.evidence_subdir(session_id), f".{kind}")
     eid = st.new_id("E")
     body = {"parsed": parsed}
@@ -216,7 +217,8 @@ def save_evidence(ctx, session_id, device_id, kind, level, data, parsed, extra=N
                       "VALUES (?,?,?,?,?,?,?,?,?,?)",
                       (eid, ctx.store.now(), session_id, device_id, kind, level, digest, path, st.dumps(body),
                        who or ctx.who))
-    return {"id": eid, "kind": kind, "sha256": digest, "level": level, "parsed": parsed, "existing": False}
+    return {"id": eid, "kind": kind, "sha256": digest, "level": level, "parsed": parsed, "existing": False,
+            "output_mtime": (extra or {}).get("output_mtime")}
 
 
 def current_parsed(store, row):
@@ -256,6 +258,8 @@ def _prepare(ctx, a):
 
 def _reply(ctx, ev, kind, text):
     data = {"evidence": {k: ev[k] for k in ("id", "kind", "sha256", "level", "parsed")}}
+    if ev.get("output_mtime"):
+        data["evidence"]["output_mtime"] = ev["output_mtime"]
     return ctx.reply(data, f"{kind}: {text} (evidence {ev['id']}{', already ingested' if ev['existing'] else ''})")
 
 
@@ -275,7 +279,13 @@ def _f3(ctx, a, kind, parser):
     if a.exit_code is None:
         raise UsageError(f"ingest {kind} needs --exit-code (the tool's exit status is the primary signal)")
     parsed = parser(data.decode("utf-8", "replace"), a.exit_code)
-    ev = save_evidence(ctx, a.session, a.device, kind, "parsed", data, parsed, {"file": p.name})
+    extra = {"file": p.name}
+    if kind in ("f3read", "f3write"):
+        # redirected log closes at the end of the run: its mtime dates the run, not the ingest (amendment 08 H1)
+        import datetime as dt
+
+        extra["output_mtime"] = st.iso(dt.datetime.fromtimestamp(p.stat().st_mtime, dt.timezone.utc))
+    ev = save_evidence(ctx, a.session, a.device, kind, "parsed", data, parsed, extra)
     return _reply(ctx, ev, kind, f"{parsed['result']} ({parsed['reason']})")
 
 
