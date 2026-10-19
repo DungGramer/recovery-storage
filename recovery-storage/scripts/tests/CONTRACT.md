@@ -582,3 +582,30 @@ rslib.ingest.parse_f3write(text, exit_code) -> dict {"result", "reason", "exit_c
   -> same `evidence.id` and `sha256`, no new row. Test helper `conftest.make_parsed_stale(home, evidence_id, old)`
   rewrites every JSON text column of the row that holds a parser result (top level or under `parsed`), keeping its
   `exit_code`, to simulate a row written by the old parser; the blob file and `sha256` are untouched.
+
+## Amendment 07 (2026-10-20): f3read after a replug, full volume below one f3 block, real f3probe
+
+Source: `plans/20261019-1726-recovery-storage-skill/amendment-07-f3read-after-replug.md` (approved by the user
+2026-10-20, "Làm và commit"). Where this section and anything above disagree, this section wins. Lines marked
+"test-designer reading" bind the frozen tests until a further amendment.
+
+- G1. An f3read `pass` counts toward PASS (flash capacity verify, SSD read verify, amendment 04 window) only when an
+  observation from `inventory --after-replug` of the device (match exact / probable / linked, same bytes) has a ts
+  after the anchor and before the f3read ingest. Anchor = ts of the last `ingest f3write` of the device in the session
+  before the f3read ingest; else `confirmed_ts` of the verification gate (amendment 04 kinds) that was open when the
+  f3read was ingested; else the PASS evidence window start. Plain `inventory` observations never count as the replug.
+  Failing -> `verdict set PASS` exit 3 with reason `f3read-not-after-replug` in `reasons` and in `message`.
+  Attested H2testw: unchanged.
+- Observations taken after a verification gate's confirm count for the PASS observation window (>= 2, one
+  `--after-replug`; resolves amendment 04 Q1).
+- G2. `parse_f3read` adds `read_rate`: the text after `Average reading speed:` (e.g. `"17.38 MB/s"`), None when absent.
+  No rule uses it; the report item of that evidence shows it (JSON item text and markdown).
+- G3. `parse_f3write`: `Write failure` / `Can't create file` with a final `Free space:` value below 1 MiB -> `inconclusive`
+  (reason contains `volume became full`); >= 1 MiB -> `fail`. Units binary (KB = 1024 B, MB = 1024^2 B, GB = 1024^3 B,
+  `Byte`). `1.00 MB` -> `fail` (decided boundary).
+- G4. Stored verdicts are never rewritten; not testable without an old-code store (open question).
+- f3probe: the real limbo output (exit 102) -> `fake` / `limbo`; `usable_size` and `announced_size` (the existing keys,
+  test-designer reading) hold the text after `*Usable* size:` / `Announced size:` including the block count, also when
+  the line is tab-indented.
+- Fixtures (real, verbatim, frozen): `fixtures/f3/f3write-card-partition-full4k.txt`,
+  `f3read-card-partition-cached.txt`, `f3read-card-partition-after-replug.txt`, `f3probe-card-limbo.txt`.

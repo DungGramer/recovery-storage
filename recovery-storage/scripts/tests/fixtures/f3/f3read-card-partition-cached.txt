@@ -1,0 +1,13 @@
+F3 read 8.0
+Copyright (C) 2010 Digirati Internet LTDA.
+This is free software; see the source for copying conditions.
+
+                  SECTORS      ok/corrupted/changed/overwritten
+Validating file 1.h2w ...  593669/        0/      0/      0
+
+  Data OK: 289.88 MB (593669 sectors)
+Data LOST: 0.00 Byte (0 sectors)
+	       Corrupted: 0.00 Byte (0 sectors)
+	Slightly changed: 0.00 Byte (0 sectors)
+	     Overwritten: 0.00 Byte (0 sectors)
+Average reading speed: 158.61 MB/s

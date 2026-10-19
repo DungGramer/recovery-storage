@@ -1,0 +1,24 @@
+F3 probe 8.0
+Copyright (C) 2010 Digirati Internet LTDA.
+This is free software; see the source for copying conditions.
+
+WARNING: Probing normally takes from a few seconds to 15 minutes, but
+         it can take longer. Please be patient.
+
+Bad news: The device `/dev/sde' is a counterfeit of type limbo
+
+You can "fix" this device using the following command:
+f3fix --last-sec=603958 /dev/sde
+
+Device geometry:
+	         *Usable* size: 294.90 MB (603959 blocks)
+	        Announced size: 30.16 GB (63246336 blocks)
+	                Module: 32.00 GB (2^35 Bytes)
+	Approximate cache size: 31.00 MB (63488 blocks), need-reset=no
+	   Physical block size: 512.00 Byte (2^9 Bytes)
+
+Probe time: 1'25"
+ Operation: total time / count = avg time
+      Read: 11.19s / 131370 = 85us
+     Write: 1'13" / 508180 = 145us
+     Reset: 0us / 2 = 0us

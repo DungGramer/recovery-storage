@@ -113,7 +113,8 @@ def parse_f3probe(text, exit_code):
     good_text = "Good news" in text
     bad = re.search(r"Bad news:.*?(counterfeit of type (\w+)|is damaged)", text)
     out = {"result": "inconclusive", "fake_type": None, "reason": "", "exit_code": exit_code,
-           "usable_size": _size_line(text, "Usable size"), "announced_size": _size_line(text, "Announced size")}
+           "usable_size": _size_line(text, "*Usable* size") or _size_line(text, "Usable size"),
+           "announced_size": _size_line(text, "Announced size")}
     if exit_code not in F3_CODES:
         out["reason"] = f"exit code {exit_code} is a tool/usage error, not a probe result"
         return out
@@ -132,6 +133,17 @@ def parse_f3probe(text, exit_code):
     return out
 
 
+F3_BLOCK = 2 ** 20  # f3write fills in 1 MiB blocks; F3 prints sizes 1024-based ("7.50 GB" = 15724108 sectors)
+F3_UNITS = {"BYTE": 1, "BYTES": 1, "KB": 2 ** 10, "MB": 2 ** 20, "GB": 2 ** 30, "TB": 2 ** 40}
+
+
+def _f3_bytes(size_text):
+    m = re.match(r"\s*([\d.]+)\s*([A-Za-z]+)", size_text or "")
+    if not m or m.group(2).upper() not in F3_UNITS:
+        return None
+    return float(m.group(1)) * F3_UNITS[m.group(2).upper()]
+
+
 def parse_f3write(text, exit_code):
     if "No space!" in text:
         return {"result": "inconclusive", "reason": "nothing written (No space!): free space is needed for f3write",
@@ -139,7 +151,9 @@ def parse_f3write(text, exit_code):
     failed = [m.start() for m in re.finditer(r"Write failure|Can't create file", text)]
     if failed:
         tail = re.findall(r"Free space:\s*([^\n]+)", text[failed[0]:])
-        if tail and tail[-1].strip().startswith("0.00 Byte"):
+        left = _f3_bytes(tail[-1]) if tail else None
+        # under one 1 MiB f3 block left = the volume is full (real card partition: 4.00 KB, amendment 07 G3)
+        if left is not None and left < F3_BLOCK:
             # WSL drvfs reports the full volume as EIO (real run 2026-10-19, amendment 06 F2)
             return {"result": "inconclusive", "reason": "write error when the volume became full (a filesystem-full "
                     "error reported as I/O error, e.g. WSL drvfs); verify with f3read", "exit_code": exit_code}
@@ -159,7 +173,9 @@ def parse_f3read(text, exit_code):
     """The summary decides; f3read 8.0 exits 0 even with lost data (real card 2026-10-20, amendment 06 F1)."""
     out = {"data_ok_bytes": _f3read_bytes(text, "Data OK"), "data_lost_bytes": _f3read_bytes(text, "Data LOST"),
            "corrupted_bytes": _f3read_bytes(text, "Corrupted"), "changed_bytes": _f3read_bytes(text, "Slightly changed"),
-           "overwritten_bytes": _f3read_bytes(text, "Overwritten"), "exit_code": exit_code}
+           "overwritten_bytes": _f3read_bytes(text, "Overwritten"), "exit_code": exit_code,
+           # far above the device's uncached rate = host cache (amendment 07 G2, informational)
+           "read_rate": _size_line(text, "Average reading speed")}
     lost, ok = out["data_lost_bytes"], out["data_ok_bytes"]
     if isinstance(lost, int) and lost > 0:
         out.update(result="fail", reason=f"{lost} bytes lost (corrupted {out['corrupted_bytes']}, changed "

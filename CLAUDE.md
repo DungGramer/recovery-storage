@@ -12,7 +12,7 @@ Claude Code skill `recovery-storage/`: storage diagnosis and recovery orchestrat
 ## Read before coding
 
 1. `plans/20261019-1726-recovery-storage-skill/requirements.md`
-2. `plans/20261019-1726-recovery-storage-skill/plan.md`, then `amendment-01-*.md`, `amendment-02-*.md`, `amendment-03-*.md`, `amendment-04-*.md`, `amendment-05-*.md` and `amendment-06-*.md`
+2. `plans/20261019-1726-recovery-storage-skill/plan.md`, then `amendment-01-*.md`, `amendment-02-*.md`, `amendment-03-*.md`, `amendment-04-*.md`, `amendment-05-*.md`, `amendment-06-*.md` and `amendment-07-*.md`
 3. `recovery-storage/scripts/tests/CONTRACT.md`
 4. `recovery-storage/SKILL.md`
 

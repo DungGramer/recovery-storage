@@ -2,6 +2,18 @@
 
 Format: newest first. Versions are semantic and assigned retroactively (no version is declared in the skill). Roadmap: [project-roadmap.md](project-roadmap.md).
 
+## [0.7.0] - 2026-10-20 - Amendment 07 (f3read after replug)
+
+Spec: [amendment-07](../plans/20261019-1726-recovery-storage-skill/amendment-07-f3read-after-replug.md). Rules version `2026.10.20-6`.
+
+### Fixed
+- An f3read pass counts for PASS (flash capacity verify, SSD read verify) only with an `inventory --after-replug` observation between the last f3write ingest (else the verification gate confirm, else the window start) and the f3read ingest; otherwise `f3read-not-after-replug`. Real runs read the Windows host cache through WSL drvfs (158-276 MB/s against 17 MB/s from the card).
+- f3write: a write error with less than one 1 MiB f3 block left is "volume became full" (`inconclusive`); F3 sizes parsed 1024-based with units.
+- f3probe: the tab-indented `*Usable* size:` line is parsed.
+
+### Added
+- f3read `read_rate` (informational) in evidence and the report; real fixtures: card partition cached / after-replug reads, full-volume write at 4.00 KB, f3probe limbo.
+
 ## [0.6.0] - 2026-10-20 - Amendment 06 (F3 ingest from real outputs)
 
 Spec: [amendment-06](../plans/20261019-1726-recovery-storage-skill/amendment-06-f3-ingest-real-outputs.md). Rules version `2026.10.20-5`.

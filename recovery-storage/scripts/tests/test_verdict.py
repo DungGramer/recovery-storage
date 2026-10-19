@@ -94,8 +94,8 @@ def test_D22_f3read_pass_covering_90pct_after_gate_pass(cli):
     (unblocked by amendment 06 F4: real f3read pass). Mutation: f3read evidence not a capacity verify, or coverage
     computed in sectors instead of bytes -> capacity-verify-missing -> red."""
     sid, dev = formatted_stick(cli)
+    replug(cli, sid)   # amendment 07 G1: the replug lies between the window anchor and the f3read ingest
     assert ingest_f3(cli, sid, dev, "f3read", F3READ_PASS)["parsed"]["result"] == "pass"
-    replug(cli, sid)
     res = cli("verdict", "set", sid, dev, "PASS")
     assert res.code == 0, res
 
@@ -116,14 +116,15 @@ def test_D22_f3read_before_gate_evidence_before_recovery(cli):
 
 def test_D22e_verdict_uses_the_current_parser_not_the_stored_parse(cli, home):
     """Amendment 06 F5 (decision: re-parse on read): a stick f3read row whose stored parse came from an older parser
-    (stored `inconclusive`) is re-parsed from its blob by `verdict set` -> the real pass counts -> PASS.
+    (stored `inconclusive`) is re-parsed from its blob by `verdict set` -> the real pass counts -> PASS. Amendment 07
+    G1: the replug comes before the f3read ingest (anchor = window start after the format).
     Mutation: verdict reads the stored parse -> capacity-verify-missing -> red."""
     from conftest import F3READ_OLD_INCONCLUSIVE, make_parsed_stale
 
     sid, dev = formatted_stick(cli)
+    replug(cli, sid)
     ev = ingest_f3(cli, sid, dev, "f3read", F3READ_PASS)
     make_parsed_stale(home, ev["id"], F3READ_OLD_INCONCLUSIVE)
-    replug(cli, sid)
     res = cli("verdict", "set", sid, dev, "PASS")
     assert res.code == 0, res
 
@@ -412,24 +413,115 @@ def test_D22c_evidence_before_the_verification_confirm_does_not_count(cli, tmp_p
 
 
 def test_D22c_f3read_ingested_inside_the_verification_gate_passes(cli):
-    """Amendment 04 B1 with f3read evidence, the exact 2026-10-19 flow (unblocked by amendment 06 F4): gate
-    f3write-f3read confirmed -> ingest f3write (volume full, F2 inconclusive) + f3read (pass) -> close success
-    --evidence <f3read> -> replug -> PASS. Mutation: window starts at the close, or an f3write record that is not a
-    pass blocks the f3read pass -> red."""
+    """Amendment 04 B1 with f3read evidence (amendment 06 F4), amended by 07 G1: gate f3write-f3read confirmed ->
+    ingest f3write (volume full, F2 inconclusive) -> replug (inventory --after-replug + inventory, inside the gate) ->
+    ingest f3read (pass) -> close success --evidence <f3read> -> PASS with no replug after the close (resolves
+    amendment 04 Q1: observations after the confirm count). Mutation: window starts at the close, an f3write record
+    that is not a pass blocks the f3read pass, or the observation window ignores the replug inside the gate -> red."""
     sid, dev, _ = prepared(cli, USB_STICK, "/dev/pd2", *DEVREC)
     g = _confirmed(cli, sid, dev, "f3write-f3read")
     ingest_f3(cli, sid, dev, "f3write", F3WRITE_FULL)
+    replug(cli, sid)
     ev = ingest_f3(cli, sid, dev, "f3read", F3READ_PASS)
     assert ev["parsed"]["result"] == "pass"
     _closed(cli, g, "success", "--evidence", ev["id"])
-    res = _pass(cli, sid, dev)
+    res = cli("verdict", "set", sid, dev, "PASS")
     assert res.code == 0, res
 
 
-@pytest.mark.skip(reason="OPEN QUESTION (amendment 04 Q1): does B1 also move the OBSERVATION window (>= 2 observations, one "
-                         "--after-replug) to the confirm? F3 guidance replugs between f3write and f3read, inside the gate.")
-def test_D22c_open_replug_inside_the_verification_gate():
-    """Would assert PASS (or replug-observation-missing) for a replug taken between confirm and close once decided."""
+# ---------------- D22f (amendment 07 G1): an f3read pass counts only when read after a replug
+# Anchor = the last f3write ingest of the device in the session before the f3read ingest, else the confirm of the
+# verification gate the f3read was ingested in, else the PASS evidence window start (CONTRACT "Amendment 07").
+F3_REASON = "f3read-not-after-replug"
+
+
+def _f3_gate(cli):
+    sid, dev, _ = prepared(cli, USB_STICK, "/dev/pd2", *DEVREC)
+    return sid, dev, _confirmed(cli, sid, dev, "f3write-f3read")
+
+
+def _refused_f3(res):
+    assert res.code == 3, res
+    assert F3_REASON in res.reasons, res
+    assert F3_REASON in res.message, res
+
+
+def test_D22f_real_run_without_replug_between_write_and_read_refused(cli):
+    """Amendment 07 G1, the real 2026-10-19 flow (stick 275.95 MB/s = host cache): f3write ingest -> f3read ingest ->
+    close -> replug -> PASS refused `f3read-not-after-replug`, named in the refusal. Mutation: no ordering rule
+    (today: PASS) -> red; a replug after the f3read accepted -> red."""
+    sid, dev, g = _f3_gate(cli)
+    ingest_f3(cli, sid, dev, "f3write", F3WRITE_FULL)
+    ev = ingest_f3(cli, sid, dev, "f3read", F3READ_PASS)
+    _closed(cli, g, "success", "--evidence", ev["id"])
+    _refused_f3(_pass(cli, sid, dev))
+
+
+def test_D22f_replug_before_the_last_f3write_does_not_count(cli):
+    """Amendment 07 G1 anchor: with an f3write ingested, the replug must follow the LAST f3write ingest; a replug after
+    the confirm but before the f3write ingest does not count. Mutation: anchor = gate confirm even when an f3write
+    was ingested -> PASS -> red."""
+    sid, dev, g = _f3_gate(cli)
+    replug(cli, sid)
+    ingest_f3(cli, sid, dev, "f3write", F3WRITE_FULL)
+    ev = ingest_f3(cli, sid, dev, "f3read", F3READ_PASS)
+    _closed(cli, g, "success", "--evidence", ev["id"])
+    _refused_f3(cli("verdict", "set", sid, dev, "PASS"))
+
+
+def test_D22f_second_f3write_after_the_replug_moves_the_anchor(cli):
+    """Amendment 07 G1 'the LAST f3write ingest': f3write, replug, f3write again (another run), f3read -> refused.
+    Mutation: anchor = the first f3write ingest -> PASS -> red."""
+    sid, dev, g = _f3_gate(cli)
+    ingest_f3(cli, sid, dev, "f3write", F3WRITE_FULL)
+    replug(cli, sid)
+    ingest_f3(cli, sid, dev, "f3write", "f3/f3write-stick-volume-full.free1mb.derived.txt")
+    ev = ingest_f3(cli, sid, dev, "f3read", F3READ_PASS)
+    _closed(cli, g, "success", "--evidence", ev["id"])
+    _refused_f3(cli("verdict", "set", sid, dev, "PASS"))
+
+
+@pytest.mark.parametrize("order,passes", [("replug-then-f3read", True), ("f3read-then-replug", False)])
+def test_D22f_no_f3write_ingested_anchor_is_the_gate_confirm(cli, order, passes):
+    """Amendment 07 G1 'else after the gate confirm': no f3write ingested; replug after the confirm and before the
+    f3read ingest -> PASS; f3read ingested before the replug -> refused. Mutation: rule only applied when an f3write
+    exists -> second row PASS -> red; replug required after the f3read -> first row red."""
+    sid, dev, g = _f3_gate(cli)
+    if order == "replug-then-f3read":
+        replug(cli, sid)
+        ev = ingest_f3(cli, sid, dev, "f3read", F3READ_PASS)
+    else:
+        ev = ingest_f3(cli, sid, dev, "f3read", F3READ_PASS)
+        replug(cli, sid)
+    _closed(cli, g, "success", "--evidence", ev["id"])
+    res = cli("verdict", "set", sid, dev, "PASS")
+    if passes:
+        assert res.code == 0, res
+    else:
+        _refused_f3(res)
+
+
+def test_D22f_plain_inventory_is_not_a_replug(cli):
+    """Amendment 07 G1 'an after-replug observation (`inventory --after-replug`)': two plain inventories between the
+    f3write and the f3read do not count. Mutation: any observation in between counts -> PASS -> red."""
+    sid, dev, g = _f3_gate(cli)
+    ingest_f3(cli, sid, dev, "f3write", F3WRITE_FULL)
+    inventory(cli, cli.runner(USB_STICK), sid)
+    inventory(cli, cli.runner(USB_STICK), sid)
+    ev = ingest_f3(cli, sid, dev, "f3read", F3READ_PASS)
+    _closed(cli, g, "success", "--evidence", ev["id"])
+    replug(cli, sid)
+    _refused_f3(cli("verdict", "set", sid, dev, "PASS"))
+
+
+def test_D22f_f3read_after_format_without_replug_before_it_refused(cli):
+    """Amendment 07 G1 anchor 'else the PASS evidence window start': no f3write, no verification gate (format closed);
+    f3read ingested before the replug -> refused (the amendment 06 order of test_D22_f3read_pass_covering_...).
+    Mutation: rule only inside verification gates -> PASS -> red."""
+    sid, dev = formatted_stick(cli)
+    ingest_f3(cli, sid, dev, "f3read", F3READ_PASS)
+    replug(cli, sid)
+    _refused_f3(cli("verdict", "set", sid, dev, "PASS"))
 
 
 # ---------------- D23b (amendment 02 E, N8): ATA self-test lifetime hours are 16-bit

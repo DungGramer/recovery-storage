@@ -15,7 +15,10 @@ F3 facts (from source):
   or usage error. Default mode saves and restores blocks, but a crash loses them; `--destructive` restores nothing.
 - f3write writes `N.h2w` files into free space of a mounted filesystem (existing files untouched, volume filled);
   `No space!` means nothing was written. f3read summarises `Data OK`, `Data LOST`, `Corrupted`, `Slightly changed`,
-  `Overwritten`. f3read 8.0 exits 0 even when data is lost (real card 2026-10-20: Data LOST 3.38 GB, exit 0): the
+  `Overwritten`. Unplug and replug the device (or at least remount) between f3write and f3read: on Windows / WSL
+  drvfs the host cache serves a read right after the write (real runs 2026-10-19/20: 158-276 MB/s cached vs 17 MB/s
+  from the card); an f3read rate far above the device's uncached rate is not a verify. f3read 8.0 exits 0 even when
+  data is lost (real card 2026-10-20: Data LOST 3.38 GB, exit 0): the
   summary decides. f3write/f3read also build on macOS and on Windows via Cygwin.
 - f3fix rewrites the partition table to the usable size (cosmetic: the device stays fake); f3brew writes blocks.
 - Windows host (verified 2026-10-20): f3probe runs in WSL once the USB reader is attached with usbipd-win
@@ -53,8 +56,11 @@ Stored F3 evidence is re-parsed with the current parser whenever it is read.
 - Preconditions: freshly created filesystem covering the device; data secured or not needed; time for a full write
   and read.
 - Risk: R2 (gate kind: f3write-f3read)
-- Tool: `f3write <mountpoint>` then `f3read <mountpoint>` (Linux, macOS, Cygwin); ingest both outputs
-- Expected result: f3read exit 0 with no lost, corrupted or overwritten data; delete the .h2w files afterwards.
+- Tool: `f3write <mountpoint>`, `rs.py ingest f3write`, operator unplugs and replugs, `rs.py inventory --session
+  <sid> --after-replug`, then `f3read <mountpoint>` and `rs.py ingest f3read` (Linux, macOS, Cygwin, WSL drvfs).
+  PASS refuses an f3read without that replug in between (`f3read-not-after-replug`). If the last file is partial and
+  f3read aborts (exit 134), truncate it to a multiple of 512 and rerun.
+- Expected result: f3read summary with Data LOST 0 at the device's real read rate; delete the .h2w files afterwards.
 - Stop criteria: write failure messages (often heat: slow down with `--max-write-rate`), disconnects.
 
 ### Method: Full verify with H2testw on Windows

@@ -182,6 +182,68 @@ def test_C23c_stale_parsed_row_is_reparsed_on_reingest_and_in_the_report(cli, ho
     assert len(rows) == 1 and rows[0]["sha256"] == ev["sha256"]
 
 
+# ---------------- C23d (amendment 07): read rate, full volume below one f3 block, real f3probe limbo
+CARD_CACHED = "f3/f3read-card-partition-cached.txt"            # 158.61 MB/s, read right after f3write (host cache)
+CARD_AFTER_REPLUG = "f3/f3read-card-partition-after-replug.txt"  # 17.38 MB/s, same card after a replug
+W_FULL_4K = "f3/f3write-card-partition-full4k.txt"             # Write failure, final Free space: 4.00 KB
+PROBE_LIMBO = "f3/f3probe-card-limbo.txt"                       # exit 102, counterfeit of type limbo
+
+
+@pytest.mark.parametrize("rel,rate", [(CARD_CACHED, "158.61 MB/s"), (CARD_AFTER_REPLUG, "17.38 MB/s"),
+                                      (STICK_PASS, "275.95 MB/s")])
+def test_C23d_f3read_records_the_read_rate_text(rel, rate):
+    """Amendment 07 G2: `read_rate` = the text of the 'Average reading speed' line; informational (no rule): both card
+    reads stay pass. Mutation: rate not parsed, or the number without its unit -> red."""
+    r = f3read(rel, 0)
+    assert r["read_rate"] == rate, r
+    assert r["result"] == "pass"
+
+
+def test_C23d_f3read_without_summary_has_no_read_rate():
+    """Amendment 07 G2 boundary (aborted run prints no 'Average reading speed'). Mutation: default '0' -> red."""
+    assert f3read(STICK_ABORT, 134)["read_rate"] is None
+
+
+def test_C23d_report_shows_the_read_rate(cli):
+    """Amendment 07 G2 'the report shows it'. Mutation: parsed but not rendered -> red."""
+    sid, dev = _stick(cli)
+    ev = cli("ingest", "f3read", sid, dev, fx(CARD_AFTER_REPLUG), "--exit-code", 0)
+    assert ev.code == 0, ev
+    md = cli("report", sid, "--device", dev, json_out=False).out
+    assert "17.38 MB/s" in md
+    txt = " ".join(str(i.get("text")) for i in _evidence_items(cli, sid, dev, ev.data["evidence"]["id"]))
+    assert "17.38 MB/s" in txt, txt
+
+
+def test_C23d_f3write_full_volume_below_one_block_inconclusive():
+    """Amendment 07 G3 (real card partition: drvfs EIO with final 'Free space: 4.00 KB', less than one 1 MiB f3 block)
+    -> inconclusive (volume became full). Mutation: amendment 06 'exactly 0.00 Byte' kept (today: fail) -> red;
+    number compared without its unit (4 >= 1) -> red."""
+    r = f3write(W_FULL_4K, 0)
+    assert r["result"] == "inconclusive", r
+    assert "volume became full" in (r["reason"] or "").lower()
+
+
+def test_C23d_f3probe_real_limbo_is_fake_with_sizes():
+    """Real f3probe 8.0 (exit 102, 'counterfeit of type limbo') -> fake / limbo; phase-03 'Parse *Usable* size: /
+    Announced size: when present' -> `usable_size` / `announced_size` text (test-designer reading of the existing keys)
+    carry the block counts. Mutation: tab-indented '*Usable* size:' line not matched (today: None) -> red."""
+    r = probe(PROBE_LIMBO, 102)
+    assert r["result"] == "fake" and r["fake_type"] == "limbo", r
+    assert "603959" in str(r.get("usable_size")), r
+    assert "63246336" in str(r.get("announced_size")), r
+
+
+def test_C23d_f3probe_real_limbo_drives_counterfeit_high(cli):
+    """C22 hypotheses on the real limbo output (as wraparound in C22). Mutation: only wraparound raises the
+    counterfeit hypothesis -> red."""
+    sid, dev = _stick(cli)
+    res = cli("ingest", "f3probe", sid, dev, fx(PROBE_LIMBO), "--exit-code", 102)
+    assert res.code == 0, res
+    h = {x["category"]: x for x in assess(cli, sid, dev)["hypotheses"]}
+    assert h["fake-capacity-or-counterfeit"]["confidence"] == "high"
+
+
 def test_C23b_ingest_f3read_cli_records_the_summary_result(cli):
     """Amendment 06 F1 through `ingest f3read ... --exit-code 0` (the real card call). Mutation: CLI passes another
     exit code or skips the parser -> red."""

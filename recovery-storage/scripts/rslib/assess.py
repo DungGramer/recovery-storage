@@ -15,7 +15,7 @@ from .datastate import last_write_ts
 from .triage import CONF_RANK, Inputs, classify, constraints, evidence_text, hypotheses
 from .wear import assess as wear_assess, host_writes_bytes
 
-RULES_VERSION = "2026.10.20-5"  # -2: am. 03 (no-media T2a); -3: am. 04 (window); -4: am. 05 (hyp confidence, count); -5: am. 06 (F3 parse)
+RULES_VERSION = "2026.10.20-6"  # -2: am. 03 no-media T2a; -3: am. 04 window; -4: am. 05 hyp count; -5: am. 06 F3 parse; -6: am. 07 replug
 
 
 def _snapshots(store, device_id, session_id=None):

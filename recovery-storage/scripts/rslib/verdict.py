@@ -145,9 +145,12 @@ def pass_missing(store, s, device_id):
                 ok_bytes, total = p.get("data_ok_bytes"), dev["fingerprint"].get("bytes")
                 return isinstance(ok_bytes, int) and isinstance(total, int) and ok_bytes >= CAPACITY_COVERAGE * total
             return False
-        if not any(capacity_ok(e) for e in post_ev):
+        good = [e for e in post_ev if capacity_ok(e)]
+        if not good:
             missing.append("evidence-before-recovery" if any(capacity_ok(e) for e in evidence)
                            else "capacity-verify-missing")
+        elif not any(e["kind"] != "f3read" or _f3read_after_replug(store, s, dev, e, evidence, start) for e in good):
+            missing.append("f3read-not-after-replug")
         return missing
 
     latest = post[-1] if post else None
@@ -183,9 +186,30 @@ def pass_missing(store, s, device_id):
                  and isinstance(dev["fingerprint"].get("bytes"), int)
                  and p["data_ok_bytes"] >= CAPACITY_COVERAGE * dev["fingerprint"]["bytes"]) or \
                 (e["kind"] == "attested" and p.get("result") == "pass")
-        if not any(read_ok(e) for e in post_ev):
+        good = [e for e in post_ev if read_ok(e)]
+        if not good:
             missing.append("read-verify-missing")
+        elif not any(e["kind"] != "f3read" or _f3read_after_replug(store, s, dev, e, evidence, start) for e in good):
+            missing.append("f3read-not-after-replug")
     return missing
+
+
+def _f3read_after_replug(store, s, dev, e, evidence, start):
+    """f3read right after f3write reads the host cache (real runs 2026-10-19/20: 158-276 MB/s vs 17 MB/s uncached):
+    an `inventory --after-replug` observation must lie between the anchor and the f3read ingest (amendment 07 G1).
+    Anchor: last f3write ingest before it, else the confirm of the verification gate open then, else window start."""
+    writes = [x["ts"] for x in evidence if x["kind"] == "f3write" and x["ts"] < e["ts"]]
+    anchor = max(writes) if writes else None
+    if anchor is None:
+        marks = ",".join("?" * len(VERIFY_KINDS))
+        g = store.one(f"SELECT confirmed_ts FROM gates WHERE device_id = ? AND kind IN ({marks}) AND confirmed_ts IS "
+                      "NOT NULL AND confirmed_ts <= ? AND (closed_ts IS NULL OR closed_ts >= ?) "
+                      "ORDER BY confirmed_ts DESC LIMIT 1", (dev["id"], *VERIFY_KINDS, e["ts"], e["ts"]))
+        anchor = g["confirmed_ts"] if g else start
+    rows = store.query("SELECT data FROM observations WHERE device_id = ? AND session_id = ? AND after_replug = 1 AND "
+                       "match IN ('exact', 'probable', 'linked') AND ts > ? AND ts < ?",
+                       (dev["id"], s["id"], anchor, e["ts"]))
+    return any(st.loads(r["data"]).get("bytes") == dev["fingerprint"].get("bytes") for r in rows)
 
 
 def cmd_set(ctx, a):

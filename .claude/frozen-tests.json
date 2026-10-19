@@ -4,11 +4,15 @@
  "reason": "spec-first acceptance + unit suite for phases 01-08 (test-designer); contract in tests/CONTRACT.md",
  "files": {
   "pytest.ini": "b0cdc0191afb27a3ef8f41d4c25ea016a7c379913f8986d863ac871b3d50be67",
-  "recovery-storage/scripts/tests/CONTRACT.md": "c44365e9bb3b29583a51f14c5586f6a4e3b0b7c66e5f75ad0161f971cee22290",
+  "recovery-storage/scripts/tests/CONTRACT.md": "6f50289ddd43fdaa4d3bf54a5154bcbc2ae9fc9b29612cf5689c703657379d49",
   "recovery-storage/scripts/tests/conftest.py": "5204aae1530225c8bf042cbabdcff58140c642baefe59d9563c18eba45559625",
+  "recovery-storage/scripts/tests/fixtures/f3/f3probe-card-limbo.txt": "a406e94fe1c9d4ac19ae56c15e033520fdfed2bf4803b694c71f90a11d719198",
   "recovery-storage/scripts/tests/fixtures/f3/f3read-card-lost.txt": "a597018215fc652d6bcc9a4928e8261514c2e4729cd51eeb6650012a2b8cf3c5",
+  "recovery-storage/scripts/tests/fixtures/f3/f3read-card-partition-after-replug.txt": "2d2c90307358c1660c0dcbb378512d458b03d74832cb46357bb9bfb5b22d3509",
+  "recovery-storage/scripts/tests/fixtures/f3/f3read-card-partition-cached.txt": "86658ca35fec66b71963e91361f157ae0b40c1d859162124cdccb4c6615820a6",
   "recovery-storage/scripts/tests/fixtures/f3/f3read-stick-abort134.txt": "1fc564b659e946930acc9c360b6f8b75fbf3c7b2072589283f309aa0ad8dedbf",
   "recovery-storage/scripts/tests/fixtures/f3/f3read-stick-pass.txt": "a89bf7e16a88e9a9bae045ca6f9a929eee5f8d11f6eca57ad517976d21d7eeaa",
+  "recovery-storage/scripts/tests/fixtures/f3/f3write-card-partition-full4k.txt": "8d17beea95da3930d7ea188061ad297bd2dccf4a459bbf4af7e6e20937dc1016",
   "recovery-storage/scripts/tests/fixtures/f3/f3write-card-removed.txt": "f7c3a02fcd529c2513b52942c35c143ee576af33a926f1741dc2cb2b24a0a382",
   "recovery-storage/scripts/tests/fixtures/f3/f3write-stick-volume-full.free1mb.derived.txt": "99c90098fdd58ea5337be4fe780c51c3ec415defc478fd27397ce7b5c4618862",
   "recovery-storage/scripts/tests/fixtures/f3/f3write-stick-volume-full.txt": "a5e4c9dc0511dddced088814faeac9baf7238e504f54de014c12e0b4bec3fc78",
@@ -128,7 +132,7 @@
   "recovery-storage/scripts/tests/test_hypotheses.py": "5efba6a5fe50b0c84437f450e2ff31e278c39b93e2e35ebfe7da08e9419f80ce",
   "recovery-storage/scripts/tests/test_identity_drift.py": "3cbaeecf7ce59e088a8d3a1b20935e67ab3392dae09b8eabfe6db3cf7a88a2d0",
   "recovery-storage/scripts/tests/test_identity_match.py": "f806eb053d4b03da59006d86c6c83d8f011dcdd27ee13df7a94d91e1d9a6ed0a",
-  "recovery-storage/scripts/tests/test_ingest_f3.py": "b9b2348d3dfabdf6971d50d2404548b68a4fe34dc453995162ce1065e22ad771",
+  "recovery-storage/scripts/tests/test_ingest_f3.py": "c310c03b493b9ac446fcfbc7ab284d20c4309b7afe6f9dace583ed18abdb577c",
   "recovery-storage/scripts/tests/test_ingest_mapfile.py": "e598a8d63b6eb351ed228ee9ec6bdbb7219536b027fbef8e31b4b62638d51b82",
   "recovery-storage/scripts/tests/test_install.py": "9bd557ce884e0e05129378ca22f3a2d1339f610c9dca821bf00b49a1067fcdb5",
   "recovery-storage/scripts/tests/test_live.py": "549c33e05c3905e9e773d508496f42fe8f96faf612f65a55d18c047a76cee7dd",
@@ -147,7 +151,7 @@
   "recovery-storage/scripts/tests/test_store.py": "e9bbf1cc7cd81bbefcb18e8184ffbbd50a9b4ef0b102c7eecd9cc4312dfd6df0",
   "recovery-storage/scripts/tests/test_tool_failures.py": "06d1d92ff11a261f5241b83af52971e036068e5e9d864b832fc78084f282e68d",
   "recovery-storage/scripts/tests/test_triage.py": "4bfb8fad815bd3568023bf8c64590d29720bdb3e0896d99ebab5097a87defae5",
-  "recovery-storage/scripts/tests/test_verdict.py": "d529de3bebf2a80db2def58ccac15a480cda7c3d868261b4101f0c33af60e240",
+  "recovery-storage/scripts/tests/test_verdict.py": "9efefa0bf8f62788df1fd31cb300de968ba9afe53245e4d2be91413b28f03008",
   "recovery-storage/scripts/tests/test_wear.py": "61415fa785d5a9051b954316b38ab792b419bcf049363484b0d316a4509617d7"
  },
  "criteria": {
@@ -765,6 +769,16 @@
   "C23c": [
    "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23c_stale_parsed_row_is_reparsed_on_reingest_and_in_the_report"
   ],
+  "C23d": [
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23d_f3probe_real_limbo_drives_counterfeit_high",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23d_f3probe_real_limbo_is_fake_with_sizes",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23d_f3read_records_the_read_rate_text[f3/f3read-card-partition-after-replug.txt-17.38 MB/s]",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23d_f3read_records_the_read_rate_text[f3/f3read-card-partition-cached.txt-158.61 MB/s]",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23d_f3read_records_the_read_rate_text[f3/f3read-stick-pass.txt-275.95 MB/s]",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23d_f3read_without_summary_has_no_read_rate",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23d_f3write_full_volume_below_one_block_inconclusive",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23d_report_shows_the_read_rate"
+  ],
   "C24": [
    "recovery-storage/scripts/tests/test_assess_cli.py::test_C24_attested_without_file_exit_2",
    "recovery-storage/scripts/tests/test_assess_cli.py::test_C24_same_file_twice_one_evidence_id"
@@ -1008,6 +1022,15 @@
   ],
   "D22e": [
    "recovery-storage/scripts/tests/test_verdict.py::test_D22e_verdict_uses_the_current_parser_not_the_stored_parse"
+  ],
+  "D22f": [
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22f_f3read_after_format_without_replug_before_it_refused",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22f_no_f3write_ingested_anchor_is_the_gate_confirm[f3read-then-replug-False]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22f_no_f3write_ingested_anchor_is_the_gate_confirm[replug-then-f3read-True]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22f_plain_inventory_is_not_a_replug",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22f_real_run_without_replug_between_write_and_read_refused",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22f_replug_before_the_last_f3write_does_not_count",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22f_second_f3write_after_the_replug_moves_the_anchor"
   ],
   "D23": [
    "recovery-storage/scripts/tests/test_verdict.py::test_D23_hdd_counters_rising_refused",
@@ -1856,8 +1879,8 @@
   },
   {
    "id": "AM04-Q1",
-   "coverage": "none",
-   "reason": "observation window (>= 2 observations, one --after-replug) vs a replug inside the verification gate not decided; test_D22c_open_replug_inside_the_verification_gate skipped."
+   "coverage": "full",
+   "reason": "resolved by amendment 07: observations after a verification gate's confirm count; test_D22c_f3read_ingested_inside_the_verification_gate_passes replugs inside the gate only (the skipped test_D22c_open_replug_inside_the_verification_gate was removed)."
   },
   {
    "id": "AM04-Q2",
@@ -1928,6 +1951,26 @@
    "id": "D24c",
    "coverage": "partial",
    "reason": "nvme below-coverage f3read case runs (amendment 06); ssd-sata / external-ssd and the at/above-coverage half stay BLOCKED (no attached SSD of those classes with a matching f3read)."
+  },
+  {
+   "id": "AM07-Q1",
+   "coverage": "manual",
+   "reason": "G4 (stored PASS verdicts not rewritten) needs a store written by the old code: check on a copy of the live store (S-81ff60a59449 keeps PASS; verdict set PASS again refused)."
+  },
+  {
+   "id": "AM07-Q2",
+   "coverage": "none",
+   "reason": "G1 judged by ingest / observation times; when f3read actually ran is invisible to the tool."
+  },
+  {
+   "id": "AM07-Q3",
+   "coverage": "none",
+   "reason": "G1 with a confirm anchor followed by a later write: not asserted separately (amendment 04 B5 moves the window)."
+  },
+  {
+   "id": "AM07-Q4",
+   "coverage": "none",
+   "reason": "G1 on the SSD read-verify path: no attached SSD fixture reaches the coverage; only the flash path asserted."
   }
  ],
  "amendments": [
@@ -2136,6 +2179,39 @@
     "test_D22_f3read_before_gate_evidence_before_recovery",
     "test_D22_f3read_pass_covering_90pct_after_gate_pass",
     "test_D22c_f3read_ingested_inside_the_verification_gate_passes"
+   ]
+  },
+  {
+   "id": "07",
+   "date": "2026-10-20",
+   "doc": "plans/20261019-1726-recovery-storage-skill/amendment-07-f3read-after-replug.md",
+   "refrozen_at": "2026-10-19T19:15:01+00:00",
+   "reason": "user-approved amendment 07 (2026-10-20, 'L\u00e0m v\u00e0 commit'): f3read pass counts only after an after-replug observation following the last f3write ingest / gate confirm (f3read-not-after-replug), read_rate parsed and shown, f3write full volume below 1 MiB inconclusive, real f3probe limbo sample; contract in tests/CONTRACT.md section 'Amendment 07'",
+   "files_changed": [
+    "recovery-storage/scripts/tests/CONTRACT.md",
+    "recovery-storage/scripts/tests/test_ingest_f3.py",
+    "recovery-storage/scripts/tests/test_verdict.py"
+   ],
+   "files_added": [
+    "recovery-storage/scripts/tests/fixtures/f3/f3probe-card-limbo.txt",
+    "recovery-storage/scripts/tests/fixtures/f3/f3read-card-partition-after-replug.txt",
+    "recovery-storage/scripts/tests/fixtures/f3/f3read-card-partition-cached.txt",
+    "recovery-storage/scripts/tests/fixtures/f3/f3write-card-partition-full4k.txt"
+   ],
+   "also_changed_not_frozen": [
+    "recovery-storage/scripts/tests/fixtures/SOURCES.md"
+   ],
+   "criteria_added": [
+    "C23d",
+    "D22f"
+   ],
+   "amended_tests": [
+    "test_D22_f3read_pass_covering_90pct_after_gate_pass (replug moved before the f3read ingest)",
+    "test_D22c_f3read_ingested_inside_the_verification_gate_passes (replug between f3write and f3read, none after the close)",
+    "test_D22e_verdict_uses_the_current_parser_not_the_stored_parse (replug moved before the f3read ingest)"
+   ],
+   "removed_tests": [
+    "test_D22c_open_replug_inside_the_verification_gate (skipped open question, resolved)"
    ]
   }
  ]
