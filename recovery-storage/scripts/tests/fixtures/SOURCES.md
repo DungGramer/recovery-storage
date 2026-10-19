@@ -46,10 +46,31 @@ then `smartctl --scan-open -j` and `smartctl -j -x -n standby /dev/pdN` per disk
 | `lsblk-JOb.json` | `lsblk -J -O -b` | Hyper-V virtual disks (vendor `Msft    ` padded, model `Virtual Disk`, no `tran`, sizes as integers, `rm`/`ro` booleans) |
 | `udevadm-sda.txt` | `udevadm info --query=property --name=/dev/sda` | properties of the first virtual disk |
 
+## f3/ (real F3 8.0 output, this machine's WSL2 Ubuntu 22.04, volume mounted via drvfs, 2026-10-19)
+
+Verbatim stdout+stderr as the operator captured it (amendment 06); no identifiers (checked with
+`tools/redact_fixtures.py --check`). Sector = 512 B. The stick and f3write/f3read stick files are byte-identical to the
+evidence ingested in the real run (sha256 equal to the store's evidence rows).
+
+| File | Device | Exit code | Content |
+|---|---|---|---|
+| `f3read-stick-pass.txt` | USB stick D-564ce922bda3 (8054112256 B) | 0 | 8 files, Data OK 7.50 GB (15724108 sectors), Data LOST 0 |
+| `f3read-stick-abort134.txt` | same stick, first f3read run | 134 | `Assertion 'size % SECTOR_SIZE == 0' failed` on the partial last file, no summary |
+| `f3write-stick-volume-full.txt` | same stick | 0 | files 1-7 OK, `Write failure: Input/output error` on file 8 exactly when the volume became full (drvfs returns EIO instead of ENOSPC); final `Free space: 0.00 Byte` |
+| `f3read-card-lost.txt` | 32 GB card D-2bc2a1f8a798 | 0 | Data OK 289.55 MB (592999 sectors), Data LOST 3.38 GB (7079816 sectors, all corrupted, 0 changed, 0 overwritten): f3read 8.0 exits 0 with data lost |
+| `f3write-card-removed.txt` | same card | 0 | files 1-3 OK, `Write failure` in file 4, `Can't create file /mnt/e/5.h2w` (operator removed the card mid-run); no final Free space line |
+
+Derived:
+
+| File | Base (real) | Field changed | Original value | New value |
+|---|---|---|---|---|
+| `f3write-stick-volume-full.free1mb.derived.txt` | f3/f3write-stick-volume-full.txt | final `Free space:` line | 0.00 Byte | 1.00 MB (amendment 06 F2: write failure with space left stays fail) |
+
 ## No real sample yet
 
 ATA HDD behind a USB dock captured on Windows (HDD capture skipped 2026-10-19); elevated (admin) `-d sat` on USB;
-native mmc SD (`/sys/block/mmcblk*`); Linux USB sysfs chain; f3probe / f3write / f3read full output; H2testw log;
+native mmc SD (`/sys/block/mmcblk*`); Linux USB sysfs chain; f3probe full output; f3read with non-zero Overwritten;
+H2testw log;
 ddrescue mapfile from a real run (research quotes the GNU manual example verbatim).
 
 ## Derived fixtures (added by test-designer, spec-first freeze 2026-10-19)

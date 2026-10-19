@@ -15,15 +15,25 @@ F3 facts (from source):
   or usage error. Default mode saves and restores blocks, but a crash loses them; `--destructive` restores nothing.
 - f3write writes `N.h2w` files into free space of a mounted filesystem (existing files untouched, volume filled);
   `No space!` means nothing was written. f3read summarises `Data OK`, `Data LOST`, `Corrupted`, `Slightly changed`,
-  `Overwritten` and exits 1 on any bad sector. f3write/f3read also build on macOS and on Windows via Cygwin.
+  `Overwritten`. f3read 8.0 exits 0 even when data is lost (real card 2026-10-20: Data LOST 3.38 GB, exit 0): the
+  summary decides. f3write/f3read also build on macOS and on Windows via Cygwin.
 - f3fix rewrites the partition table to the usable size (cosmetic: the device stays fake); f3brew writes blocks.
+- Windows host (verified 2026-10-20): f3probe runs in WSL once the USB reader is attached with usbipd-win
+  (`usbipd bind --busid <id>` elevated, `usbipd attach --wsl --busid <id>`); the WSL kernel needs usb-storage
+  (absent in 5.15.167, present as a module in 6.18 after `wsl --update`; `modprobe usb-storage`). Confirm the gate
+  while Windows still sees the device, verify the Linux node by exact bytes, `TRAN usb` and model (WSL's own disks
+  are "Msft Virtual Disk"), `usbipd detach` before `gate close`. A real limbo card: f3probe usable size matched the
+  raw-read boundary of the f3read loss exactly.
 
 Windows: H2testw 1.4 (GUI, no CLI) fills free space with files and reads them back; record the result with
 `rs.py ingest attested <sid> <dev> --tool h2testw --result pass --file <screenshot-or-log>` (counts for PASS as
 ATTESTED evidence). ValiDrive samples random locations only: a quick hint, not a full verify.
 
 Ingest F3 output with its exit code: `rs.py ingest f3probe <sid> <dev> <out.txt> --exit-code <code>` (same for
-f3write/f3read). The exit code is the primary signal; text that disagrees with it makes the record inconclusive.
+f3write/f3read). f3probe: the exit code is the primary signal; text that disagrees with it makes the record
+inconclusive. f3read: the summary decides (Data LOST > 0 fail, 0 with Data OK pass, no summary inconclusive), the exit
+code is only recorded. f3write: a write error when the volume became full (final free space 0) is inconclusive.
+Stored F3 evidence is re-parsed with the current parser whenever it is read.
 
 ### Method: Quick probe with f3probe (non-destructive mode)
 - Preconditions: Linux host or live USB; device USB-backed and unmounted; data secured or not needed.

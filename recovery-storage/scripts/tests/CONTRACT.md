@@ -547,3 +547,38 @@ amendment.
 - Fixture: `windows/usb-sd/win-events.ntfs55x3.derived.json` (3 x Ntfs 55 on volume `E:`, the card) with
   `windows/usb-sd` `/dev/pd3`: `partition-or-filesystem` evidence `observation.events.fs_corruption` = `Ntfs 55`,
   count 3.
+
+## Amendment 06 (2026-10-20): F3 ingest from real F3 8.0 outputs
+
+Source: `plans/20261019-1726-recovery-storage-skill/amendment-06-f3-ingest-real-outputs.md` (approved by the user
+2026-10-20, "Làm và commit"). Where this section and anything above disagree, this section wins (it replaces the
+phase-03 reading "f3read exit code 0 pass, 1 bad"). Lines marked "test-designer reading" bind the frozen tests until a
+further amendment.
+
+```python
+rslib.ingest.parse_f3read(text, exit_code) -> dict {"result", "reason", "exit_code", "data_ok_bytes", "data_lost_bytes",
+                                                    "corrupted_bytes", "changed_bytes", "overwritten_bytes"}
+    # bytes = sectors x 512 from the summary lines `Data OK:`, `Data LOST:`, `Corrupted:`, `Slightly changed:`,
+    # `Overwritten:`; all byte keys None when there is no summary
+rslib.ingest.parse_f3write(text, exit_code) -> dict {"result", "reason", "exit_code"}
+```
+- f3read: summary present -> `fail` if data_lost_bytes > 0 (reason contains the lost byte count as an integer and the
+  words `corrupted`, `changed`, `overwritten`), `pass` if data_lost_bytes == 0 and data_ok_bytes > 0; no summary ->
+  `inconclusive` for every exit code. The exit code is stored in `exit_code` and never flips a summary result
+  (test-designer reading of "recorded but does not flip").
+- f3write: `Write failure` / `Can't create file` and a final `Free space: 0.00 Byte` line -> `inconclusive`, reason
+  contains `volume became full` and `f3read`; a failure with a final `Free space` > 0, or with no final `Free space`
+  line (test-designer reading: card removed mid-run), -> `fail`. `No space!` unchanged (C23).
+- `ingest f3read <s> <d> <file> --exit-code N`: `evidence.parsed` is the parse_f3read dict.
+- Verdict: an f3read `fail` record is never a capacity verify (PASS refused `capacity-verify-missing`); a `pass` record
+  counts when data_ok_bytes >= `verdict.CAPACITY_COVERAGE` x device bytes (D22; amendment 02 F for SSD/NVMe).
+- Fixtures (real, verbatim, frozen): `fixtures/f3/f3read-stick-pass.txt`, `f3read-stick-abort134.txt`,
+  `f3write-stick-volume-full.txt`, `f3read-card-lost.txt`, `f3write-card-removed.txt`; derived
+  `f3write-stick-volume-full.free1mb.derived.txt` (final free space 1.00 MB). Stick = `windows/usb-stick` `/dev/pd2`
+  (8054112256 B); the card output is ingested on that stick as a fail record (its device is not a capture).
+- F5 (re-parse on read, test-designer's call as the amendment allows): every read of parsed evidence (verdict set,
+  report, assess, and the `evidence` object returned by `ingest` when the same bytes are already stored) uses the
+  current parser on the stored blob with the stored exit code. A stored parsed copy is never trusted. Same bytes again
+  -> same `evidence.id` and `sha256`, no new row. Test helper `conftest.make_parsed_stale(home, evidence_id, old)`
+  rewrites every JSON text column of the row that holds a parser result (top level or under `parsed`), keeping its
+  `exit_code`, to simulate a row written by the old parser; the blob file and `sha256` are untouched.

@@ -526,6 +526,45 @@ def db_rows(home, table):
         con.close()
 
 
+def make_parsed_stale(home, evidence_id, old):
+    """Amendment 06 F5: simulate a row written by an older parser. Every JSON text column of the evidence row that
+    holds a parser result (top level or under `parsed`) gets `old` (dict) instead, keeping its `exit_code`; the blob
+    file and `sha256` are not touched. Column-agnostic on purpose: the contract fixes behaviour, not the column."""
+    import sqlite3
+
+    con = sqlite3.connect(pathlib.Path(home) / "rs.sqlite")
+    try:
+        cols = [r[1] for r in con.execute("PRAGMA table_info(evidence)")]
+        row = con.execute("SELECT * FROM evidence WHERE id = ?", (evidence_id,)).fetchone()
+        assert row is not None, evidence_id
+        for col, val in zip(cols, row):
+            if not isinstance(val, str):
+                continue
+            try:
+                doc = json.loads(val)
+            except ValueError:
+                continue
+            if not isinstance(doc, dict):
+                continue
+            target = doc.get("parsed") if isinstance(doc.get("parsed"), dict) else doc
+            if "result" not in target:
+                continue
+            code = target.get("exit_code")
+            target.clear()
+            target.update(old)
+            if code is not None:
+                target["exit_code"] = code
+            con.execute(f"UPDATE evidence SET {col} = ? WHERE id = ?", (json.dumps(doc), evidence_id))
+        con.commit()
+    finally:
+        con.close()
+
+
+# Pre-amendment-06 f3read parse of a summary-bearing exit-0 output (live store row E-0fa5fe3226ed shape).
+F3READ_OLD_INCONCLUSIVE = {"result": "inconclusive", "reason": "exit code 0 / summary not parsed",
+                           "data_ok_bytes": None, "data_lost_bytes": None, "overwritten_bytes": None}
+
+
 def operator_state(home):
     """Rows an operator command may change (amendment 01 A 'nothing is changed in the store')."""
     return {t: sorted(map(repr, db_rows(home, t))) for t in ("gates", "data_states", "evidence")}

@@ -79,16 +79,65 @@ def test_D22_replug_observation_required(cli, tmp_path):
     assert res.code == 3 and "replug-observation-missing" in res.reasons, res
 
 
-@pytest.mark.skip(reason="BLOCKED (open question F3-numbers): f3read pass with coverage >= 0.9 x device bytes needs a "
-                         "real f3read output with Data OK amounts; research quotes labels only.")
-def test_D22_f3read_pass_covering_90pct_after_gate_pass():
-    """D22 'USB stick with f3read pass covering >= 0.9 x bytes after the last R2 gate + after-replug -> PASS'."""
+# Amendment 06: real F3 8.0 outputs (fixtures/f3, SOURCES.md). Stick 8054112256 B; Data OK 8050743296 B = 0.9996 x.
+F3READ_PASS = "f3/f3read-stick-pass.txt"
+F3READ_CARD_LOST = "f3/f3read-card-lost.txt"
+F3WRITE_FULL = "f3/f3write-stick-volume-full.txt"
 
 
-@pytest.mark.skip(reason="BLOCKED (open question F3-numbers): f3read evidence dated before the last R2 gate; needs a "
-                         "real f3read output.")
-def test_D22_f3read_before_gate_evidence_before_recovery():
-    """D22 'Same f3read evidence dated before the last R2 gate -> refused evidence-before-recovery'."""
+def ingest_f3(cli, sid, dev, kind, rel, code=0):
+    return ok(cli("ingest", kind, sid, dev, fx(rel), "--exit-code", code))["evidence"]
+
+
+def test_D22_f3read_pass_covering_90pct_after_gate_pass(cli):
+    """D22 'USB stick with f3read pass covering >= 0.9 x bytes after the last R2 gate + after-replug -> PASS'
+    (unblocked by amendment 06 F4: real f3read pass). Mutation: f3read evidence not a capacity verify, or coverage
+    computed in sectors instead of bytes -> capacity-verify-missing -> red."""
+    sid, dev = formatted_stick(cli)
+    assert ingest_f3(cli, sid, dev, "f3read", F3READ_PASS)["parsed"]["result"] == "pass"
+    replug(cli, sid)
+    res = cli("verdict", "set", sid, dev, "PASS")
+    assert res.code == 0, res
+
+
+def test_D22_f3read_before_gate_evidence_before_recovery(cli):
+    """D22 'Same f3read evidence dated before the last R2 gate -> refused evidence-before-recovery' (amendment 06 F4).
+    Mutation: evidence window ignores the format close for f3read records -> PASS -> red."""
+    sid, dev, _ = prepared(cli, USB_STICK, "/dev/pd2", *DEVREC)
+    ingest_f3(cli, sid, dev, "f3read", F3READ_PASS)
+    g, _ = gate_ok(cli, USB_STICK, sid, dev, "format")
+    assert confirm(cli, USB_STICK, g, STICK_PHRASE).code == 0
+    assert close(cli, USB_STICK, g, "success").code == 0
+    replug(cli, sid)
+    res = cli("verdict", "set", sid, dev, "PASS")
+    assert res.code == 3, res
+    assert "evidence-before-recovery" in res.reasons, res
+
+
+def test_D22e_verdict_uses_the_current_parser_not_the_stored_parse(cli, home):
+    """Amendment 06 F5 (decision: re-parse on read): a stick f3read row whose stored parse came from an older parser
+    (stored `inconclusive`) is re-parsed from its blob by `verdict set` -> the real pass counts -> PASS.
+    Mutation: verdict reads the stored parse -> capacity-verify-missing -> red."""
+    from conftest import F3READ_OLD_INCONCLUSIVE, make_parsed_stale
+
+    sid, dev = formatted_stick(cli)
+    ev = ingest_f3(cli, sid, dev, "f3read", F3READ_PASS)
+    make_parsed_stale(home, ev["id"], F3READ_OLD_INCONCLUSIVE)
+    replug(cli, sid)
+    res = cli("verdict", "set", sid, dev, "PASS")
+    assert res.code == 0, res
+
+
+@pytest.mark.parametrize("code", [0, 1])
+def test_D22d_f3read_with_data_lost_never_satisfies_capacity_verify(cli, code):
+    """Amendment 06 F3: the real card f3read (exit 0, 7079816 sectors lost) is a fail record and never a capacity
+    verify, after the gate and replug. Mutation: exit 0 + Data OK > 0 read as pass -> PASS -> red."""
+    sid, dev = formatted_stick(cli)
+    assert ingest_f3(cli, sid, dev, "f3read", F3READ_CARD_LOST, code)["parsed"]["result"] == "fail"
+    replug(cli, sid)
+    res = cli("verdict", "set", sid, dev, "PASS")
+    assert res.code == 3, res
+    assert "capacity-verify-missing" in res.reasons, res
 
 
 def test_D23_hdd_without_new_selftest_refused(cli):
@@ -245,7 +294,7 @@ def test_D22b_write_gate_aborted_while_pending_leaves_the_window(cli, tmp_path):
 
 # ---------------- D22c (amendment 04): a verification gate's writes ARE the capacity test
 # Spec: plans/.../amendment-04-verification-gate-window.md, CONTRACT.md "Amendment 04". Capacity evidence = attested
-# H2testw (the f3read cases stay BLOCKED: no real f3read output with Data OK amounts is a fixture yet).
+# H2testw; the f3read form uses the real F3 8.0 output of amendment 06.
 VERIFY_KINDS = ["f3write-f3read", "h2testw", "f3probe", "f3probe-destructive"]
 OTHER_WRITE_KINDS = [("format", ()), ("partition-write", ()), ("fs-repair-on-source", ()), ("clear-disk", ()),
                      ("firmware-update", ("--controller-id", "vendor-ctrl-1", "--tool-source", "vendor site")),
@@ -362,10 +411,19 @@ def test_D22c_evidence_before_the_verification_confirm_does_not_count(cli, tmp_p
     assert "evidence-before-recovery" in res.reasons, res
 
 
-@pytest.mark.skip(reason="BLOCKED (open question F3-numbers): the real-run f3read pass (Data OK 8050743296 of 8054112256 B) "
-                         "ingested inside the f3write-f3read gate needs the raw redacted f3read output as a fixture.")
-def test_D22c_f3read_ingested_inside_the_verification_gate_passes():
-    """Amendment 04 B1 with f3read evidence (the exact 2026-10-19 flow)."""
+def test_D22c_f3read_ingested_inside_the_verification_gate_passes(cli):
+    """Amendment 04 B1 with f3read evidence, the exact 2026-10-19 flow (unblocked by amendment 06 F4): gate
+    f3write-f3read confirmed -> ingest f3write (volume full, F2 inconclusive) + f3read (pass) -> close success
+    --evidence <f3read> -> replug -> PASS. Mutation: window starts at the close, or an f3write record that is not a
+    pass blocks the f3read pass -> red."""
+    sid, dev, _ = prepared(cli, USB_STICK, "/dev/pd2", *DEVREC)
+    g = _confirmed(cli, sid, dev, "f3write-f3read")
+    ingest_f3(cli, sid, dev, "f3write", F3WRITE_FULL)
+    ev = ingest_f3(cli, sid, dev, "f3read", F3READ_PASS)
+    assert ev["parsed"]["result"] == "pass"
+    _closed(cli, g, "success", "--evidence", ev["id"])
+    res = _pass(cli, sid, dev)
+    assert res.code == 0, res
 
 
 @pytest.mark.skip(reason="OPEN QUESTION (amendment 04 Q1): does B1 also move the OBSERVATION window (>= 2 observations, one "
@@ -447,12 +505,26 @@ def test_D23b_verdict_set_uses_the_wrapped_window(cli, rel, missing):
 
 
 # ---------------- D24c (amendment 02 F, N13): SSD read verify by f3read needs flash coverage
-@pytest.mark.skip(reason="BLOCKED (open question F3-numbers, amendment 02 F): an f3read pass counts as SSD/NVMe read "
-                         "verify only with coverage >= verdict.CAPACITY_COVERAGE x device bytes; testing it needs a real "
-                         "f3read output with Data OK amounts, and research quotes the labels only.")
+@pytest.mark.skip(reason="BLOCKED (amendment 02 F, partly unblocked by amendment 06): the nvme below-coverage case runs in "
+                         "test_D24c_nvme_f3read_pass_below_flash_coverage_is_not_read_verify; ssd-sata / external-ssd and "
+                         "the at/above-coverage half need an attached SSD of those classes and an f3read output of its "
+                         "size.")
 @pytest.mark.parametrize("cls", ["ssd-sata", "nvme", "external-ssd"])
 def test_D24c_ssd_f3read_below_flash_coverage_is_not_read_verify(cls):
     """Amendment 02 F: f3read pass below coverage -> not a read verify (PASS refused); at/above coverage -> counts."""
+
+
+def test_D24c_nvme_f3read_pass_below_flash_coverage_is_not_read_verify(cli):
+    """Amendment 02 F with the real f3read pass of amendment 06: 8050743296 B verified on the 990 PRO (1000204886016 B)
+    is far below CAPACITY_COVERAGE x bytes -> not a read verify -> PASS refused (D24 flow with f3read in place of the
+    full-read map). Mutation: any f3read pass counts as SSD/NVMe read verify -> PASS -> red."""
+    sid, dev, _ = prepared(cli, BASELINE, "/dev/pd0", "--goal", "health-assessment")
+    assert ingest_f3(cli, sid, dev, "f3read", F3READ_PASS)["parsed"]["result"] == "pass"
+    inventory(cli, cli.runner(BASELINE), sid, after_replug=True)
+    collect(cli, BASELINE, sid, dev)
+    res = cli("verdict", "set", sid, dev, "PASS")
+    assert res.code == 3, res
+    assert ok(cli("verdict", "show", sid, dev))["effective"] != "PASS"
 
 
 def test_D24c_coverage_parameter_is_exposed():

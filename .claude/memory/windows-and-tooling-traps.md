@@ -20,5 +20,10 @@
 - f3write on WSL drvfs: the volume filling up comes back as EIO, not ENOSPC: "Write failure: Input/output error" on
   the last file with final free space 0. f3read then aborts (exit 134, `size % SECTOR_SIZE` assertion) on that
   partial file: truncate it to a 512 multiple and rerun f3read. Check Windows System events to rule out a device error.
+- `wsl.exe -- sh -c "..."`: WSL hands the joined argv to the Linux login shell, which expands `$var` / `$(...)`
+  inside the double quotes BEFORE `sh` runs, even when escaped for Git Bash (2026-10-20: a size guard saw empty
+  values and refused). Put anything with variables in a script file, copy it into WSL, run `sh /root/x.sh`.
+- WSL 2.4.11 kernel 5.15.167 has no usb-storage (`CONFIG_USB_STORAGE is not set`): usbipd-attached USB disks never
+  appear. `wsl --update` (3.0.3, kernel 6.18) ships it as a module; it also restarts Docker Desktop's distros.
 - Verification gates (f3write-f3read...) write the source: before amendment 04 their close moved the PASS window
   past the evidence they produced. A green suite never ran the real run-ingest-close order; real runs find these.

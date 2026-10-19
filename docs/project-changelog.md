@@ -2,6 +2,19 @@
 
 Format: newest first. Versions are semantic and assigned retroactively (no version is declared in the skill). Roadmap: [project-roadmap.md](project-roadmap.md).
 
+## [0.6.0] - 2026-10-20 - Amendment 06 (F3 ingest from real outputs)
+
+Spec: [amendment-06](../plans/20261019-1726-recovery-storage-skill/amendment-06-f3-ingest-real-outputs.md). Rules version `2026.10.20-5`.
+
+### Fixed
+- f3read result comes from its summary: f3read 8.0 exits 0 even with lost data, so a real counterfeit card was recorded `inconclusive`; now Data LOST > 0 is `fail` (corrupted / changed / overwritten bytes parsed), no summary is `inconclusive` whatever the exit code.
+- f3write: a write error when the volume became full (WSL drvfs reports it as I/O error) is `inconclusive`, not `fail`.
+- Evidence is re-parsed with the current parser from its stored blob wherever it is read (verdict, report, assess, re-ingest); stored parsed copies from older parsers no longer decide.
+
+### Added
+- Real F3 8.0 fixtures (`tests/fixtures/f3/`): stick pass, abort 134, volume-full write error, card with lost data, card removed mid-run.
+- Playbook: f3probe from Windows through usbipd-win + WSL (kernel with usb-storage).
+
 ## [0.5.0] - 2026-10-20 - Amendment 05 (report fixes)
 
 Spec: [amendment-05](../plans/20261019-1726-recovery-storage-skill/amendment-05-report-fixes.md). Rules version `2026.10.20-4`.

@@ -9,6 +9,7 @@ from .datastate import mapfile_complete
 from .delta import delta
 from .errors import Refused, UsageError
 from .health import verdict as health_verdict
+from .ingest import current_parsed
 
 CAPACITY_COVERAGE = 0.9  # f3read verified bytes / device bytes needed for a flash PASS (parameter)
 VERIFY_KINDS = ("f3write-f3read", "h2testw", "f3probe", "f3probe-destructive")  # writes = the test (amendment 04)
@@ -132,7 +133,7 @@ def pass_missing(store, s, device_id):
     evidence = store.query("SELECT * FROM evidence WHERE device_id = ? AND session_id = ? ORDER BY ts",
                            (device_id, s["id"]))
     for e in evidence:
-        e["parsed"] = (st.loads(e["data"]) or {}).get("parsed") or {}
+        e["parsed"] = current_parsed(store, e) or {}  # current parser, not the stored copy (amendment 06 F5)
     post_ev = [e for e in evidence if e["ts"] > start]
 
     if cls in FLASH:

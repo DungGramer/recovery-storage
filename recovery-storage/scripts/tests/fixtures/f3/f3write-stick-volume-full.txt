@@ -1,0 +1,23 @@
+F3 write 8.0
+Copyright (C) 2010 Digirati Internet LTDA.
+This is free software; see the source for copying conditions.
+
+Free space: 7.50 GB
+Creating file 1.h2w ... OK!
+Creating file 2.h2w ... OK!
+Creating file 3.h2w ... OK!
+Creating file 4.h2w ... OK!
+Creating file 5.h2w ... OK!
+Creating file 6.h2w ... OK!
+Creating file 7.h2w ... OK!
+Creating file 8.h2w ... Write failure: Input/output error
+
+WARNING:
+The write error above may be due to your memory card overheating
+under constant, maximum write rate. You can test this hypothesis
+touching your memory card. If it is hot, you can try f3write
+again, once your card has cooled down, using parameter --max-write-rate=2048
+to limit the maximum write rate to 2MB/s, or another suitable rate.
+
+Free space: 0.00 Byte
+Average writing speed: 0.00 Byte/s

@@ -136,7 +136,13 @@ def parse_f3write(text, exit_code):
     if "No space!" in text:
         return {"result": "inconclusive", "reason": "nothing written (No space!): free space is needed for f3write",
                 "exit_code": exit_code}
-    if "Write failure" in text:
+    failed = [m.start() for m in re.finditer(r"Write failure|Can't create file", text)]
+    if failed:
+        tail = re.findall(r"Free space:\s*([^\n]+)", text[failed[0]:])
+        if tail and tail[-1].strip().startswith("0.00 Byte"):
+            # WSL drvfs reports the full volume as EIO (real run 2026-10-19, amendment 06 F2)
+            return {"result": "inconclusive", "reason": "write error when the volume became full (a filesystem-full "
+                    "error reported as I/O error, e.g. WSL drvfs); verify with f3read", "exit_code": exit_code}
         return {"result": "fail", "reason": "write failure reported", "exit_code": exit_code}
     if exit_code == 0:
         return {"result": "pass", "reason": "files written", "exit_code": exit_code,
@@ -150,14 +156,18 @@ def _f3read_bytes(text, label):
 
 
 def parse_f3read(text, exit_code):
+    """The summary decides; f3read 8.0 exits 0 even with lost data (real card 2026-10-20, amendment 06 F1)."""
     out = {"data_ok_bytes": _f3read_bytes(text, "Data OK"), "data_lost_bytes": _f3read_bytes(text, "Data LOST"),
+           "corrupted_bytes": _f3read_bytes(text, "Corrupted"), "changed_bytes": _f3read_bytes(text, "Slightly changed"),
            "overwritten_bytes": _f3read_bytes(text, "Overwritten"), "exit_code": exit_code}
-    if exit_code == 0 and out["data_lost_bytes"] == 0 and out["data_ok_bytes"]:
+    lost, ok = out["data_lost_bytes"], out["data_ok_bytes"]
+    if isinstance(lost, int) and lost > 0:
+        out.update(result="fail", reason=f"{lost} bytes lost (corrupted {out['corrupted_bytes']}, changed "
+                                         f"{out['changed_bytes']}, overwritten {out['overwritten_bytes']})")
+    elif lost == 0 and ok:
         out.update(result="pass", reason="all sectors read back intact")
-    elif exit_code == 1:
-        out.update(result="fail", reason="corrupted, changed or overwritten sectors")
     else:
-        out.update(result="inconclusive", reason=f"exit code {exit_code} / summary not parsed")
+        out.update(result="inconclusive", reason=f"exit code {exit_code}, no f3read summary parsed")
     return out
 
 
@@ -180,9 +190,8 @@ def save_evidence(ctx, session_id, device_id, kind, level, data, parsed, extra=N
     row = ctx.store.one("SELECT * FROM evidence WHERE session_id = ? AND device_id = ? AND kind = ? AND sha256 = ?",
                         (session_id, device_id, kind, digest))
     if row is not None:
-        d = st.loads(row["data"])
-        return {"id": row["id"], "kind": kind, "sha256": digest, "level": row["level"], "parsed": d.get("parsed"),
-                "existing": True}
+        return {"id": row["id"], "kind": kind, "sha256": digest, "level": row["level"],
+                "parsed": current_parsed(ctx.store, row), "existing": True}
     _, path = ctx.store.write_blob(data, ctx.store.evidence_subdir(session_id), f".{kind}")
     eid = st.new_id("E")
     body = {"parsed": parsed}
@@ -194,11 +203,32 @@ def save_evidence(ctx, session_id, device_id, kind, level, data, parsed, extra=N
     return {"id": eid, "kind": kind, "sha256": digest, "level": level, "parsed": parsed, "existing": False}
 
 
+def current_parsed(store, row):
+    """Parsed result of an evidence row by the CURRENT parser, from the stored blob and exit code; the stored parsed
+    copy is only a fallback (amendment 06 F5: rows written by an older parser must not decide a verdict)."""
+    d = row["data"] if isinstance(row["data"], dict) else (st.loads(row["data"]) or {})
+    old = d.get("parsed") or {}
+    parser = REPARSE.get(row["kind"])
+    if parser is None or not row.get("path"):
+        return old
+    try:
+        text = store.read_blob(row["path"]).decode("utf-8", "replace")
+    except OSError:
+        return old
+    if row["kind"] == "ddrescue":
+        try:
+            return parse_mapfile(text).to_dict()
+        except MalformedInput:
+            return old
+    return parser(text, old.get("exit_code"))
+
+
 def evidence_rows(store, session_id, device_id):
     rows = store.query("SELECT * FROM evidence WHERE session_id = ? AND device_id = ? ORDER BY ts, rowid",
                        (session_id, device_id))
     for r in rows:
-        r["data"] = st.loads(r["data"])
+        r["data"] = st.loads(r["data"]) or {}
+        r["data"]["parsed"] = current_parsed(store, r)
     return rows
 
 
@@ -264,3 +294,6 @@ def cmd_ingest_attested(ctx, a):
     ev = save_evidence(ctx, a.session, a.device, "attested", "attested", data, parsed, {"file": p.name},
                        who="operator")
     return _reply(ctx, ev, "attested", f"{a.tool} {a.result} (operator attestation, sha256 {ev['sha256']})")
+
+
+REPARSE = {"f3probe": parse_f3probe, "f3write": parse_f3write, "f3read": parse_f3read, "ddrescue": parse_mapfile}

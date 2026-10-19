@@ -4,8 +4,14 @@
  "reason": "spec-first acceptance + unit suite for phases 01-08 (test-designer); contract in tests/CONTRACT.md",
  "files": {
   "pytest.ini": "b0cdc0191afb27a3ef8f41d4c25ea016a7c379913f8986d863ac871b3d50be67",
-  "recovery-storage/scripts/tests/CONTRACT.md": "c768916ae84cbc985044e32cc3b63d57ec563bb241fbe1d279516cdb626c1451",
-  "recovery-storage/scripts/tests/conftest.py": "8d34b6ce4a7eca28d017057f4b1c71f1d7c19a097c95882de4a38e4d538422b0",
+  "recovery-storage/scripts/tests/CONTRACT.md": "c44365e9bb3b29583a51f14c5586f6a4e3b0b7c66e5f75ad0161f971cee22290",
+  "recovery-storage/scripts/tests/conftest.py": "5204aae1530225c8bf042cbabdcff58140c642baefe59d9563c18eba45559625",
+  "recovery-storage/scripts/tests/fixtures/f3/f3read-card-lost.txt": "a597018215fc652d6bcc9a4928e8261514c2e4729cd51eeb6650012a2b8cf3c5",
+  "recovery-storage/scripts/tests/fixtures/f3/f3read-stick-abort134.txt": "1fc564b659e946930acc9c360b6f8b75fbf3c7b2072589283f309aa0ad8dedbf",
+  "recovery-storage/scripts/tests/fixtures/f3/f3read-stick-pass.txt": "a89bf7e16a88e9a9bae045ca6f9a929eee5f8d11f6eca57ad517976d21d7eeaa",
+  "recovery-storage/scripts/tests/fixtures/f3/f3write-card-removed.txt": "f7c3a02fcd529c2513b52942c35c143ee576af33a926f1741dc2cb2b24a0a382",
+  "recovery-storage/scripts/tests/fixtures/f3/f3write-stick-volume-full.free1mb.derived.txt": "99c90098fdd58ea5337be4fe780c51c3ec415defc478fd27397ce7b5c4618862",
+  "recovery-storage/scripts/tests/fixtures/f3/f3write-stick-volume-full.txt": "a5e4c9dc0511dddced088814faeac9baf7238e504f54de014c12e0b4bec3fc78",
   "recovery-storage/scripts/tests/fixtures/ingest/ddrescue-finished.980pro.derived.map": "910cd87fc46f417dc8729b84e2cfb9088aefa61547bac2af8d67a4ed369bbe3e",
   "recovery-storage/scripts/tests/fixtures/ingest/ddrescue-finished.990pro.derived.map": "f9c2d62c450e4a466c1197843c579ba9accaf57ccfcef38a1af5d5204a5f4f2f",
   "recovery-storage/scripts/tests/fixtures/ingest/ddrescue-finished.hitachi500.derived.map": "d1f36ee25c58e7c1683798e3efbf7956aa1036062305418e91d5f1e6c4f1806d",
@@ -122,7 +128,7 @@
   "recovery-storage/scripts/tests/test_hypotheses.py": "5efba6a5fe50b0c84437f450e2ff31e278c39b93e2e35ebfe7da08e9419f80ce",
   "recovery-storage/scripts/tests/test_identity_drift.py": "3cbaeecf7ce59e088a8d3a1b20935e67ab3392dae09b8eabfe6db3cf7a88a2d0",
   "recovery-storage/scripts/tests/test_identity_match.py": "f806eb053d4b03da59006d86c6c83d8f011dcdd27ee13df7a94d91e1d9a6ed0a",
-  "recovery-storage/scripts/tests/test_ingest_f3.py": "bae8fd469fc37dc96c2db0490c74fc174f63fb27f19567f0af7fbb5fe88b8cc1",
+  "recovery-storage/scripts/tests/test_ingest_f3.py": "b9b2348d3dfabdf6971d50d2404548b68a4fe34dc453995162ce1065e22ad771",
   "recovery-storage/scripts/tests/test_ingest_mapfile.py": "e598a8d63b6eb351ed228ee9ec6bdbb7219536b027fbef8e31b4b62638d51b82",
   "recovery-storage/scripts/tests/test_install.py": "9bd557ce884e0e05129378ca22f3a2d1339f610c9dca821bf00b49a1067fcdb5",
   "recovery-storage/scripts/tests/test_live.py": "549c33e05c3905e9e773d508496f42fe8f96faf612f65a55d18c047a76cee7dd",
@@ -141,7 +147,7 @@
   "recovery-storage/scripts/tests/test_store.py": "e9bbf1cc7cd81bbefcb18e8184ffbbd50a9b4ef0b102c7eecd9cc4312dfd6df0",
   "recovery-storage/scripts/tests/test_tool_failures.py": "06d1d92ff11a261f5241b83af52971e036068e5e9d864b832fc78084f282e68d",
   "recovery-storage/scripts/tests/test_triage.py": "4bfb8fad815bd3568023bf8c64590d29720bdb3e0896d99ebab5097a87defae5",
-  "recovery-storage/scripts/tests/test_verdict.py": "54e2d8df9a7e56f793d01c35c1af02084d35661d3c2c70c7549d698573f60be8",
+  "recovery-storage/scripts/tests/test_verdict.py": "d529de3bebf2a80db2def58ccac15a480cda7c3d868261b4101f0c33af60e240",
   "recovery-storage/scripts/tests/test_wear.py": "61415fa785d5a9051b954316b38ab792b419bcf049363484b0d316a4509617d7"
  },
  "criteria": {
@@ -745,6 +751,20 @@
    "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23_f3read_exit1_overwritten_fail_and_fake_capacity_medium",
    "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23_f3write_no_space_inconclusive"
   ],
+  "C23b": [
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23b_f3read_data_lost_is_fail_whatever_the_exit_code[0]",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23b_f3read_data_lost_is_fail_whatever_the_exit_code[1]",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23b_f3read_without_summary_inconclusive[0]",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23b_f3read_without_summary_inconclusive[134]",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23b_f3write_failure_when_the_volume_became_full_inconclusive",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23b_f3write_failure_with_space_left_still_fail[card-removed-no-final-line]",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23b_f3write_failure_with_space_left_still_fail[free-space-left]",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23b_ingest_f3read_cli_records_the_summary_result",
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23b_nonzero_exit_with_clean_summary_keeps_the_summary_result"
+  ],
+  "C23c": [
+   "recovery-storage/scripts/tests/test_ingest_f3.py::test_C23c_stale_parsed_row_is_reparsed_on_reingest_and_in_the_report"
+  ],
   "C24": [
    "recovery-storage/scripts/tests/test_assess_cli.py::test_C24_attested_without_file_exit_2",
    "recovery-storage/scripts/tests/test_assess_cli.py::test_C24_same_file_twice_one_evidence_id"
@@ -969,6 +989,7 @@
    "recovery-storage/scripts/tests/test_verdict.py::test_D22c_capacity_evidence_ingested_inside_the_verification_gate_passes[h2testw]",
    "recovery-storage/scripts/tests/test_verdict.py::test_D22c_evidence_before_the_verification_confirm_does_not_count[before-open]",
    "recovery-storage/scripts/tests/test_verdict.py::test_D22c_evidence_before_the_verification_confirm_does_not_count[between-open-and-confirm]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22c_f3read_ingested_inside_the_verification_gate_passes",
    "recovery-storage/scripts/tests/test_verdict.py::test_D22c_later_format_moves_the_window_past_f3_evidence",
    "recovery-storage/scripts/tests/test_verdict.py::test_D22c_other_write_gate_close_still_starts_the_window[clear-disk]",
    "recovery-storage/scripts/tests/test_verdict.py::test_D22c_other_write_gate_close_still_starts_the_window[firmware-update]",
@@ -980,6 +1001,13 @@
    "recovery-storage/scripts/tests/test_verdict.py::test_D22c_unsuccessful_verification_gate_gives_no_credit[failed]",
    "recovery-storage/scripts/tests/test_verdict.py::test_D22c_unsuccessful_verification_gate_gives_no_credit[interrupted]",
    "recovery-storage/scripts/tests/test_verdict.py::test_D22c_verification_after_an_earlier_format_passes"
+  ],
+  "D22d": [
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22d_f3read_with_data_lost_never_satisfies_capacity_verify[0]",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22d_f3read_with_data_lost_never_satisfies_capacity_verify[1]"
+  ],
+  "D22e": [
+   "recovery-storage/scripts/tests/test_verdict.py::test_D22e_verdict_uses_the_current_parser_not_the_stored_parse"
   ],
   "D23": [
    "recovery-storage/scripts/tests/test_verdict.py::test_D23_hdd_counters_rising_refused",
@@ -1009,6 +1037,7 @@
   ],
   "D24c": [
    "recovery-storage/scripts/tests/test_verdict.py::test_D24c_coverage_parameter_is_exposed",
+   "recovery-storage/scripts/tests/test_verdict.py::test_D24c_nvme_f3read_pass_below_flash_coverage_is_not_read_verify",
    "recovery-storage/scripts/tests/test_verdict.py::test_D24c_ssd_f3read_below_flash_coverage_is_not_read_verify[external-ssd]",
    "recovery-storage/scripts/tests/test_verdict.py::test_D24c_ssd_f3read_below_flash_coverage_is_not_read_verify[nvme]",
    "recovery-storage/scripts/tests/test_verdict.py::test_D24c_ssd_f3read_below_flash_coverage_is_not_read_verify[ssd-sata]"
@@ -1748,12 +1777,7 @@
   {
    "id": "C23",
    "coverage": "partial",
-   "reason": "f3read pass/fail cases skipped (BLOCKED): research quotes f3read labels without values; f3write 'No space!' tested."
-  },
-  {
-   "id": "D22",
-   "coverage": "partial",
-   "reason": "f3read coverage >= 0.9 x bytes and f3read-before-gate skipped (BLOCKED, no numeric f3read sample); PASS path and evidence-before-recovery tested via attested H2testw (Q3)."
+   "reason": "f3read exit 1 with non-zero Overwritten (fake-capacity hypothesis) skipped (BLOCKED: no real output with Overwritten > 0); pass / fail / no-summary cases run on real F3 8.0 outputs (amendment 06)."
   },
   {
    "id": "F7",
@@ -1852,8 +1876,8 @@
   },
   {
    "id": "AM04-Q5",
-   "coverage": "partial",
-   "reason": "B1 with f3read evidence BLOCKED (no real f3read output with Data OK amounts as a fixture); test_D22c_f3read_ingested_inside_the_verification_gate_passes skipped; attested H2testw used instead."
+   "coverage": "full",
+   "reason": "resolved by amendment 06: test_D22c_f3read_ingested_inside_the_verification_gate_passes runs on fixtures/f3."
   },
   {
    "id": "AM05-Q1",
@@ -1884,6 +1908,26 @@
    "id": "AM05-Q6",
    "coverage": "none",
    "reason": "R5 merged-item strength when duplicates differ, and same path with different values staying separate: no fixture yields either; not asserted."
+  },
+  {
+   "id": "AM06-Q1",
+   "coverage": "none",
+   "reason": "hypothesis category of a corrupted-only f3read fail not specified."
+  },
+  {
+   "id": "AM06-Q2",
+   "coverage": "none",
+   "reason": "f3read summary with Data OK 0 and Data LOST 0: result not asserted."
+  },
+  {
+   "id": "AM06-Q3",
+   "coverage": "partial",
+   "reason": "f3write non-pass records next to an f3read pass: asserted only for the real-run inconclusive (volume full) case."
+  },
+  {
+   "id": "D24c",
+   "coverage": "partial",
+   "reason": "nvme below-coverage f3read case runs (amendment 06); ssd-sata / external-ssd and the at/above-coverage half stay BLOCKED (no attached SSD of those classes with a matching f3read)."
   }
  ],
  "amendments": [
@@ -2052,6 +2096,46 @@
     "E14",
     "E6b",
     "E8b"
+   ]
+  },
+  {
+   "id": "06",
+   "date": "2026-10-20",
+   "doc": "plans/20261019-1726-recovery-storage-skill/amendment-06-f3-ingest-real-outputs.md",
+   "refrozen_at": "2026-10-19T18:23:36+00:00",
+   "reason": "user-approved amendment 06 (2026-10-20, 'L\u00e0m v\u00e0 commit'): f3read result from the parsed summary (F3 8.0 exits 0 with data lost), f3write write failure at a full volume inconclusive, real F3 8.0 fixtures unblock the D22 / D22c / C23 f3read tests; contract in tests/CONTRACT.md section 'Amendment 06'; F5 (added 2026-10-20, same approval): evidence re-parsed from its stored blob on every read",
+   "files_changed": [
+    "recovery-storage/scripts/tests/CONTRACT.md",
+    "recovery-storage/scripts/tests/conftest.py",
+    "recovery-storage/scripts/tests/test_ingest_f3.py",
+    "recovery-storage/scripts/tests/test_verdict.py"
+   ],
+   "files_added": [
+    "recovery-storage/scripts/tests/fixtures/f3/f3read-card-lost.txt",
+    "recovery-storage/scripts/tests/fixtures/f3/f3read-stick-abort134.txt",
+    "recovery-storage/scripts/tests/fixtures/f3/f3read-stick-pass.txt",
+    "recovery-storage/scripts/tests/fixtures/f3/f3write-card-removed.txt",
+    "recovery-storage/scripts/tests/fixtures/f3/f3write-stick-volume-full.free1mb.derived.txt",
+    "recovery-storage/scripts/tests/fixtures/f3/f3write-stick-volume-full.txt"
+   ],
+   "also_changed_not_frozen": [
+    "recovery-storage/scripts/tests/fixtures/SOURCES.md"
+   ],
+   "criteria_added": [
+    "C23b",
+    "C23c",
+    "D22d",
+    "D22e"
+   ],
+   "criteria_extended": [
+    "D22c",
+    "D24c"
+   ],
+   "unblocked": [
+    "test_C23_f3read_exit0_data_lost_zero_pass",
+    "test_D22_f3read_before_gate_evidence_before_recovery",
+    "test_D22_f3read_pass_covering_90pct_after_gate_pass",
+    "test_D22c_f3read_ingested_inside_the_verification_gate_passes"
    ]
   }
  ]

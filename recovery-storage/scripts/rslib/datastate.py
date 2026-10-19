@@ -92,7 +92,9 @@ def cmd_data_state(ctx, a):
                 reasons.append("image-gate-missing")
                 notes.append("needs a closed, successful image-ddrescue gate on this device in this session, "
                              "confirmed before the mapfile was ingested")
-            parsed = (st.loads(ev["data"]) or {}).get("parsed") or {}
+            from .ingest import current_parsed
+
+            parsed = current_parsed(ctx.store, ev) or {}
             ok, why = mapfile_complete(parsed, fp.get("bytes"))
             if not ok:
                 reasons.append(why)

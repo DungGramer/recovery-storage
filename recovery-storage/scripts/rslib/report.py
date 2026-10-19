@@ -14,6 +14,7 @@ from .actions import CATALOG
 from .collect import device_row, load_snapshot_record
 from .errors import Refused, UsageError
 from .fleet import latest_assessment, medium_scoped
+from .ingest import current_parsed
 from .triage import evidence_text
 from .verdict import history, pass_missing
 
@@ -119,7 +120,7 @@ def build_device(store, s, device_id):
         if n["field"] == "note":  # session-level: shown for every device of the session (amendment 05 R2)
             secs[3].append(item(A, f"session note ({n['who']}, {n['ts']}): {n['new']}", by=n["who"]))
     for e in evidence:
-        p = (st.loads(e["data"]) or {}).get("parsed") or {}
+        p = current_parsed(store, e) or {}
         if e["level"] == "attested":
             secs[3].append(item(A, f"attested by {e.get('who') or 'unknown'}: {p.get('tool')} result {p.get('result')} "
                                    f"(attachment sha256 {e['sha256']})", evidence_id=e["id"], sha256=e["sha256"],

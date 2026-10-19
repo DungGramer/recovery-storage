@@ -1,0 +1,14 @@
+F3 read 8.0
+Copyright (C) 2010 Digirati Internet LTDA.
+This is free software; see the source for copying conditions.
+
+                  SECTORS      ok/corrupted/changed/overwritten
+Validating file 1.h2w ... 2097152/        0/      0/      0
+Validating file 2.h2w ... 2097152/        0/      0/      0
+Validating file 3.h2w ... 2097152/        0/      0/      0
+Validating file 4.h2w ... 2097152/        0/      0/      0
+Validating file 5.h2w ... 2097152/        0/      0/      0
+Validating file 6.h2w ... 2097152/        0/      0/      0
+Validating file 7.h2w ... 2097152/        0/      0/      0
+Validating file 8.h2w ... f3read: f3read.c:167: check_buffer: Assertion `size % SECTOR_SIZE == 0' failed.
+Aborted (core dumped)
