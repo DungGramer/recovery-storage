@@ -25,5 +25,8 @@
   values and refused). Put anything with variables in a script file, copy it into WSL, run `sh /root/x.sh`.
 - WSL 2.4.11 kernel 5.15.167 has no usb-storage (`CONFIG_USB_STORAGE is not set`): usbipd-attached USB disks never
   appear. `wsl --update` (3.0.3, kernel 6.18) ships it as a module; it also restarts Docker Desktop's distros.
+- f3read right after f3write through WSL drvfs reads the Windows host cache, not the device (2026-10-19/20: stick
+  276 MB/s, card 159 MB/s; after an operator replug 14 / 17 MB/s). I recorded a PASS on a cached read and had to
+  re-verify; amendment 07 now refuses it (`f3read-not-after-replug`). Check the f3read rate against the device.
 - Verification gates (f3write-f3read...) write the source: before amendment 04 their close moved the PASS window
   past the evidence they produced. A green suite never ran the real run-ingest-close order; real runs find these.
