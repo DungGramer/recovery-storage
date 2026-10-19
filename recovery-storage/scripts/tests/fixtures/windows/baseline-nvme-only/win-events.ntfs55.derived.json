@@ -1,0 +1,15 @@
+{
+ "schema": "win-events/1",
+ "since": "2026-10-12T10:55:47.7819358Z",
+ "lookback_hours": 168,
+ "events": [
+  {
+   "time": "2026-10-19T23:30:00.0000000Z",
+   "provider": "Ntfs",
+   "id": 55,
+   "level": 2,
+   "message": "A corruption was discovered in the file system structure on volume %1"
+  }
+ ],
+ "errors": []
+}

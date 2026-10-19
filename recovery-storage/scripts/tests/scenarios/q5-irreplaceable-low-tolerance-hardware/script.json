@@ -1,0 +1,45 @@
+{
+ "name": "q5-irreplaceable-low-tolerance-hardware",
+ "structural": false,
+ "covers": [
+  "G2:HARDWARE_DIAGNOSIS_REQUIRED",
+  "Q5:branch-b"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "data-recovery",
+    "--risk-tolerance",
+    "low"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "ingest",
+    "smartctl",
+    "@fx:smartctl/scrutiny-usbjmicron-hdd-failing.json",
+    "--session",
+    "$sid"
+   ],
+   "save": {
+    "dev": "device_id"
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ],
+   "expect": {
+    "assessment.triage.branch": "b"
+   }
+  }
+ ]
+}

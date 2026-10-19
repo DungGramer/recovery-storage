@@ -1,0 +1,42 @@
+{
+ "name": "q5-not-spinning-stop",
+ "structural": false,
+ "covers": [
+  "G2:STOP_UNSAFE",
+  "Q5:not-spinning"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "data-recovery",
+    "--symptom",
+    "not-spinning"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "ingest",
+    "smartctl",
+    "@fx:smartctl/scrutiny-usbjmicron-hdd-failing.json",
+    "--session",
+    "$sid"
+   ],
+   "save": {
+    "dev": "device_id"
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ]
+  }
+ ]
+}

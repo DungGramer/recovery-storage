@@ -1,0 +1,7 @@
+{
+ "triage": "SOFTWARE_RECOVERY_CANDIDATE",
+ "hypotheses": [
+  "partition-or-filesystem"
+ ],
+ "verdict": "PASS"
+}

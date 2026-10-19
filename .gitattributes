@@ -1,0 +1,3 @@
+# sha256-pinned content: never let git rewrite line endings
+recovery-storage/scripts/rslib/ps/*.ps1 -text
+recovery-storage/scripts/tests/fixtures/** -text

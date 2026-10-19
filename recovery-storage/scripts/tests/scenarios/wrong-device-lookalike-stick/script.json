@@ -1,0 +1,192 @@
+{
+ "name": "wrong-device-lookalike-stick",
+ "structural": false,
+ "covers": [
+  "G3"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "device-recovery",
+    "--preserve-data",
+    "no",
+    "--ceiling",
+    "R1"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "inventory",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick"
+   },
+   "save": {
+    "dev": "observations[os_path=/dev/pd2].device_id"
+   }
+  },
+  {
+   "cli": [
+    "collect",
+    "$dev",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick"
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ]
+  },
+  {
+   "cli": [
+    "inventory",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick",
+    "override": {
+     "win-disks": "windows/usb-stick/win-disks.othersig.derived.json"
+    }
+   },
+   "exit": 5,
+   "reasons": [
+    "ambiguous"
+   ],
+   "expect": {
+    "observations[os_path=/dev/pd2].device_id": null
+   },
+   "save": {
+    "obs_b": "observations[os_path=/dev/pd2].observation_id"
+   }
+  },
+  {
+   "cli": [
+    "gate",
+    "open",
+    "$sid",
+    "$dev",
+    "disk-offline"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick",
+    "override": {
+     "win-disks": "windows/usb-stick/win-disks.othersig.derived.json"
+    }
+   },
+   "exit": [
+    3,
+    5
+   ]
+  },
+  {
+   "cli": [
+    "device",
+    "link",
+    "$obs_b",
+    "--new"
+   ],
+   "expect": {
+    "created": true
+   },
+   "save": {
+    "dev_b": "device_id"
+   }
+  },
+  {
+   "cli": [
+    "collect",
+    "$dev_b",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick",
+    "override": {
+     "win-disks": "windows/usb-stick/win-disks.othersig.derived.json"
+    }
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev_b"
+   ]
+  },
+  {
+   "cli": [
+    "gate",
+    "open",
+    "$sid",
+    "$dev_b",
+    "disk-offline"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick",
+    "override": {
+     "win-disks": "windows/usb-stick/win-disks.othersig.derived.json"
+    }
+   },
+   "expect": {
+    "gate.state": "pending"
+   },
+   "save": {
+    "gate_b": "gate.id"
+   }
+  },
+  {
+   "cli": [
+    "gate",
+    "confirm",
+    "$gate_b"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick",
+    "override": {
+     "win-disks": "windows/usb-stick/win-disks.othersig.derived.json"
+    }
+   },
+   "expect": {
+    "gate.state": "open",
+    "os_path": "/dev/pd2"
+   },
+   "answers": [
+    "8054112256"
+   ]
+  },
+  {
+   "cli": [
+    "gate",
+    "open",
+    "$sid",
+    "$dev",
+    "disk-offline"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick",
+    "override": {
+     "win-disks": "windows/usb-stick/win-disks.othersig.derived.json"
+    }
+   },
+   "exit": [
+    3,
+    5
+   ]
+  }
+ ]
+}

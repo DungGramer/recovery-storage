@@ -1,0 +1,10 @@
+{
+ "triage": "SOFTWARE_RECOVERY_CANDIDATE",
+ "hypotheses": [
+  "fake-capacity-or-counterfeit"
+ ],
+ "verdict": "RETIRED",
+ "hypothesis_confidence": {
+  "fake-capacity-or-counterfeit": "high"
+ }
+}

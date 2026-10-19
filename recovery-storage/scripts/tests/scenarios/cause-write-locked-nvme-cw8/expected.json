@@ -1,0 +1,7 @@
+{
+ "triage": "CONTROLLER_RECOVERY_CANDIDATE",
+ "hypotheses": [
+  "write-locked"
+ ],
+ "verdict": null
+}

@@ -1,0 +1,75 @@
+{
+ "name": "cause-fake-f3probe-wraparound",
+ "structural": false,
+ "covers": [
+  "G1:fake-capacity-or-counterfeit"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "authenticity-check",
+    "--preserve-data",
+    "no"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "inventory",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick"
+   },
+   "save": {
+    "dev": "observations[os_path=/dev/pd2].device_id"
+   }
+  },
+  {
+   "cli": [
+    "collect",
+    "$dev",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick"
+   }
+  },
+  {
+   "cli": [
+    "ingest",
+    "f3probe",
+    "$sid",
+    "$dev",
+    "@fx:ingest/f3probe-wraparound.verbatim.txt",
+    "--exit-code",
+    "103"
+   ]
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ]
+  },
+  {
+   "cli": [
+    "verdict",
+    "set",
+    "$sid",
+    "$dev",
+    "RETIRED",
+    "--reason",
+    "counterfeit capacity (f3probe wraparound)"
+   ]
+  }
+ ]
+}

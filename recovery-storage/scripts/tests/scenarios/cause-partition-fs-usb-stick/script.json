@@ -1,0 +1,51 @@
+{
+ "name": "cause-partition-fs-usb-stick",
+ "structural": false,
+ "covers": [
+  "G1:partition-or-filesystem"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "data-recovery"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "inventory",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick"
+   },
+   "save": {
+    "dev": "observations[os_path=/dev/pd2].device_id"
+   }
+  },
+  {
+   "cli": [
+    "collect",
+    "$dev",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick"
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ]
+  }
+ ]
+}

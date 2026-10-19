@@ -1,0 +1,44 @@
+{
+ "name": "cause-encryption-bridge",
+ "structural": false,
+ "covers": [
+  "G1:encryption-or-protection"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "data-recovery",
+    "--symptom",
+    "encrypted-locked"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "ingest",
+    "smartctl",
+    "@fx:smartctl/scrutiny-usbjmicron-hdd-failing.json",
+    "--session",
+    "$sid"
+   ],
+   "save": {
+    "dev": "device_id"
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ],
+   "expect": {
+    "assessment.triage.constraints[]": "keep-original-enclosure"
+   }
+  }
+ ]
+}

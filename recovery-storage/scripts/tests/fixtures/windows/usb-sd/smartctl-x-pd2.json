@@ -1,0 +1,35 @@
+{
+ "json_format_version": [
+  1,
+  0
+ ],
+ "smartctl": {
+  "version": [
+   7,
+   5
+  ],
+  "pre_release": false,
+  "svn_revision": "5714",
+  "platform_info": "x86_64-w64-mingw32-w11-b26200",
+  "build_info": "(AppVeyor)",
+  "argv": [
+   "smartctl",
+   "-j",
+   "-x",
+   "-n",
+   "standby",
+   "/dev/pd2"
+  ],
+  "messages": [
+   {
+    "string": "/dev/pd2: Unknown USB bridge [0xabcd:0x1234]",
+    "severity": "error"
+   }
+  ],
+  "exit_status": 1
+ },
+ "local_time": {
+  "time_t": 1792408066,
+  "asctime": "Mon Oct 19 18:07:46 2026 SEAST"
+ }
+}

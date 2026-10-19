@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+*.sqlite
+*.db
+/sessions/
+.venv/
+*.img
+*.mapfile
+*.log
+
+# raw captures with real device identifiers (redacted copies live in recovery-storage/scripts/tests/fixtures/)
+plans/*/research/samples/

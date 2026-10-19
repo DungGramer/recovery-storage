@@ -1,0 +1,39 @@
+{
+ "name": "cause-write-locked-nvme-cw8",
+ "structural": false,
+ "covers": [
+  "G1:write-locked"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "data-recovery"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "ingest",
+    "smartctl",
+    "@fx:smartctl/nvme-990pro-x.cw8.derived.json",
+    "--session",
+    "$sid"
+   ],
+   "save": {
+    "dev": "device_id"
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,43 @@
+{
+ "name": "q5-failing-hdd-default-software",
+ "structural": false,
+ "covers": [
+  "G2:SOFTWARE_RECOVERY_CANDIDATE",
+  "Q5:default"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "data-recovery"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "ingest",
+    "smartctl",
+    "@fx:smartctl/scrutiny-usbjmicron-hdd-failing.json",
+    "--session",
+    "$sid"
+   ],
+   "save": {
+    "dev": "device_id"
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ],
+   "expect": {
+    "assessment.triage.constraints[]": "image-before-any-write"
+   }
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+# Mapfile. Created by GNU ddrescue version 1.30
+# Command line: ddrescue -d -c18 /dev/fd0 fdimage mapfile
+# Start time:   2015-07-21 09:37:44
+# Current time: 2015-07-21 09:38:19
+# Copying non-tried blocks... Pass 1 (forwards)
+# current_pos  current_status  current_pass
+0x00120000     +               1
+#      pos        size  status
+0x00000000  0x00117000  +
+0x00117000  0x00000200  +
+0x00117200  0x00001000  +
+0x00118200  0x00007E00  +
+0x00120000  0xE8E0C96000  +

@@ -1,0 +1,10 @@
+{
+ "triage": "SOFTWARE_RECOVERY_CANDIDATE",
+ "hypotheses": [
+  "partition-or-filesystem"
+ ],
+ "verdict": null,
+ "open_gates_only": [
+  "gate_b"
+ ]
+}

@@ -1,0 +1,52 @@
+{
+ "name": "undetermined-not-detected-no-isolation",
+ "structural": false,
+ "covers": [
+  "G2:UNDETERMINED"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "data-recovery",
+    "--symptom",
+    "not-detected"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "inventory",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick"
+   },
+   "save": {
+    "dev": "observations[os_path=/dev/pd2].device_id"
+   }
+  },
+  {
+   "cli": [
+    "inventory",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ]
+  }
+ ]
+}

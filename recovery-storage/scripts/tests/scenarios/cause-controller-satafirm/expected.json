@@ -1,0 +1,7 @@
+{
+ "triage": "CONTROLLER_RECOVERY_CANDIDATE",
+ "hypotheses": [
+  "controller-or-firmware"
+ ],
+ "verdict": null
+}

@@ -1,0 +1,154 @@
+{
+ "name": "usb-stick-end-to-end",
+ "structural": false,
+ "covers": [
+  "real-usb"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "device-recovery",
+    "--preserve-data",
+    "no",
+    "--ceiling",
+    "R2"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "inventory",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick"
+   },
+   "save": {
+    "dev": "observations[os_path=/dev/pd2].device_id"
+   }
+  },
+  {
+   "cli": [
+    "collect",
+    "$dev",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick"
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ]
+  },
+  {
+   "cli": [
+    "session",
+    "data-state",
+    "$sid",
+    "$dev",
+    "not-needed"
+   ],
+   "answers": [
+    "YES"
+   ]
+  },
+  {
+   "cli": [
+    "gate",
+    "open",
+    "$sid",
+    "$dev",
+    "f3write-f3read"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick"
+   },
+   "save": {
+    "g": "gate.id"
+   }
+  },
+  {
+   "cli": [
+    "gate",
+    "confirm",
+    "$g"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick"
+   },
+   "answers": [
+    "8054112256"
+   ]
+  },
+  {
+   "cli": [
+    "gate",
+    "close",
+    "$g",
+    "--outcome",
+    "success"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick"
+   }
+  },
+  {
+   "cli": [
+    "ingest",
+    "attested",
+    "$sid",
+    "$dev",
+    "--tool",
+    "h2testw",
+    "--result",
+    "pass",
+    "--file",
+    "@tmp:h2testw-stick.txt"
+   ],
+   "answers": [
+    "YES"
+   ]
+  },
+  {
+   "cli": [
+    "inventory",
+    "--session",
+    "$sid",
+    "--after-replug"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick"
+   }
+  },
+  {
+   "cli": [
+    "inventory",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick"
+   }
+  },
+  {
+   "cli": [
+    "verdict",
+    "set",
+    "$sid",
+    "$dev",
+    "PASS"
+   ]
+  }
+ ]
+}

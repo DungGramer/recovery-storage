@@ -1,0 +1,59 @@
+{
+ "name": "hardware-not-detected-isolated",
+ "structural": false,
+ "covers": [
+  "G2:HARDWARE_DIAGNOSIS_REQUIRED"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "data-recovery",
+    "--symptom",
+    "not-detected",
+    "--tried",
+    "other-port",
+    "--tried",
+    "other-host"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "inventory",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick"
+   },
+   "save": {
+    "dev": "observations[os_path=/dev/pd2].device_id"
+   }
+  },
+  {
+   "cli": [
+    "inventory",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ],
+   "expect": {
+    "assessment.triage.branch": "a"
+   }
+  }
+ ]
+}

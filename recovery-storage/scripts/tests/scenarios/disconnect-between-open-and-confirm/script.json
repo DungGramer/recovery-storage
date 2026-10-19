@@ -1,0 +1,89 @@
+{
+ "name": "disconnect-between-open-and-confirm",
+ "structural": false,
+ "covers": [
+  "G4:open-confirm"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "diagnosis-only",
+    "--ceiling",
+    "R1"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "inventory",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick"
+   },
+   "save": {
+    "dev": "observations[os_path=/dev/pd2].device_id"
+   }
+  },
+  {
+   "cli": [
+    "collect",
+    "$dev",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick"
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ]
+  },
+  {
+   "cli": [
+    "gate",
+    "open",
+    "$sid",
+    "$dev",
+    "disk-offline"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick"
+   },
+   "save": {
+    "g": "gate.id"
+   }
+  },
+  {
+   "cli": [
+    "gate",
+    "confirm",
+    "$g"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   },
+   "exit": 3,
+   "reasons": [
+    "device-changed"
+   ],
+   "expect": {
+    "gate.state": "aborted",
+    "gate.abort_reason": "device-changed"
+   },
+   "answers": [
+    "8054112256"
+   ]
+  }
+ ]
+}

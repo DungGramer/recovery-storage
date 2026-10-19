@@ -1,0 +1,39 @@
+{
+ "name": "undetermined-open-failed-ingest",
+ "structural": false,
+ "covers": [
+  "G2:UNDETERMINED"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "diagnosis-only"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "ingest",
+    "smartctl",
+    "@fx:smartctl/scrutiny-open-failed.json",
+    "--session",
+    "$sid"
+   ],
+   "save": {
+    "dev": "device_id"
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ]
+  }
+ ]
+}

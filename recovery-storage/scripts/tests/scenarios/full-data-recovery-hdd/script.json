@@ -1,0 +1,126 @@
+{
+ "name": "full-data-recovery-hdd",
+ "structural": true,
+ "covers": [
+  "G9"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "data-recovery",
+    "--goal",
+    "device-recovery",
+    "--ceiling",
+    "R2"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "ingest",
+    "smartctl",
+    "@fx:smartctl/scrutiny-usbjmicron-hdd-failing.json",
+    "--session",
+    "$sid"
+   ],
+   "save": {
+    "dev": "device_id"
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ]
+  },
+  {
+   "cli": [
+    "ingest",
+    "ddrescue",
+    "$sid",
+    "$dev",
+    "@fx:ingest/ddrescue-manual-1.30.map"
+   ],
+   "save": {
+    "ev1": "evidence.id"
+   }
+  },
+  {
+   "cli": [
+    "session",
+    "data-state",
+    "$sid",
+    "$dev",
+    "secured",
+    "--evidence",
+    "$ev1"
+   ],
+   "exit": 3,
+   "reasons": [
+    "image-incomplete"
+   ]
+  },
+  {
+   "cli": [
+    "gate",
+    "open",
+    "$sid",
+    "$dev",
+    "format"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   },
+   "exit": 3,
+   "reasons": [
+    "data-not-secured"
+   ]
+  },
+  {
+   "cli": [
+    "ingest",
+    "ddrescue",
+    "$sid",
+    "$dev",
+    "@fx:ingest/ddrescue-finished.hitachi500.derived.map"
+   ],
+   "save": {
+    "ev2": "evidence.id"
+   }
+  },
+  {
+   "cli": [
+    "session",
+    "data-state",
+    "$sid",
+    "$dev",
+    "secured",
+    "--evidence",
+    "$ev2"
+   ]
+  },
+  {
+   "cli": [
+    "gate",
+    "open",
+    "$sid",
+    "$dev",
+    "format"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   },
+   "exit": 3,
+   "reasons": [
+    "device-not-found"
+   ]
+  }
+ ],
+ "structural_reason": "No real HDD-behind-USB-dock capture on Windows (SOURCES.md 'No real sample yet'): the HDD is known only via ingest, so the format gate ends at device-not-found and the self-test/PASS matrix steps cannot run."
+}

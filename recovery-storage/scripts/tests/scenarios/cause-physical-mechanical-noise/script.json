@@ -1,0 +1,42 @@
+{
+ "name": "cause-physical-mechanical-noise",
+ "structural": false,
+ "covers": [
+  "G1:physical-hardware",
+  "G2:STOP_UNSAFE"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "data-recovery",
+    "--symptom",
+    "mechanical-noise"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "ingest",
+    "smartctl",
+    "@fx:smartctl/scrutiny-ata-hdd-healthy.json",
+    "--session",
+    "$sid"
+   ],
+   "save": {
+    "dev": "device_id"
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ]
+  }
+ ]
+}

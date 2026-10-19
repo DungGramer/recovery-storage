@@ -1,0 +1,51 @@
+{
+ "name": "cause-bad-sectors-failing-hdd",
+ "structural": false,
+ "covers": [
+  "G1:bad-sectors-io",
+  "G2:SOFTWARE_RECOVERY_CANDIDATE"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "data-recovery"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "ingest",
+    "smartctl",
+    "@fx:smartctl/scrutiny-usbjmicron-hdd-failing.json",
+    "--session",
+    "$sid"
+   ],
+   "save": {
+    "dev": "device_id"
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ]
+  },
+  {
+   "cli": [
+    "verdict",
+    "set",
+    "$sid",
+    "$dev",
+    "REPAIR_REQUIRED",
+    "--reason",
+    "reallocated sectors at threshold"
+   ]
+  }
+ ]
+}

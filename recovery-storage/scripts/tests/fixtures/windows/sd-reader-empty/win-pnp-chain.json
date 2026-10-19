@@ -1,0 +1,155 @@
+{
+ "schema": "win-pnp-chain/1",
+ "disks": [
+  {
+   "Index": 0,
+   "PNPDeviceID": "SCSI\\DISK&VEN_NVME&PROD_SAMSUNG_SSD_990\\5&39DAB19&0&000000",
+   "Chain": [
+    {
+     "InstanceId": "SCSI\\DISK&VEN_NVME&PROD_SAMSUNG_SSD_990\\5&39DAB19&0&000000",
+     "Class": "DiskDrive",
+     "FriendlyName": "Samsung SSD 990 PRO 1TB",
+     "Service": "disk",
+     "Status": "OK"
+    },
+    {
+     "InstanceId": "PCI\\VEN_144D&DEV_A80C&SUBSYS_A801144D&REV_00\\4&e45fc2a&0&0030",
+     "Class": "SCSIAdapter",
+     "FriendlyName": "Standard NVM Express Controller",
+     "Service": "stornvme",
+     "Status": "OK"
+    },
+    {
+     "InstanceId": "PCI\\VEN_8086&DEV_A74D&SUBSYS_88821043&REV_01\\3&11583659&0&30",
+     "Class": "System",
+     "FriendlyName": "Intel(R) PCIe RC 060 (x4) G4 - A74D",
+     "Service": "pci",
+     "Status": "OK"
+    },
+    {
+     "InstanceId": "ACPI\\PNP0A08\\0",
+     "Class": "System",
+     "FriendlyName": "PCI Express Root Complex",
+     "Service": "pci",
+     "Status": "OK"
+    },
+    {
+     "InstanceId": "ACPI_HAL\\PNP0C08\\0",
+     "Class": "System",
+     "FriendlyName": "Microsoft ACPI-Compliant System",
+     "Service": "ACPI",
+     "Status": "OK"
+    },
+    {
+     "InstanceId": "ROOT\\ACPI_HAL\\0000",
+     "Class": "Computer",
+     "FriendlyName": "ACPI x64-based PC",
+     "Service": "\\Driver\\ACPI_HAL",
+     "Status": "OK"
+    },
+    {
+     "InstanceId": "HTREE\\ROOT\\0",
+     "Class": null,
+     "FriendlyName": null,
+     "Service": null,
+     "Status": "OK"
+    }
+   ]
+  },
+  {
+   "Index": 1,
+   "PNPDeviceID": "SCSI\\DISK&VEN_NVME&PROD_SAMSUNG_SSD_980\\5&20BC6FEE&0&000000",
+   "Chain": [
+    {
+     "InstanceId": "SCSI\\DISK&VEN_NVME&PROD_SAMSUNG_SSD_980\\5&20BC6FEE&0&000000",
+     "Class": "DiskDrive",
+     "FriendlyName": "Samsung SSD 980 PRO 2TB",
+     "Service": "disk",
+     "Status": "OK"
+    },
+    {
+     "InstanceId": "PCI\\VEN_144D&DEV_A80A&SUBSYS_A801144D&REV_00\\4&6d0681d&0&00D0",
+     "Class": "SCSIAdapter",
+     "FriendlyName": "Standard NVM Express Controller",
+     "Service": "stornvme",
+     "Status": "OK"
+    },
+    {
+     "InstanceId": "PCI\\VEN_8086&DEV_7A48&SUBSYS_88821043&REV_11\\3&11583659&0&D0",
+     "Class": "System",
+     "FriendlyName": "Intel(R) PCI Express Root Port #25 - 7A48",
+     "Service": "pci",
+     "Status": "OK"
+    },
+    {
+     "InstanceId": "ACPI\\PNP0A08\\0",
+     "Class": "System",
+     "FriendlyName": "PCI Express Root Complex",
+     "Service": "pci",
+     "Status": "OK"
+    },
+    {
+     "InstanceId": "ACPI_HAL\\PNP0C08\\0",
+     "Class": "System",
+     "FriendlyName": "Microsoft ACPI-Compliant System",
+     "Service": "ACPI",
+     "Status": "OK"
+    },
+    {
+     "InstanceId": "ROOT\\ACPI_HAL\\0000",
+     "Class": "Computer",
+     "FriendlyName": "ACPI x64-based PC",
+     "Service": "\\Driver\\ACPI_HAL",
+     "Status": "OK"
+    },
+    {
+     "InstanceId": "HTREE\\ROOT\\0",
+     "Class": null,
+     "FriendlyName": null,
+     "Service": null,
+     "Status": "OK"
+    }
+   ]
+  },
+  {
+   "Index": 3,
+   "PNPDeviceID": "USBSTOR\\DISK&VEN_GENERIC&PROD_STORAGE_DEVICE&REV_1404\\6&19CB5336&3",
+   "Chain": [
+    {
+     "InstanceId": "USBSTOR\\DISK&VEN_GENERIC&PROD_STORAGE_DEVICE&REV_1404\\6&19CB5336&3",
+     "Class": "DiskDrive",
+     "FriendlyName": "Generic STORAGE DEVICE USB Device",
+     "Service": "disk",
+     "Status": "OK"
+    },
+    {
+     "InstanceId": "USB\\VID_05E3&PID_0751\\5&cc3f949&0&1",
+     "Class": "USB",
+     "FriendlyName": "USB Mass Storage Device",
+     "Service": "USBSTOR",
+     "Status": "OK"
+    }
+   ]
+  },
+  {
+   "Index": 2,
+   "PNPDeviceID": "USBSTOR\\DISK&VEN_GENERAL&PROD_UDISK&REV_5.00\\6&2A5FF242&0&_&0",
+   "Chain": [
+    {
+     "InstanceId": "USBSTOR\\DISK&VEN_GENERAL&PROD_UDISK&REV_5.00\\6&2A5FF242&0&_&0",
+     "Class": "DiskDrive",
+     "FriendlyName": "General UDisk USB Device",
+     "Service": "disk",
+     "Status": "OK"
+    },
+    {
+     "InstanceId": "USB\\VID_ABCD&PID_1234\\5&cc3f949&0&8",
+     "Class": "USB",
+     "FriendlyName": "USB Mass Storage Device",
+     "Service": "USBSTOR",
+     "Status": "OK"
+    }
+   ]
+  }
+ ]
+}

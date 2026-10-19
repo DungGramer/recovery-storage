@@ -1,0 +1,40 @@
+{
+ "name": "cause-controller-satafirm",
+ "structural": false,
+ "covers": [
+  "G1:controller-or-firmware",
+  "G2:CONTROLLER_RECOVERY_CANDIDATE"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "data-recovery"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "ingest",
+    "smartctl",
+    "@fx:smartctl/scrutiny-ata-ssd-healthy.satafirm.derived.json",
+    "--session",
+    "$sid"
+   ],
+   "save": {
+    "dev": "device_id"
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ]
+  }
+ ]
+}

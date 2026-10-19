@@ -1,0 +1,64 @@
+{
+ "name": "cause-nand-f3probe-damaged",
+ "structural": false,
+ "covers": [
+  "G1:nand-degradation"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "authenticity-check",
+    "--preserve-data",
+    "no"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "inventory",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick"
+   },
+   "save": {
+    "dev": "observations[os_path=/dev/pd2].device_id"
+   }
+  },
+  {
+   "cli": [
+    "collect",
+    "$dev",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/usb-stick"
+   }
+  },
+  {
+   "cli": [
+    "ingest",
+    "f3probe",
+    "$sid",
+    "$dev",
+    "@fx:ingest/f3probe-damaged.verbatim.txt",
+    "--exit-code",
+    "101"
+   ]
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ]
+  }
+ ]
+}

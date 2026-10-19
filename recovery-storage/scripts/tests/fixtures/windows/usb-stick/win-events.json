@@ -1,0 +1,7 @@
+{
+ "schema": "win-events/1",
+ "since": "2026-10-12T10:58:26.4176249Z",
+ "lookback_hours": 168,
+ "events": [],
+ "errors": []
+}

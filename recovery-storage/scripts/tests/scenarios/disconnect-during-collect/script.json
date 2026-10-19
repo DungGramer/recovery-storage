@@ -1,0 +1,71 @@
+{
+ "name": "disconnect-during-collect",
+ "structural": false,
+ "covers": [
+  "G4:collect"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "diagnosis-only"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "inventory",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   },
+   "save": {
+    "dev": "observations[os_path=/dev/pd1].device_id"
+   }
+  },
+  {
+   "cli": [
+    "collect",
+    "$dev",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only",
+    "replace": [
+     [
+      "smartctl",
+      [
+       "-j",
+       "-x",
+       "-n",
+       "standby",
+       "/dev/pd1"
+      ],
+      "smartctl/missing-device.json"
+     ]
+    ]
+   },
+   "exit": 4,
+   "expect": {
+    "snapshot.collection_status": "collection_failed"
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ],
+   "expect": {
+    "assessment.health.verdict": "unknown"
+   }
+  }
+ ]
+}

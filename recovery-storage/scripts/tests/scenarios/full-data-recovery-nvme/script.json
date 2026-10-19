@@ -1,0 +1,242 @@
+{
+ "name": "full-data-recovery-nvme",
+ "structural": false,
+ "covers": [
+  "G9"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "data-recovery",
+    "--goal",
+    "device-recovery",
+    "--ceiling",
+    "R2"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "inventory",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   },
+   "save": {
+    "dev": "observations[os_path=/dev/pd1].device_id"
+   }
+  },
+  {
+   "cli": [
+    "collect",
+    "$dev",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ]
+  },
+  {
+   "cli": [
+    "gate",
+    "open",
+    "$sid",
+    "$dev",
+    "format"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   },
+   "exit": 3,
+   "reasons": [
+    "data-not-secured"
+   ]
+  },
+  {
+   "cli": [
+    "ingest",
+    "ddrescue",
+    "$sid",
+    "$dev",
+    "@fx:ingest/ddrescue-manual-1.30.map"
+   ],
+   "save": {
+    "ev1": "evidence.id"
+   }
+  },
+  {
+   "cli": [
+    "session",
+    "data-state",
+    "$sid",
+    "$dev",
+    "secured",
+    "--evidence",
+    "$ev1"
+   ],
+   "exit": 3,
+   "reasons": [
+    "image-incomplete"
+   ]
+  },
+  {
+   "cli": [
+    "ingest",
+    "ddrescue",
+    "$sid",
+    "$dev",
+    "@fx:ingest/ddrescue-finished.980pro.derived.map"
+   ],
+   "save": {
+    "ev2": "evidence.id"
+   }
+  },
+  {
+   "cli": [
+    "session",
+    "data-state",
+    "$sid",
+    "$dev",
+    "secured",
+    "--evidence",
+    "$ev2"
+   ],
+   "expect": {
+    "data_state": "secured"
+   }
+  },
+  {
+   "cli": [
+    "gate",
+    "open",
+    "$sid",
+    "$dev",
+    "format"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   },
+   "expect": {
+    "gate.state": "pending"
+   },
+   "save": {
+    "g": "gate.id"
+   }
+  },
+  {
+   "cli": [
+    "gate",
+    "confirm",
+    "$g"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   },
+   "expect": {
+    "gate.state": "open",
+    "os_path": "/dev/pd1"
+   },
+   "answers": [
+    "0D9Z"
+   ]
+  },
+  {
+   "cli": [
+    "gate",
+    "close",
+    "$g",
+    "--outcome",
+    "success"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   },
+   "expect": {
+    "gate.state": "closed"
+   }
+  },
+  {
+   "cli": [
+    "verdict",
+    "set",
+    "$sid",
+    "$dev",
+    "PASS"
+   ],
+   "exit": 3,
+   "reasons": [
+    "replug-observation-missing"
+   ]
+  },
+  {
+   "cli": [
+    "inventory",
+    "--session",
+    "$sid",
+    "--after-replug"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   }
+  },
+  {
+   "cli": [
+    "collect",
+    "$dev",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ]
+  },
+  {
+   "cli": [
+    "ingest",
+    "attested",
+    "$sid",
+    "$dev",
+    "--tool",
+    "other",
+    "--result",
+    "pass",
+    "--file",
+    "@tmp:read-verify.txt"
+   ],
+   "answers": [
+    "YES"
+   ]
+  },
+  {
+   "cli": [
+    "verdict",
+    "set",
+    "$sid",
+    "$dev",
+    "PASS"
+   ]
+  }
+ ]
+}

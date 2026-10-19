@@ -1,0 +1,7 @@
+{
+ "triage": "HARDWARE_DIAGNOSIS_REQUIRED",
+ "hypotheses": [
+  "bad-sectors-io"
+ ],
+ "verdict": null
+}

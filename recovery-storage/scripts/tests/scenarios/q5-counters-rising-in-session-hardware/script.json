@@ -1,0 +1,57 @@
+{
+ "name": "q5-counters-rising-in-session-hardware",
+ "structural": false,
+ "covers": [
+  "G2:HARDWARE_DIAGNOSIS_REQUIRED",
+  "Q5:branch-c"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "data-recovery",
+    "--risk-tolerance",
+    "high"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "ingest",
+    "smartctl",
+    "@fx:smartctl/scrutiny-usbjmicron-hdd-failing.json",
+    "--session",
+    "$sid"
+   ],
+   "save": {
+    "dev": "device_id"
+   }
+  },
+  {
+   "cli": [
+    "ingest",
+    "smartctl",
+    "@fx:smartctl/scrutiny-usbjmicron-hdd-failing.p197-12.derived.json",
+    "--session",
+    "$sid"
+   ],
+   "save": {
+    "dev2": "device_id"
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ],
+   "expect": {
+    "assessment.triage.branch": "c"
+   }
+  }
+ ]
+}

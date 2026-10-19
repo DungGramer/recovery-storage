@@ -1,0 +1,112 @@
+{
+ "name": "disconnect-swap-between-confirm-and-close",
+ "structural": false,
+ "covers": [
+  "G4:confirm-close"
+ ],
+ "steps": [
+  {
+   "cli": [
+    "session",
+    "new",
+    "--goal",
+    "diagnosis-only",
+    "--ceiling",
+    "R1"
+   ],
+   "save": {
+    "sid": "session.id"
+   }
+  },
+  {
+   "cli": [
+    "inventory",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   },
+   "save": {
+    "dev": "observations[os_path=/dev/pd1].device_id"
+   }
+  },
+  {
+   "cli": [
+    "collect",
+    "$dev",
+    "--session",
+    "$sid"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   }
+  },
+  {
+   "cli": [
+    "assess",
+    "$sid",
+    "$dev"
+   ]
+  },
+  {
+   "cli": [
+    "gate",
+    "open",
+    "$sid",
+    "$dev",
+    "smart-selftest-short"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   },
+   "save": {
+    "g": "gate.id"
+   }
+  },
+  {
+   "cli": [
+    "gate",
+    "confirm",
+    "$g"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only"
+   },
+   "answers": [
+    "0D9Z"
+   ]
+  },
+  {
+   "cli": [
+    "gate",
+    "close",
+    "$g",
+    "--outcome",
+    "success"
+   ],
+   "runner": {
+    "capture": "windows/baseline-nvme-only",
+    "override": {
+     "pd1": "windows/baseline-nvme-only/smartctl-x-pd1.serial-swap.derived.json"
+    }
+   },
+   "expect": {
+    "gate.identity_drift": true
+   }
+  },
+  {
+   "cli": [
+    "verdict",
+    "set",
+    "$sid",
+    "$dev",
+    "PASS"
+   ],
+   "exit": 3,
+   "reasons": [
+    "unresolved-identity-drift"
+   ]
+  }
+ ]
+}

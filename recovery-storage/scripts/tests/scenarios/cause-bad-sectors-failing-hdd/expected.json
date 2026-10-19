@@ -1,0 +1,7 @@
+{
+ "triage": "SOFTWARE_RECOVERY_CANDIDATE",
+ "hypotheses": [
+  "bad-sectors-io"
+ ],
+ "verdict": "REPAIR_REQUIRED"
+}
