@@ -1,6 +1,6 @@
 # Plan: recovery-storage skill (GĐ 1-4)
 
-Status: Done - 2026-10-19 (review amendments: [01](amendment-01-operator-console-and-mapfile-coverage.md), [02](amendment-02-review-round-2.md), [03](amendment-03-real-run-card-reader.md), [04](amendment-04-verification-gate-window.md))
+Status: Done - 2026-10-19 (review amendments: [01](amendment-01-operator-console-and-mapfile-coverage.md), [02](amendment-02-review-round-2.md), [03](amendment-03-real-run-card-reader.md), [04](amendment-04-verification-gate-window.md), [05](amendment-05-report-fixes.md))
 Spec: [requirements.md](requirements.md) (verbatim spec, settled decisions, verified facts). Research: `research/researcher-0{1..5}-*.md`. Fixtures (built): `recovery-storage/scripts/tests/fixtures/SOURCES.md`.
 
 ## Goal

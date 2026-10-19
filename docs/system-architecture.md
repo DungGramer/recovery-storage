@@ -71,7 +71,7 @@ Skill layout: `recovery-storage/` holds `SKILL.md`, `references/`, `scripts/`. `
 4. `assess` produces the health verdict, the triage class and constraints, and ranked hypotheses from stored evidence.
 5. Risky actions go through the gate (below). `ingest` stores tool output the operator ran outside the process.
 6. `session data-state` records whether the data is secured, waived or not needed.
-7. `verdict set` refuses PASS unless the device class's evidence is present, then `report` renders the document.
+7. `verdict set` refuses PASS unless the device class's evidence is present, then `report` renders the document. A verdict recorded while the reader showed no medium (or a weak match) is scoped to that session's card and never becomes the reader's fleet status (`fleet.medium_scoped`).
 
 ### Gate state machine
 

@@ -4,7 +4,7 @@
  "reason": "spec-first acceptance + unit suite for phases 01-08 (test-designer); contract in tests/CONTRACT.md",
  "files": {
   "pytest.ini": "b0cdc0191afb27a3ef8f41d4c25ea016a7c379913f8986d863ac871b3d50be67",
-  "recovery-storage/scripts/tests/CONTRACT.md": "4cc5b6dde3958bf08da1eefcf3237dc5212290dc20b04fa94a4631755ee0ffa2",
+  "recovery-storage/scripts/tests/CONTRACT.md": "c768916ae84cbc985044e32cc3b63d57ec563bb241fbe1d279516cdb626c1451",
   "recovery-storage/scripts/tests/conftest.py": "8d34b6ce4a7eca28d017057f4b1c71f1d7c19a097c95882de4a38e4d538422b0",
   "recovery-storage/scripts/tests/fixtures/ingest/ddrescue-finished.980pro.derived.map": "910cd87fc46f417dc8729b84e2cfb9088aefa61547bac2af8d67a4ed369bbe3e",
   "recovery-storage/scripts/tests/fixtures/ingest/ddrescue-finished.990pro.derived.map": "f9c2d62c450e4a466c1197843c579ba9accaf57ccfcef38a1af5d5204a5f4f2f",
@@ -42,6 +42,7 @@
   "recovery-storage/scripts/tests/fixtures/windows/usb-sd/smartctl-x-pd4.from-pd3.derived.json": "211eba57ad9d4088b25eb370fd1e3b47e29f0d957098babed059f2054a2aa0b2",
   "recovery-storage/scripts/tests/fixtures/windows/usb-sd/smartctl-x-sat-pd4.from-pd3.derived.json": "140d78a843af9c1436cb295caff59a55fa5967f5f6291dd352d2ecd3d35111b3",
   "recovery-storage/scripts/tests/fixtures/windows/usb-sd/win-disks.sd-twin.derived.json": "4d2804ecce654ba3ed742ff08cab30724544aa5993604de9651badd127890892",
+  "recovery-storage/scripts/tests/fixtures/windows/usb-sd/win-events.ntfs55x3.derived.json": "aa16c459db3662c3d04e9826f2af30398dd6c2791f9c94a5d5a5a1dcd388d638",
   "recovery-storage/scripts/tests/fixtures/windows/usb-sd/win-pnp-chain.sd-twin.derived.json": "4aea9aacc07072a70e48955fb07bea8658b0e575b72a7c442d3f6e587e0d7768",
   "recovery-storage/scripts/tests/fixtures/windows/usb-stick/smartctl-x-pd3.from-pd2.derived.json": "356014b413350d42bf3187a1d06a3f0fa1a68f4f96a74b33b06e4eda4399a340",
   "recovery-storage/scripts/tests/fixtures/windows/usb-stick/smartctl-x-sat-pd2.no-error.derived.json": "5e7228705de9fd75af682367bfbee61b95750b90768b77fbffd326bb8a8d4bc4",
@@ -111,14 +112,14 @@
   "recovery-storage/scripts/tests/test_enum_windows.py": "9fa80a47358a4cb736fee18c2cc7576930ea11da2c15e63340942a4ecfbd030e",
   "recovery-storage/scripts/tests/test_exit_bits.py": "4ada39f32952f2d1850575dd52d5e1d2335e5f157b473cd25f4830cbe9ccde84",
   "recovery-storage/scripts/tests/test_fixtures_sources.py": "aeca0fdb5acdd47972c5cfa6c3c5650bd49fa0a9ab67a99413a5a2da5f0d797b",
-  "recovery-storage/scripts/tests/test_fleet.py": "24c838b0b89eb9962f865c2e8c137b481b987658e070af3d5aac1456f90b3ba0",
+  "recovery-storage/scripts/tests/test_fleet.py": "261a0494c0fb273698fdc40934f3c6084ab0ac76a5e7df5709359c01eda1f146",
   "recovery-storage/scripts/tests/test_gate_confirm_close.py": "971b28e7400744bd42c90764832a1b3ddbefe56f1153fa6385a2386541c30dcd",
   "recovery-storage/scripts/tests/test_gate_lock.py": "94f92051c40833ea1b902883234b101986f3f63b9fea64c345cad5f9fe6953c9",
   "recovery-storage/scripts/tests/test_gate_open.py": "d3561628d78b9c9fd835ffbe19f269cd08961a692b742bc87ce5dcc827851325",
   "recovery-storage/scripts/tests/test_guard_hook.py": "b7bb7d3966fc889c68d7e0404b3cfb30bc119c400a78cf2dc42db9f69b331dd3",
   "recovery-storage/scripts/tests/test_guard_patterns.py": "348bc4d5b57734247c26a904e81f0de9df7e45684773c84abadd1b676cb2be2e",
   "recovery-storage/scripts/tests/test_health_rules.py": "5dfd9ac9c2c158dbb5409c9307bdbb1d367e518d2dd8aeb88420f70d4cfce5e2",
-  "recovery-storage/scripts/tests/test_hypotheses.py": "8803b8247e5f66cd668dabd32eaf82064c7b7bf12b405ecdf59cd2f3192beed7",
+  "recovery-storage/scripts/tests/test_hypotheses.py": "5efba6a5fe50b0c84437f450e2ff31e278c39b93e2e35ebfe7da08e9419f80ce",
   "recovery-storage/scripts/tests/test_identity_drift.py": "3cbaeecf7ce59e088a8d3a1b20935e67ab3392dae09b8eabfe6db3cf7a88a2d0",
   "recovery-storage/scripts/tests/test_identity_match.py": "f806eb053d4b03da59006d86c6c83d8f011dcdd27ee13df7a94d91e1d9a6ed0a",
   "recovery-storage/scripts/tests/test_ingest_f3.py": "bae8fd469fc37dc96c2db0490c74fc174f63fb27f19567f0af7fbb5fe88b8cc1",
@@ -129,8 +130,8 @@
   "recovery-storage/scripts/tests/test_operator.py": "e3db17e4227307f43e9275a5fed8b6fa352d7735872c9bf1d490b6db507f9464",
   "recovery-storage/scripts/tests/test_python_compat.py": "278c662148d8c3a698b67c7a81050fcea67bd792df1c175c71e1bf1a00e8cc35",
   "recovery-storage/scripts/tests/test_report_check.py": "bd6ef1b57749fd5b99420de3e5803a6a0cd77b4956e5cea65a9fa48271bf243a",
-  "recovery-storage/scripts/tests/test_report_redact.py": "1c9bdb4def368f34a57328e0784337cc6807afaab327a2cf9217f2fa58e9c460",
-  "recovery-storage/scripts/tests/test_report_sections.py": "ec4e075fe8f2669e120adf33e1718e62e9a54b42648a237c45dd6686f8ee5eaa",
+  "recovery-storage/scripts/tests/test_report_redact.py": "7ad72cb5e6c92a2f527a3ede8a2dca63d1a9c421a66fb604fb9f16c32a4a7cbb",
+  "recovery-storage/scripts/tests/test_report_sections.py": "6f39393127261377e8a21e280365401bd97ab3e9af26193a82b7a04f8f96523f",
   "recovery-storage/scripts/tests/test_rules_doc.py": "89679c16e9234b0df9a6fb34167f552b56d9801430ff2a2bf9d6a6b7dfdb8432",
   "recovery-storage/scripts/tests/test_runner.py": "bac8133c46795cca04e4459fb7159f1e922a4447e1629561828bca4cd2ba7a49",
   "recovery-storage/scripts/tests/test_scenarios.py": "7b7c52041826831bac2211b6b1625fa8e2a6ab0058568f4dcd914a20bc99035d",
@@ -685,6 +686,11 @@
    "recovery-storage/scripts/tests/test_hypotheses.py::test_C18_corpus_is_not_vacuous",
    "recovery-storage/scripts/tests/test_hypotheses.py::test_C18_every_hypothesis_complete"
   ],
+  "C18b": [
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C18b_repeated_event_evidence_once_with_count_json",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C18b_repeated_event_evidence_once_with_count_text_and_report",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C18b_single_items_carry_no_count_marker"
+  ],
   "C19": [
    "recovery-storage/scripts/tests/test_hypotheses.py::test_C19_no_counterfeit_above_low_without_f3",
    "recovery-storage/scripts/tests/test_ingest_f3.py::test_C22_good_f3probe_no_counterfeit_above_low"
@@ -1083,6 +1089,26 @@
    "recovery-storage/scripts/tests/test_fleet.py::test_E11_list_and_show_json_parseable",
    "recovery-storage/scripts/tests/test_report_redact.py::test_E6_redact_applies_to_json_model"
   ],
+  "E12": [
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E12_notes_of_another_session_do_not_appear",
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E12_notes_pass_through_redaction",
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E12_notes_shown_for_every_device_of_the_session",
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E12_session_notes_in_section_3_attested_with_who_and_ts_in_order"
+  ],
+  "E13": [
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E13_assessment_after_the_verdict_is_current",
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E13_fail_verdict_keeps_hypotheses_open",
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E13_pre_verdict_next_tests_not_shown_after_pass[nvme-pass-limited]",
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E13_pre_verdict_next_tests_not_shown_after_pass[stick-pass]"
+  ],
+  "E13b": [
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E13b_symptom_only_hypothesis_after_a_write_is_low",
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E13b_write_in_an_earlier_session_leaves_new_symptoms_as_is"
+  ],
+  "E14": [
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E14_verdict_on_empty_reader_worded_as_the_card",
+   "recovery-storage/scripts/tests/test_report_sections.py::test_E14_verdict_still_effective_in_its_own_session"
+  ],
   "E2": [
    "recovery-storage/scripts/tests/test_report_sections.py::test_E2_inferred_items_carry_rule_and_confidence",
    "recovery-storage/scripts/tests/test_report_sections.py::test_E2_missing_field_undetermined_not_reported",
@@ -1101,6 +1127,12 @@
    "recovery-storage/scripts/tests/test_report_redact.py::test_E6_redact_applies_to_json_model",
    "recovery-storage/scripts/tests/test_report_redact.py::test_E6_redact_removes_serial_eui_wwn_and_username"
   ],
+  "E6b": [
+   "recovery-storage/scripts/tests/test_report_redact.py::test_E6b_redact_changes_only_identifier_values[reader-retired]",
+   "recovery-storage/scripts/tests/test_report_redact.py::test_E6b_redact_changes_only_identifier_values[stick-pass]",
+   "recovery-storage/scripts/tests/test_report_redact.py::test_E6b_redact_json_model_texts_unchanged_without_identifiers[reader-retired]",
+   "recovery-storage/scripts/tests/test_report_redact.py::test_E6b_redact_json_model_texts_unchanged_without_identifiers[stick-pass]"
+  ],
   "E7": [
    "recovery-storage/scripts/tests/test_report_check.py::test_E7_existing_file_not_overwritten_without_force",
    "recovery-storage/scripts/tests/test_report_check.py::test_E7_out_writes_utf8_markdown"
@@ -1108,6 +1140,13 @@
   "E8": [
    "recovery-storage/scripts/tests/test_fleet.py::test_E8_group_by_triage",
    "recovery-storage/scripts/tests/test_fleet.py::test_E8_ordering_stable_and_byte_identical"
+  ],
+  "E8b": [
+   "recovery-storage/scripts/tests/test_fleet.py::test_E8b_later_session_with_the_same_reader_does_not_inherit[empty-again]",
+   "recovery-storage/scripts/tests/test_fleet.py::test_E8b_later_session_with_the_same_reader_does_not_inherit[medium-online]",
+   "recovery-storage/scripts/tests/test_fleet.py::test_E8b_verdict_on_a_device_with_own_identity_stays_the_fleet_status",
+   "recovery-storage/scripts/tests/test_fleet.py::test_E8b_verdict_recorded_on_empty_reader_not_the_fleet_status",
+   "recovery-storage/scripts/tests/test_fleet.py::test_E8b_weak_match_card_verdict_scoped_too"
   ],
   "E9": [
    "recovery-storage/scripts/tests/test_fleet.py::test_E9_device_show_chronological_across_sessions"
@@ -1815,6 +1854,36 @@
    "id": "AM04-Q5",
    "coverage": "partial",
    "reason": "B1 with f3read evidence BLOCKED (no real f3read output with Data OK amounts as a fixture); test_D22c_f3read_ingested_inside_the_verification_gate_passes skipped; attested H2testw used instead."
+  },
+  {
+   "id": "AM05-Q1",
+   "coverage": "none",
+   "reason": "R4 scope fixed at verdict time vs recomputed from the latest observation at display time: fixtures cannot tell them apart; not asserted."
+  },
+  {
+   "id": "AM05-Q2",
+   "coverage": "none",
+   "reason": "R3 (b) read as 'symptom-only after a write in this session'; the reading 'an earlier assessment had non-session evidence that is gone' is not asserted."
+  },
+  {
+   "id": "AM05-Q3",
+   "coverage": "none",
+   "reason": "R3 (a) with a PASS superseded by a later non-PASS verdict, or PASS in another session: not asserted beyond the per-session effective verdict."
+  },
+  {
+   "id": "AM05-Q4",
+   "coverage": "none",
+   "reason": "R4: device show history of a scoped verdict not asserted."
+  },
+  {
+   "id": "AM05-Q5",
+   "coverage": "partial",
+   "reason": "R1 fixed vocabulary checked on two real-run report shapes (stick PASS, empty reader RETIRED); words printed only by other flows covered by the rule, not by a test."
+  },
+  {
+   "id": "AM05-Q6",
+   "coverage": "none",
+   "reason": "R5 merged-item strength when duplicates differ, and same path with different values staying separate: no fixture yields either; not asserted."
   }
  ],
  "amendments": [
@@ -1954,6 +2023,35 @@
    "criteria_added": [
     "D22c",
     "D4c"
+   ]
+  },
+  {
+   "id": "05",
+   "date": "2026-10-20",
+   "doc": "plans/20261019-1726-recovery-storage-skill/amendment-05-report-fixes.md",
+   "refrozen_at": "2026-10-19T17:37:43+00:00",
+   "reason": "user-approved amendment 05 (2026-10-20, 'S\u1eeda ti\u1ebfp 4 l\u1ed7i b\u00e1o c\u00e1o'): R1 redaction masks identifier values only, R2 session notes in section 3 [ATTESTED], R3 pre-verdict hypotheses resolved after PASS / PASS_LIMITED and symptom-only hypotheses low after a write in the session, R4 verdict on a no_media / weak card reader scoped to the session's medium; contract in tests/CONTRACT.md section 'Amendment 05'; R5 (added 2026-10-20, same approval): identical hypothesis evidence items once with a count",
+   "files_changed": [
+    "recovery-storage/scripts/tests/CONTRACT.md",
+    "recovery-storage/scripts/tests/test_fleet.py",
+    "recovery-storage/scripts/tests/test_hypotheses.py",
+    "recovery-storage/scripts/tests/test_report_redact.py",
+    "recovery-storage/scripts/tests/test_report_sections.py"
+   ],
+   "files_added": [
+    "recovery-storage/scripts/tests/fixtures/windows/usb-sd/win-events.ntfs55x3.derived.json"
+   ],
+   "also_changed_not_frozen": [
+    "recovery-storage/scripts/tests/fixtures/SOURCES.md"
+   ],
+   "criteria_added": [
+    "C18b",
+    "E12",
+    "E13",
+    "E13b",
+    "E14",
+    "E6b",
+    "E8b"
    ]
   }
  ]

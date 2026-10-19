@@ -13,7 +13,8 @@ from . import store as st
 from .actions import CATALOG
 from .collect import device_row, load_snapshot_record
 from .errors import Refused, UsageError
-from .fleet import latest_assessment
+from .fleet import latest_assessment, medium_scoped
+from .triage import evidence_text
 from .verdict import history, pass_missing
 
 HEADINGS = ["Mục tiêu xử lý", "Thông tin nhận dạng", "Triệu chứng và bằng chứng", "Chẩn đoán và mức độ tin cậy",
@@ -114,6 +115,9 @@ def build_device(store, s, device_id):
                                 tool="Get-WinEvent (frozen script win-events)", evidence_id=last["id"]))
     evidence = store.query("SELECT * FROM evidence WHERE device_id = ? AND session_id = ? ORDER BY ts, rowid",
                            (device_id, s["id"]))
+    for n in sess.events(store, s["id"]):
+        if n["field"] == "note":  # session-level: shown for every device of the session (amendment 05 R2)
+            secs[3].append(item(A, f"session note ({n['who']}, {n['ts']}): {n['new']}", by=n["who"]))
     for e in evidence:
         p = (st.loads(e["data"]) or {}).get("parsed") or {}
         if e["level"] == "attested":
@@ -127,21 +131,27 @@ def build_device(store, s, device_id):
             secs[6].append(item(V, f"ingested {e['kind']} output: {summary}", tool=e["kind"], evidence_id=e["id"],
                                 sha256=e["sha256"]))
 
+    vs = history(store, s["id"], device_id)
+    latest = vs[0] if vs else None
+    # assessment older than a PASS verdict: its open items were answered by the verdict (amendment 05 R3)
+    resolved = latest["status"] if latest and a and latest["status"] in ("PASS", "PASS_LIMITED") and \
+        a["ts"] < latest["ts"] else None
     if a:
         d = a["data"]
         h, t = d["health"], d["triage"]
         secs[4].append(item(I, f"health {h['verdict']}: {h['reason']}", rule_id=h["rule_id"],
                             confidence=h["confidence"]))
         secs[4].append(item(I, f"triage {t['class']}" + (f" (branch {t['branch']})" if t["branch"] else "")
-                            + f"; next test: {t['next_test']}", rule_id=t["rule_id"],
-                            confidence=TRI_CONF[t["class"]]))
+                            + (f"; resolved by verdict {resolved}" if resolved else f"; next test: {t['next_test']}"),
+                            rule_id=t["rule_id"], confidence=TRI_CONF[t["class"]]))
         if t["constraints"]:
             secs[4].append(item(I, "constraints: " + ", ".join(t["constraints"]), rule_id=t["rule_id"],
                                 confidence=TRI_CONF[t["class"]]))
         for x in d["hypotheses"]:
             secs[4].append(item(I, f"hypothesis {x['category']}: evidence "
-                                   + "; ".join(f"{e['path']}={_fmt(e['value'])}" for e in x["evidence"])
-                                   + f"; alternative: {x['alternative']}; next test: {x['next_test']}",
+                                   + "; ".join(evidence_text(e, _fmt) for e in x["evidence"])
+                                   + f"; alternative: {x['alternative']}; "
+                                   + (f"resolved by verdict {resolved}" if resolved else f"next test: {x['next_test']}"),
                                 rule_id=f"hyp:{x['category']}", confidence=x["confidence"]))
     else:
         secs[4].append(item(U, "no assessment recorded (run assess)"))
@@ -168,8 +178,6 @@ def build_device(store, s, device_id):
                             + (f" (evidence {ds['evidence_id']})" if ds["evidence_id"] else "")
                             + (f": {ds['reason']}" if ds["reason"] else "")))
 
-    vs = history(store, s["id"], device_id)
-    latest = vs[0] if vs else None
     missing = pass_missing(store, s, device_id)
     if latest and latest["status"] == "PASS":
         secs[8].append(item(V, "post-recovery verification complete for the device class (verdict PASS accepted)"))
@@ -184,7 +192,9 @@ def build_device(store, s, device_id):
                                    f"{e['sha256']}", evidence_id=e["id"], sha256=e["sha256"], by=e.get("who")))
 
     if latest:
-        secs[9].append(item(None, f"{latest['status']} ({latest['ts']})"
+        scoped = medium_scoped(store, {"device_id": device_id, "session_id": s["id"], "ts": latest["ts"]})
+        scope = " for the card in the reader, not the reader" if scoped else ""
+        secs[9].append(item(None, f"{latest['status']} ({latest['ts']}){scope}"
                             + (f": {latest['reason']}" if latest["reason"] else "")))
     else:
         secs[9].append(item(U, "UNRESOLVED (no verdict recorded)"))
@@ -216,7 +226,7 @@ def build_device(store, s, device_id):
         secs[11].append(item(None, "loại khỏi sử dụng; không ghi dữ liệu mới lên thiết bị"))
     elif status == "REPAIR_REQUIRED":
         secs[11].append(item(None, "chuyển cho đơn vị sửa chữa/cứu dữ liệu chuyên môn; không thử thêm bằng phần mềm"))
-    if a:
+    if a and not resolved:
         secs[11].append(item(I, f"next step: {a['data']['triage']['next_test']}",
                              rule_id=a["data"]["triage"]["rule_id"], confidence=TRI_CONF[a["data"]["triage"]["class"]]))
     if not secs[11]:
@@ -254,6 +264,10 @@ def render(s, devices):
     return "\n".join(out)
 
 
+# report/CLI vocabulary after "serial:" / "serial=" is never an identifier (amendment 05 R1: "not reported")
+FIXED_WORD = re.compile(r"(?i)(not|none|n/a|unknown|absent|untrusted|yes|no)(\(|$)")
+
+
 def _mask(v):
     return "****" + v[-4:] if len(v) > 4 else "****"
 
@@ -285,7 +299,8 @@ def redact(obj, secrets, home):
         for sec in sorted(secrets, key=len, reverse=True):
             text = re.sub(re.escape(sec), _mask(sec), text, flags=re.I)
         # identifiers of other devices / the host that may sit in OS event text
-        text = re.sub(r"(?i)(serial\s*(number)?\s*[:=]\s*)(\S+)", lambda m: m.group(1) + _mask(m.group(3)), text)
+        text = re.sub(r"(?i)(serial\s*(number)?\s*[:=]\s*)(\S+)",
+                      lambda m: m.group(0) if FIXED_WORD.match(m.group(3)) else m.group(1) + _mask(m.group(3)), text)
         text = re.sub(r"\{?[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\}?", "<guid>",
                       text)
         if host and len(host) >= 3:

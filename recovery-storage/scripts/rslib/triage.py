@@ -368,4 +368,24 @@ def hypotheses(inp, tri):
             cur["evidence"] += [e for e in x["evidence"] if e not in cur["evidence"]]
             if CONF_RANK[x["confidence"]] < CONF_RANK[cur["confidence"]]:
                 cur["confidence"] = x["confidence"]
+    for x in merged.values():
+        x["evidence"] = _collapse(x["evidence"])
     return sorted(merged.values(), key=lambda x: (CONF_RANK[x["confidence"]], x["category"]))
+
+
+def _collapse(items):
+    """Same path + value once, with `count` when repeated (amendment 05 R5: one item per matching OS event)."""
+    out, seen = [], {}
+    for e in items:
+        key = (e["path"], repr(e["value"]))
+        if key in seen:
+            seen[key]["count"] = seen[key].get("count", 1) + 1
+        else:
+            seen[key] = dict(e)
+            out.append(seen[key])
+    return out
+
+
+def evidence_text(e, fmt=str):
+    """`path=value`, plus ` (xN)` for a collapsed item (R5)."""
+    return f"{e['path']}={fmt(e['value'])}" + (f" (x{e['count']})" if e.get("count", 1) > 1 else "")

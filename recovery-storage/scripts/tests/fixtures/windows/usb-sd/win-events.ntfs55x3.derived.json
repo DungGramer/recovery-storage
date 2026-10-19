@@ -1,0 +1,29 @@
+{
+ "schema": "win-events/1",
+ "since": "2026-10-12T11:07:44.8192781Z",
+ "lookback_hours": 168,
+ "events": [
+  {
+   "time": "2026-10-19T23:30:00.0000000Z",
+   "provider": "Ntfs",
+   "id": 55,
+   "level": 2,
+   "message": "A corruption was discovered in the file system structure on volume E:"
+  },
+  {
+   "time": "2026-10-19T23:31:00.0000000Z",
+   "provider": "Ntfs",
+   "id": 55,
+   "level": 2,
+   "message": "A corruption was discovered in the file system structure on volume E:"
+  },
+  {
+   "time": "2026-10-19T23:32:00.0000000Z",
+   "provider": "Ntfs",
+   "id": 55,
+   "level": 2,
+   "message": "A corruption was discovered in the file system structure on volume E:"
+  }
+ ],
+ "errors": []
+}

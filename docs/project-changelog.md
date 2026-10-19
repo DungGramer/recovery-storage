@@ -2,6 +2,18 @@
 
 Format: newest first. Versions are semantic and assigned retroactively (no version is declared in the skill). Roadmap: [project-roadmap.md](project-roadmap.md).
 
+## [0.5.0] - 2026-10-20 - Amendment 05 (report fixes)
+
+Spec: [amendment-05](../plans/20261019-1726-recovery-storage-skill/amendment-05-report-fixes.md). Rules version `2026.10.20-4`.
+
+### Fixed
+- `--redact` no longer masks report vocabulary after `serial:` ("serial: not reported" stayed "serial: **** reported").
+- Session notes appear in report section 3 as `[ATTESTED]` items with who and timestamp, for every device of the session.
+- After PASS / PASS_LIMITED, items of an assessment older than the verdict show `resolved by verdict <STATUS>` instead of their next tests; section 11 drops the stale next step. An `assess` after a verdict is a new assessment (the latest verdict is part of the inputs key).
+- `assess`: a hypothesis backed only by `session.*` evidence drops to `low` once the source was written in this session.
+- A verdict recorded while the latest observation has no medium or a weak match applies to the card in the reader: the report says so, and `device list` no longer shows it as the reader's status.
+- Hypothesis evidence: identical path + value items are merged with a `count` (`(xN)` in text); one item per matching OS event repeated it before.
+
 ## [0.4.0] - 2026-10-19 - Amendments 03 and 04 (real-device run)
 
 Specs: [amendment-03](../plans/20261019-1726-recovery-storage-skill/amendment-03-real-run-card-reader.md), [amendment-04](../plans/20261019-1726-recovery-storage-skill/amendment-04-verification-gate-window.md). Rules version `2026.10.19-3`.

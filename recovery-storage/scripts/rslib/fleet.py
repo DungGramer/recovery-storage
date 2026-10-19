@@ -18,10 +18,22 @@ def latest_assessment(store, device_id, session_id=None):
     return r
 
 
+def medium_scoped(store, v):
+    """Verdict recorded while the latest observation had no medium or a weak match: it judged the card inside a
+    reader, not the reader device (amendment 05 R4); fleet views skip it."""
+    o = store.one("SELECT match, data FROM observations WHERE device_id = ? AND session_id = ? AND ts <= ? "
+                  "ORDER BY ts DESC, rowid DESC LIMIT 1", (v["device_id"], v["session_id"], v["ts"]))
+    return bool(o) and (o["match"] == "weak" or bool((st.loads(o["data"]) or {}).get("no_media")))
+
+
 def latest_verdict(store, device_id, session_id=None):
-    sql = "SELECT * FROM verdicts WHERE device_id = ?" + (" AND session_id = ?" if session_id else "") + \
-          " ORDER BY ts DESC, rowid DESC LIMIT 1"
-    return store.one(sql, (device_id, session_id) if session_id else (device_id,))
+    if session_id:
+        return store.one("SELECT * FROM verdicts WHERE device_id = ? AND session_id = ? ORDER BY ts DESC, rowid DESC "
+                         "LIMIT 1", (device_id, session_id))
+    for v in store.query("SELECT * FROM verdicts WHERE device_id = ? ORDER BY ts DESC, rowid DESC", (device_id,)):
+        if not medium_scoped(store, v):
+            return v
+    return None
 
 
 def primary_category(assessment):

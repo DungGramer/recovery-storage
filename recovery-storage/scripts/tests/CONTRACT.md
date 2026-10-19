@@ -487,3 +487,63 @@ only). Lines marked "test-designer reading" bind the frozen tests until a furthe
 - Tests (D22c, D4c) use attested H2testw as capacity evidence and `/dev/pd2` of `windows/usb-stick` with session
   `--goal device-recovery --preserve-data no --ceiling R2` (D4c: `--goal data-recovery --goal device-recovery
   --ceiling R2` + `waived`); `gate close` may carry `--evidence <id>` of evidence ingested inside the gate.
+
+## Amendment 05 (2026-10-20): report fixes R1-R4
+
+Source: `plans/20261019-1726-recovery-storage-skill/amendment-05-report-fixes.md` (approved by the user 2026-10-20,
+"Sửa tiếp 4 lỗi báo cáo"; real reports of sessions S-81ff60a59449 and S-4fdc1ba07b90). Where this section and anything
+above disagree, this section wins. Lines marked "test-designer reading" bind the frozen tests until a further
+amendment.
+
+### R1. Redaction (E6b)
+
+- `--redact` masks identifier values only (serial, EUI-64, WWN, GUID values, host name, home path / user name); fixed
+  report vocabulary is never masked. E6 (real serial masked, last 4 kept) unchanged.
+- Test-designer reading: redaction preserves line structure (same number of markdown lines, same number of JSON items,
+  observed on the real store). For a report of a device without identifier values (stick, empty reader: serial trust
+  absent), every markdown line and every JSON item text that carries no path (`X:\`, `X:/`, `/home/`, `/Users/`,
+  `/tmp/`), no `~` and no user name form is identical with and without `--redact`.
+
+### R2. Session notes (E12)
+
+- Every `session note` of the session appears in section 3 of every device of that session's report (test-designer
+  reading: notes are session-level; `--device` reports include them), as an item with `tag` `[ATTESTED]` whose text
+  contains the note text; the item (any key, or its text) carries the note's `who` and `ts` as `session show` returns
+  them (ts shown at least to the second, `T` or space separator). Items in time order. The markdown line holding the
+  note text contains `[ATTESTED`, the `who` value and the ts.
+- Notes of other sessions never appear. `--redact` applies to note text like any other text (device serial and home
+  path masked; ordinary words kept).
+
+### R3. Resolved and stale hypotheses (E13, E13b)
+
+- Effective verdict (`verdict show` of the session/device) PASS or PASS_LIMITED: for every assessment of that
+  session/device made before the effective verdict's `ts`, no `next_test` string of it (triage or hypothesis) appears
+  in the text of section 4 or 11 items; each of its hypothesis items in section 4 (the item whose text names the
+  category) contains `resolved by verdict <STATUS>` (case-insensitive). The latest assessment made after the verdict is
+  shown as today (no `resolved by verdict`, its `next_test` present). Other statuses: unchanged (open).
+- `assess`: a hypothesis whose every evidence `path` starts with `session.` has `confidence` `low` when
+  `last_write_ts(device)` (amendment 02 B) is later than this session's start; otherwise unchanged. The category is
+  kept. Report section 4 shows the same confidence. Assessment JSON keeps every `next_test` non-empty (C18, G7).
+
+### R4. Verdict on a card reader (E14, E8b)
+
+- A verdict recorded while the device's latest observation has `no_media` true, or `match` `weak`, is scoped to the
+  medium of that session: `verdict show` and the report of that session show it (section 9 item text contains
+  `card in the reader` and `not the reader`, case-insensitive, besides the status); `device list` (`verdict` column)
+  and `device list --group-by status` never show it as the device's status, in that session or later. Later sessions
+  of the same device: `verdict show` effective null, section 9 `UNRESOLVED (no verdict recorded)` until a verdict of
+  their own.
+- A verdict recorded while the latest observation matches `exact` / `probable` with `no_media` false is the device's
+  fleet status as today.
+- Fixtures: `windows/sd-reader-empty` (real), `win-disks.media-online.derived.json` (amendment 03), `windows/usb-sd`
+  inventoried twice (second observation `weak`).
+
+### R5. Duplicate evidence items (C18b)
+
+- Within one hypothesis, evidence items with the same `path` and the same `value` are one item. `assess --json`: that
+  item keeps `path`, `value`, `strength` and gains `count` (int, the number of merged items) when more than one;
+  absent or 1 otherwise (test-designer reading of "with a count"). Text forms (`assess` without `--json`, report JSON
+  item text, report markdown) show it once as `<path>=<value> (x<count>)`; a single item has no `(x1)`.
+- Fixture: `windows/usb-sd/win-events.ntfs55x3.derived.json` (3 x Ntfs 55 on volume `E:`, the card) with
+  `windows/usb-sd` `/dev/pd3`: `partition-or-filesystem` evidence `observation.events.fs_corruption` = `Ntfs 55`,
+  count 3.

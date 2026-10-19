@@ -11,10 +11,11 @@ from .collect import device_row, load_snapshot_record
 from .delta import delta
 from .health import NEXT_TESTS, RULE_BY_OUTCOME, HealthVerdict, verdict
 from .ingest import evidence_rows
-from .triage import Inputs, classify, constraints, hypotheses
+from .datastate import last_write_ts
+from .triage import CONF_RANK, Inputs, classify, constraints, evidence_text, hypotheses
 from .wear import assess as wear_assess, host_writes_bytes
 
-RULES_VERSION = "2026.10.19-3"  # -2: amendment 03 (no-media T2a); -3: amendment 04 (verification window)
+RULES_VERSION = "2026.10.20-4"  # -2: amendment 03 (no-media T2a); -3: amendment 04 (window); -4: amendment 05 (hyp confidence, evidence count)
 
 
 def _snapshots(store, device_id, session_id=None):
@@ -66,12 +67,19 @@ def gather(store, session_id, device_id):
         events = ((getattr(rec, "extra", {}) or {}).get("events") or {}).get("items") or []
     inp = Inputs(s, rec, obs, health, session_deltas, _absent(store, session_id, device_id), evidence, events,
                  obs_row is not None)
+    lw = last_write_ts(store, device_id)
+    written = bool(lw and lw > s["created_ts"])  # source written since this session started (amendment 05 R3)
+    # an assess after a verdict is a new assessment, shown as current by the report (amendment 05 R3)
+    v = store.one("SELECT id FROM verdicts WHERE session_id = ? AND device_id = ? ORDER BY ts DESC, rowid DESC LIMIT 1",
+                  (session_id, device_id))
     runs = store.query("SELECT id FROM inventory_runs WHERE session_id = ? ORDER BY ts, rowid", (session_id,))
     key_src = st.dumps({"rules": RULES_VERSION, "snapshots": [r["id"] for r in rows],
                         "prev": getattr(prev, "snapshot_id", None), "evidence": [e["id"] for e in evidence],
                         "session": {k: v for k, v in s.items() if k != "notes"},
                         "observation": obs_row["id"] if obs_row else None,
-                        "run": runs[-1]["id"] if runs else None})
+                        "run": runs[-1]["id"] if runs else None, "written": written,
+                        "verdict": v["id"] if v else None})
+    inp.written_in_session = written
     return inp, rows, evidence, hashlib.sha256(key_src.encode("utf-8")).hexdigest()
 
 
@@ -79,6 +87,12 @@ def compute(inp, rows, evidence):
     tri = classify(inp)
     tri["constraints"] = constraints(inp, tri["class"])
     hyps = hypotheses(inp, tri)
+    if getattr(inp, "written_in_session", False):
+        # operator symptom alone predates the write: it no longer supports the cause (amendment 05 R3)
+        for x in hyps:
+            if x["evidence"] and all(e["path"].startswith("session.") for e in x["evidence"]):
+                x["confidence"] = "low"
+        hyps.sort(key=lambda x: (CONF_RANK[x["confidence"]], x["category"]))
     rec = inp.rec
     return {
         "rules_version": RULES_VERSION,
@@ -103,7 +117,7 @@ def _text(a):
         lines.append(f"missing: {', '.join(h['missing'])}")
     for x in a["hypotheses"]:
         lines.append(f"hypothesis {x['category']} ({x['confidence']}): evidence "
-                     + "; ".join(f"{e['path']}={e['value']}" for e in x["evidence"]))
+                     + "; ".join(evidence_text(e) for e in x["evidence"]))
         lines.append(f"  alternative: {x['alternative']}")
         lines.append(f"  next test: {x['next_test']}")
     return "\n".join(lines)

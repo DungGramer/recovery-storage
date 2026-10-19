@@ -124,6 +124,61 @@ def test_C19_no_counterfeit_above_low_without_f3(corpus):
     assert bad == []
 
 
+# ---------------- C18b (amendment 05 R5): identical evidence items once, with a count
+NTFS55_X3 = {"win-events": f"{USB_SD}/win-events.ntfs55x3.derived.json"}   # 3 x Ntfs 55 on volume E: (the card)
+FS_CORRUPTION = "observation.events.fs_corruption"
+
+
+def _ntfs_card(cli):
+    sid = new_session(cli, "--goal", "diagnosis-only")
+    dev = device_at(cli, USB_SD, sid, "/dev/pd3", NTFS55_X3)
+    collect(cli, USB_SD, sid, dev, override=NTFS55_X3)
+    return sid, dev
+
+
+def test_C18b_repeated_event_evidence_once_with_count_json(cli):
+    """Amendment 05 R5 (assess --json): three matching System events -> one evidence item (path, value unchanged) with
+    `count` 3. Mutation: one item per event (today: 3 identical items) -> red; count dropped -> red."""
+    sid, dev = _ntfs_card(cli)
+    h = hyps(assess(cli, sid, dev))["partition-or-filesystem"]
+    items = [e for e in h["evidence"] if e["path"] == FS_CORRUPTION]
+    assert len(items) == 1, h["evidence"]
+    assert items[0]["value"] == "Ntfs 55"
+    assert items[0].get("count") == 3, items[0]
+
+
+def test_C18b_repeated_event_evidence_once_with_count_text_and_report(cli):
+    """Amendment 05 R5 (assess text, report JSON item text, report markdown): `observation.events.fs_corruption=Ntfs 55
+    (x3)` exactly once, no bare repeats. Mutation: text renders every item (today: 3 times) -> red; no '(x3)' -> red."""
+    import re
+
+    sid, dev = _ntfs_card(cli)
+    assess(cli, sid, dev)
+    want = re.compile(re.escape(f"{FS_CORRUPTION}=Ntfs 55") + r"\s*\(x3\)")
+    txt = cli("assess", sid, dev, json_out=False)
+    assert txt.code == 0, txt
+    m = cli("report", sid, "--device", dev)
+    d = next(x for x in m.data["devices"] if x["device_id"] == dev)
+    s4 = " ".join(str(i.get("text")) for s in d["sections"] if s["number"] == 4 for i in s["items"])
+    md = cli("report", sid, "--device", dev, json_out=False).out
+    for where, text in (("assess text", txt.out), ("report json", s4), ("report md", md)):
+        assert len(want.findall(text)) == 1, (where, text)
+        assert text.count(f"{FS_CORRUPTION}=Ntfs 55") == 1, (where, text)
+
+
+def test_C18b_single_items_carry_no_count_marker(cli):
+    """Amendment 05 R5 'with a count IF more than one': distinct items stay as they are (stick: fs_unrecognised,
+    mbr_type, symptom). Mutation: every item rendered '(x1)' or given count != 1 -> red."""
+    sid = new_session(cli, "--goal", "diagnosis-only", "--symptom", "raw-or-unreadable-fs")
+    dev = device_at(cli, USB_STICK, sid, "/dev/pd2")
+    collect(cli, USB_STICK, sid, dev)
+    a = assess(cli, sid, dev)
+    for h in a["hypotheses"]:
+        assert all(e.get("count", 1) == 1 for e in h["evidence"]), h["evidence"]
+    assert "(x1)" not in cli("assess", sid, dev, json_out=False).out
+    assert "(x1)" not in cli("report", sid, "--device", dev, json_out=False).out
+
+
 def test_C18_corpus_is_not_vacuous(corpus):
     """Guard: the property runs saw hypotheses at all (a no-hypothesis implementation must not pass C18)."""
     cats = {h["category"] for _, _, a in corpus for h in a["hypotheses"]}
