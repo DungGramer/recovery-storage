@@ -26,6 +26,6 @@ Claude Code skill `recovery-storage/`: storage diagnosis and recovery orchestrat
 
 ## Lessons
 
-- Text with backslashes (Python source, regexes): write it with the Write/Edit tools, never through a Bash heredoc; on Windows always run Python with -I when the CWD is recovery-storage/scripts/rslib. Detail: .claude/memory/windows-and-tooling-traps.md
+- Text with backslashes (Python source, regexes): write it with the Write/Edit tools, never through a Bash heredoc; on Windows always run Python with -I when the CWD is recovery-storage/scripts/rslib; frozen hashes are taken over the git blob bytes. Detail: .claude/memory/windows-and-tooling-traps.md
 - Card reader medium changes size or media id mid-session: ask whether the card was swapped before concluding anything; a write gate cut by a disconnect closes `interrupted`. Detail: .claude/memory/card-swap-misread.md
 - Review findings: turn the reviewer's reproductions into spec tests (test-designer, amendment + re-freeze when the contract changes) before changing code; re-review only the changed functions. Detail: .claude/memory/review-fix-regressions.md

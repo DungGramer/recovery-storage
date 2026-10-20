@@ -31,5 +31,8 @@
 - Windows reuses drive letters across media in the same reader: event text "volume E:" is not a device id (2026-10-20:
   a 32 GB card's 25 Ntfs 55 events became evidence on a 4 GB card). Amendment 09 attributes by the nearest observation
   holding the letter; any new event matcher must do the same.
+- Files written on Windows by the Write tool / agents land CRLF while git stores LF (`core.autocrlf=input`, status
+  stays clean): 59 frozen files carried CRLF hashes, a fresh clone mismatched (fixed 2026-10-21, manifest entry
+  `eol-lf`). Freeze hashes over the git blob bytes; check with `git show HEAD:<path>` before re-freezing.
 - Verification gates (f3write-f3read...) write the source: before amendment 04 their close moved the PASS window
   past the evidence they produced. A green suite never ran the real run-ingest-close order; real runs find these.
