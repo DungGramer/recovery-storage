@@ -2,6 +2,13 @@
 
 Format: newest first. Versions are semantic and assigned retroactively (no version is declared in the skill). Roadmap: [project-roadmap.md](project-roadmap.md).
 
+## [0.9.0] - 2026-10-20 - Amendment 09 (event attribution by drive letter)
+
+Spec: [amendment-09](../plans/20261019-1726-recovery-storage-skill/amendment-09-event-attribution-by-nearest-letter-holder.md). Rules version `2026.10.20-8`.
+
+### Fixed
+- An OS event naming a drive letter belongs to the device whose observation showing that letter is nearest in time (any session); a tie goes to nobody. Drive letters are reused across media: a 32 GB card's 25 Ntfs 55 events on E: were evidence on a later 4 GB card (real run 2026-10-20). Applies to assess hypotheses and report section 3.
+
 ## [0.8.0] - 2026-10-20 - Amendment 08 (f3read run time)
 
 Spec: [amendment-08](../plans/20261019-1726-recovery-storage-skill/amendment-08-f3read-run-time.md). Rules version `2026.10.20-7`.

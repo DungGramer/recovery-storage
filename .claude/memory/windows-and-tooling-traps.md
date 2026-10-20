@@ -28,5 +28,8 @@
 - f3read right after f3write through WSL drvfs reads the Windows host cache, not the device (2026-10-19/20: stick
   276 MB/s, card 159 MB/s; after an operator replug 14 / 17 MB/s). I recorded a PASS on a cached read and had to
   re-verify; amendment 07 now refuses it (`f3read-not-after-replug`). Check the f3read rate against the device.
+- Windows reuses drive letters across media in the same reader: event text "volume E:" is not a device id (2026-10-20:
+  a 32 GB card's 25 Ntfs 55 events became evidence on a 4 GB card). Amendment 09 attributes by the nearest observation
+  holding the letter; any new event matcher must do the same.
 - Verification gates (f3write-f3read...) write the source: before amendment 04 their close moved the PASS window
   past the evidence they produced. A green suite never ran the real run-ingest-close order; real runs find these.

@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 import pathlib
+import re
 import sqlite3
 import uuid
 
@@ -88,6 +89,15 @@ def _utcnow():
 def iso(t):
     # fixed width (microseconds always present) so string order == time order
     return t.astimezone(dt.timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
+
+
+def parse_ts(text):
+    """Inverse of iso(); also takes win-events times (7 fractional digits, cut to 6). None if not a UTC timestamp."""
+    m = re.match(r"^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d+))?Z?$", str(text or ""))
+    if not m:
+        return None
+    base = dt.datetime.fromisoformat(m.group(1)).replace(tzinfo=dt.timezone.utc)
+    return base + dt.timedelta(microseconds=int((m.group(2) or "0")[:6].ljust(6, "0")))
 
 
 class Store:

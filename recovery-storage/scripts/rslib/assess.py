@@ -12,10 +12,11 @@ from .delta import delta
 from .health import NEXT_TESTS, RULE_BY_OUTCOME, HealthVerdict, verdict
 from .ingest import evidence_rows
 from .datastate import last_write_ts
+from .events import attributable
 from .triage import CONF_RANK, Inputs, classify, constraints, evidence_text, hypotheses
 from .wear import assess as wear_assess, host_writes_bytes
 
-RULES_VERSION = "2026.10.20-7"  # -2..-7: amendments 03-08 (see docs/project-changelog.md)
+RULES_VERSION = "2026.10.20-8"  # -2..-8: amendments 03-09 (see docs/project-changelog.md)
 
 
 def _snapshots(store, device_id, session_id=None):
@@ -65,6 +66,7 @@ def gather(store, session_id, device_id):
     events = []
     if rec is not None:
         events = ((getattr(rec, "extra", {}) or {}).get("events") or {}).get("items") or []
+        events = attributable(store, device_id, events)  # drive letters are reused across media (amendment 09)
     inp = Inputs(s, rec, obs, health, session_deltas, _absent(store, session_id, device_id), evidence, events,
                  obs_row is not None)
     lw = last_write_ts(store, device_id)

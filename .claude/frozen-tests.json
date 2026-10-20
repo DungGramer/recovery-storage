@@ -4,7 +4,7 @@
  "reason": "spec-first acceptance + unit suite for phases 01-08 (test-designer); contract in tests/CONTRACT.md",
  "files": {
   "pytest.ini": "b0cdc0191afb27a3ef8f41d4c25ea016a7c379913f8986d863ac871b3d50be67",
-  "recovery-storage/scripts/tests/CONTRACT.md": "1a51d761dd74a267355dc147a9f6f77a838a46beb26feb68365bc78aba3ecfbc",
+  "recovery-storage/scripts/tests/CONTRACT.md": "89b69687bfb4a2e86131ebb771943ece8f7667ab9ba72b37d593c380359f2ca3",
   "recovery-storage/scripts/tests/conftest.py": "5204aae1530225c8bf042cbabdcff58140c642baefe59d9563c18eba45559625",
   "recovery-storage/scripts/tests/fixtures/f3/f3probe-card-limbo.txt": "a406e94fe1c9d4ac19ae56c15e033520fdfed2bf4803b694c71f90a11d719198",
   "recovery-storage/scripts/tests/fixtures/f3/f3read-card-lost.txt": "a597018215fc652d6bcc9a4928e8261514c2e4729cd51eeb6650012a2b8cf3c5",
@@ -59,6 +59,7 @@
   "recovery-storage/scripts/tests/fixtures/windows/usb-stick/smartctl-x-sat-pd3.from-pd2.derived.json": "a7ea4fe78ce9d5cd59bdd079be13ae59895735bfc71fc7ef0316cb0de3771a83",
   "recovery-storage/scripts/tests/fixtures/windows/usb-stick/win-disks.othersig.derived.json": "999832a46e7ddd8fe7f735d4dab0bddd265eff3299b6958d723b903311752d65",
   "recovery-storage/scripts/tests/fixtures/windows/usb-stick/win-disks.renumber3.derived.json": "719ae25a53ebf06864b3bf35879100fe58c402fbef9000f3baa8b2e86182a915",
+  "recovery-storage/scripts/tests/fixtures/windows/usb-stick/win-disks.stick-e.derived.json": "5b04fd599541fa21f78d6854936804de56ce885e14ae53159d148979aa38b80f",
   "recovery-storage/scripts/tests/fixtures/windows/usb-stick/win-disks.twin.derived.json": "271a37aaa01a737829c1cd572c5a4d9269bd30de2b3876ca71c770ddb489f854",
   "recovery-storage/scripts/tests/fixtures/windows/usb-stick/win-pnp-chain.renumber3.derived.json": "a74cf82d37e044bad0d44f4c0d3f51fc7d004160a964399839b9c1fafb84767c",
   "recovery-storage/scripts/tests/fixtures/windows/usb-stick/win-pnp-chain.twin.derived.json": "3c19d7c77b455469301441f7564f01c0bf50da934a2de035e8b378c059ab3d1d",
@@ -129,7 +130,7 @@
   "recovery-storage/scripts/tests/test_guard_hook.py": "b7bb7d3966fc889c68d7e0404b3cfb30bc119c400a78cf2dc42db9f69b331dd3",
   "recovery-storage/scripts/tests/test_guard_patterns.py": "348bc4d5b57734247c26a904e81f0de9df7e45684773c84abadd1b676cb2be2e",
   "recovery-storage/scripts/tests/test_health_rules.py": "5dfd9ac9c2c158dbb5409c9307bdbb1d367e518d2dd8aeb88420f70d4cfce5e2",
-  "recovery-storage/scripts/tests/test_hypotheses.py": "5efba6a5fe50b0c84437f450e2ff31e278c39b93e2e35ebfe7da08e9419f80ce",
+  "recovery-storage/scripts/tests/test_hypotheses.py": "65c169c533227a7954e998bb3c7965f37ae94130c6467e499b86abb3a6b67cae",
   "recovery-storage/scripts/tests/test_identity_drift.py": "3cbaeecf7ce59e088a8d3a1b20935e67ab3392dae09b8eabfe6db3cf7a88a2d0",
   "recovery-storage/scripts/tests/test_identity_match.py": "f806eb053d4b03da59006d86c6c83d8f011dcdd27ee13df7a94d91e1d9a6ed0a",
   "recovery-storage/scripts/tests/test_ingest_f3.py": "c63acd8b05c107e0379563540dc3e5cefd676a589afb9fbdef0e049551f1a3d7",
@@ -691,6 +692,27 @@
   ],
   "C17c": [
    "recovery-storage/scripts/tests/test_triage.py::test_C17c_usb_sd_software_unknown_no_partition_hypothesis"
+  ],
+  "C17d": [
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C17d_letter_event_goes_to_the_nearest_holder_of_the_letter[origin-other-after-card]",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C17d_letter_event_goes_to_the_nearest_holder_of_the_letter[origin-other-after-stick]",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C17d_letter_event_goes_to_the_nearest_holder_of_the_letter[other-before-card]",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C17d_letter_event_goes_to_the_nearest_holder_of_the_letter[other-before-stick]",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C17d_letter_event_goes_to_the_nearest_holder_of_the_letter[card-before-far-other-after-card]",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C17d_letter_event_goes_to_the_nearest_holder_of_the_letter[card-before-far-other-after-stick]",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C17d_letter_event_goes_to_the_nearest_holder_of_the_letter[card-after-card]",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C17d_letter_event_goes_to_the_nearest_holder_of_the_letter[card-after-stick]",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C17d_letter_event_goes_to_the_nearest_holder_of_the_letter[card-before-card]",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C17d_letter_event_goes_to_the_nearest_holder_of_the_letter[card-before-stick]",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C17d_letter_event_goes_to_the_nearest_holder_of_the_letter[other-before-far-card-after-card]",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C17d_letter_event_goes_to_the_nearest_holder_of_the_letter[other-before-far-card-after-stick]",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C17d_other_device_without_the_letter_does_not_take_the_events",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C17d_sole_holder_keeps_events_however_far_in_time",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C17d_equal_distance_is_attributed_to_nobody[tie-nobody]",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C17d_equal_distance_is_attributed_to_nobody[1s-nearer-stick]",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C17d_equal_distance_is_attributed_to_nobody[1s-nearer-card]",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C17d_report_drops_the_misattributed_hypothesis",
+   "recovery-storage/scripts/tests/test_hypotheses.py::test_C17d_report_section3_lists_the_events_only_for_the_nearest_holder"
   ],
   "C18": [
    "recovery-storage/scripts/tests/test_hypotheses.py::test_C18_corpus_is_not_vacuous",
@@ -1985,6 +2007,11 @@
    "id": "AM08-Q1",
    "coverage": "none",
    "reason": "f3write output_mtime recorded but not used as the G1 anchor (anchor stays the f3write ingest ts)."
+  },
+  {
+   "id": "C17d",
+   "coverage": "partial",
+   "reason": "nearest observation with no device (device_id null: ambiguous / unlinked) not tested (amendment 09 Q2); gate before/after observations not tested separately (Q3)."
   }
  ],
  "amendments": [
@@ -2247,6 +2274,26 @@
    ],
    "amended_tests": [
     "test_verdict.py ingest_f3 helper: ingests a temp copy with the current test-clock mtime (fixes test_D22_f3read_pass_covering_90pct_after_gate_pass, test_D22e_verdict_uses_the_current_parser_not_the_stored_parse, test_D22c_f3read_ingested_inside_the_verification_gate_passes, test_D22f_no_f3write_ingested_anchor_is_the_gate_confirm[replug-then-f3read-True])"
+   ]
+  },
+  {
+   "id": "09",
+   "date": "2026-10-20",
+   "doc": "plans/20261019-1726-recovery-storage-skill/amendment-09-event-attribution-by-nearest-letter-holder.md",
+   "refrozen_at": "2026-10-20T11:18:22+00:00",
+   "reason": "user-approved amendment 09 (2026-10-20, 'L\u00e0m, commit + push'): an OS event naming drive letter L is evidence for a device only when that device's observation showing L is the nearest in time to the event (any device, any session); equal distance -> nobody; no holder / other naming unchanged; assess, report section 4 and report section 3 (test-designer reading) drop the misattributed evidence; contract in tests/CONTRACT.md section 'Amendment 09'",
+   "files_changed": [
+    "recovery-storage/scripts/tests/CONTRACT.md",
+    "recovery-storage/scripts/tests/test_hypotheses.py"
+   ],
+   "files_added": [
+    "recovery-storage/scripts/tests/fixtures/windows/usb-stick/win-disks.stick-e.derived.json"
+   ],
+   "also_changed_not_frozen": [
+    "recovery-storage/scripts/tests/fixtures/SOURCES.md"
+   ],
+   "criteria_added": [
+    "C17d"
    ]
   }
  ]

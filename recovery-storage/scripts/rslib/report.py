@@ -14,6 +14,7 @@ from .actions import CATALOG
 from .collect import device_row, load_snapshot_record
 from .errors import Refused, UsageError
 from .fleet import latest_assessment, medium_scoped
+from .events import attributable
 from .ingest import current_parsed
 from .triage import evidence_text
 from .verdict import history, pass_missing
@@ -111,7 +112,7 @@ def build_device(store, s, device_id):
             for m in a["data"]["health"]["missing"]:
                 secs[3].append(item(U, f"smartctl {m}: not reported"))
         ev_items = ((st.loads(last["data"]) or {}).get("events") or {})
-        for e in ev_items.get("items") or []:
+        for e in attributable(store, device_id, ev_items.get("items") or []):
             secs[3].append(item(V, f"OS event {e['provider']} {e['id']} at {e['time']}: {e['message'][:120]}",
                                 tool="Get-WinEvent (frozen script win-events)", evidence_id=last["id"]))
     evidence = store.query("SELECT * FROM evidence WHERE device_id = ? AND session_id = ? ORDER BY ts, rowid",

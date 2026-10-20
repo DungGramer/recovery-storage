@@ -625,3 +625,30 @@ Source: `plans/20261019-1726-recovery-storage-skill/amendment-08-f3read-run-time
 - H3. No output_mtime (rows from before this amendment) -> ingest ts as in amendment 07; the file is never re-read after
   ingest.
 - Tests set mtimes with `os.utime` on temp copies of the frozen fixtures (bytes unchanged); clock = conftest FakeClock.
+
+## Amendment 09 (2026-10-20): OS events go to the nearest holder of the drive letter
+
+Source: `plans/20261019-1726-recovery-storage-skill/amendment-09-event-attribution-by-nearest-letter-holder.md` (approved
+by the user 2026-10-20, "Làm, commit + push"). Where this section and anything above disagree, this section wins. Lines
+marked "test-designer reading" bind the frozen tests until a further amendment.
+
+- E1. An OS event naming drive letter L at time t is evidence for device D only when, among all observations (any
+  device, any session; inventory and collect re-resolution alike) whose partitions show L, the one nearest in time to t
+  (before or after) is D's. Nearest is another device's -> no `observation.events.*` item for D anywhere in `assess`
+  (health, triage, hypotheses). Equal distance to observations of two devices -> evidence for neither.
+- E2 / E3 (test-designer reading of black-box probes, commit 746fc2c): only Ntfs 55 (`fs_corruption`) naming a drive
+  letter reaches an assessment today; letter compared case-insensitively, read from the observation's partitions. A
+  letter no observation shows -> no device, unchanged. No other naming (disk number, PDO, `HarddiskN`, volume GUID)
+  reaches an assessment, so E3 adds nothing to test.
+- E4. The device whose observation is nearest keeps the amendment 05 R5 item (`observation.events.fs_corruption`,
+  `Ntfs 55`, count). The other device's hypotheses equal those of the same timeline without the events (test-designer
+  reading of "disappear"); report section 4 (JSON item text, markdown) carries neither the item nor the
+  `partition-or-filesystem` hypothesis it alone raised. Test-designer reading: report section 3 (the device's evidence
+  section) of D lists no `OS event Ntfs 55 ... volume E:` item / markdown line for an event attributed to another
+  device; the nearest holder's section 3 still lists every such event. Events on a letter no observation shows: not
+  asserted.
+- Observation time = the `ts` of the observation (`device show` history, type `observation`); event time = the
+  capture's `time` (7 fractional digits, `Z`). Tests place inventories with conftest FakeClock (`clock.now`), collect
+  and assess hours later.
+- Fixture: `windows/usb-stick/win-disks.stick-e.derived.json` (stick partition on `E:`, single field;
+  fixtures/SOURCES.md), frozen.

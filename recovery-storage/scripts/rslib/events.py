@@ -4,6 +4,8 @@ import json
 import re
 from dataclasses import dataclass, field
 
+from .store import parse_ts
+
 TAGS = {("ntfs", 55): "fs_corruption"}
 LOOKBACK_HOURS = 72  # window before session start; bounded by allowlist.PS_ENV_BOUNDS
 MAX_EVENTS = 50
@@ -67,3 +69,36 @@ def parse_journal(text):
 def parse_dmesg(text):
     items = [_kernel_item(ln, None, None) for ln in (text or "").splitlines() if ln.strip() and STORAGE_LINE.search(ln)]
     return EventsResult("ok", items[-MAX_EVENTS:])
+
+
+# ------------------------------------------------------------------ attribution (amendment 09)
+_LETTER = re.compile(r"(?<![A-Za-z])([A-Za-z]):")
+
+
+def attributable(store, device_id, items):
+    """Keep the events this device may own. Drive letters are reused across media (real run 2026-10-20: a 32 GB
+    card's Ntfs 55 on E: landed on a later 4 GB card), so an event naming letter L belongs to the device whose
+    observation showing L is nearest in time; a tie between devices goes to nobody. Events without a letter pass."""
+    holders = {}
+    for o in store.query("SELECT ts, device_id, data FROM observations WHERE device_id IS NOT NULL"):
+        t = parse_ts(o["ts"])
+        for p in (json.loads(o["data"]) or {}).get("partitions") or []:
+            if p.get("drive_letter") and t is not None:
+                holders.setdefault(p["drive_letter"].upper(), []).append((t, o["device_id"]))
+    out = []
+    for it in items:
+        letters = {x.upper() for x in _LETTER.findall(str(it.get("message") or ""))}
+        t = parse_ts(it.get("time"))
+        if not letters or t is None:
+            out.append(it)
+            continue
+        for L in letters:
+            seen = holders.get(L)
+            if not seen:
+                continue
+            best = min(abs((h - t).total_seconds()) for h, _ in seen)
+            owners = {d for h, d in seen if abs((h - t).total_seconds()) == best}
+            if owners == {device_id}:
+                out.append(it)
+                break
+    return out

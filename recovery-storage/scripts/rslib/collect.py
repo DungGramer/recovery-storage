@@ -384,7 +384,7 @@ def load_snapshot_record(store, snap_row):
 
 def _events(ctx, session_id):
     s = sess.load(ctx.store, session_id)
-    start = dt.datetime.fromisoformat(s["created_ts"].replace("Z", "+00:00"))
+    start = st.parse_ts(s["created_ts"])
     now = ctx.clock()
     lo, hi = allowlist.PS_ENV_BOUNDS["RS_LOOKBACK_HOURS"]
     hours = min(hi, max(lo, math.ceil((now - start).total_seconds() / 3600) + ev.LOOKBACK_HOURS))
