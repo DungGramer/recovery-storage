@@ -652,3 +652,42 @@ marked "test-designer reading" bind the frozen tests until a further amendment.
   and assess hours later.
 - Fixture: `windows/usb-stick/win-disks.stick-e.derived.json` (stick partition on `E:`, single field;
   fixtures/SOURCES.md), frozen.
+
+## Amendment 10 (2026-10-21): guard hook clock is injectable; the 12 h open-gate limit is specified
+
+Source: `plans/20261019-1726-recovery-storage-skill/amendment-10-guard-hook-clock.md` (approved by the user 2026-10-21,
+"có cả 2"). Where this section and anything above disagree, this section wins. Lines marked "test-designer reading"
+bind the frozen tests until a further amendment.
+
+```python
+guard_hook._now() -> datetime   # module-level, aware UTC; default = wall clock; tests monkeypatch it
+```
+
+- G1 (H19). `_now()` is the hook's only clock: the stale check and the `guard.log` time both read it. Test-designer
+  reading: the log line contains `_now()` as `YYYY-MM-DDTHH:MM:SS` (seconds precision; suffix `Z` / `+00:00` and
+  fraction not fixed). Default `_now()` is aware, offset 0, within 5 min of `dt.datetime.now(UTC)`.
+- G2 (H20). Gate time = `confirmed_ts`, else `ts` when `confirmed_ts` is null (store format
+  `YYYY-MM-DDTHH:MM:SS.ffffffZ`). An `open` gate whose gate time is more than 12 h before `_now()` does not unlock;
+  exactly 12 h unlocks, 12 h + 1 s is stale. Deny (exit 2) stderr contains the stale gate id, `more than 12 h`, the rule
+  id and `rs.py gate open` (phase 08 item 6 next-step hint). A stale gate does not stop another non-stale open gate
+  from unlocking, whatever the row order (rowid or ts). Unparseable or timezone-less gate time -> not stale.
+- Test-designer readings for G2 states the CLI cannot build (rows edited with sqlite on a CLI-built store, committed and
+  closed before the hook runs): `confirmed_ts` NULL on an open gate; a second open gate = copy of the CLI-built row on
+  the BASELINE 990 PRO device id (`gate open` on /dev/pd0 is refused `boot-or-system-disk`; `gates_device` allows one
+  open gate per device), `ts` / `confirmed_ts` rewritten; unparseable = `not-a-time`, timezone-less = the store text
+  without its `Z`. A non-null unparseable `confirmed_ts` is the gate time (no fall back to `ts`), so the gate unlocks.
+  Open-then-confirm 13 h apart is built through the CLI (`cli.clock.advance`; phase 04: no automatic expiry).
+- G3. `test_guard_hook.hook()` pins `_now` to FakeClock start + 1 h (2026-10-20T01:00:00Z) by default, with
+  `raising=False` (tests without a gate run before `_now` exists); `now=<datetime>` pins strictly (attribute must
+  exist); `now=None` leaves the clock alone. H10, H10b (criterion H5c), H13 (x2), H14 (x2) keep their assertions.
+- G4 sweep (2026-10-21, full suite on 225eff7 at wall clock 2026-10-20T23:00Z: only the six G3 tests red). Wall-clock
+  reads in production: `guard_hook.py` (2, G1), `rslib/store.py:_utcnow` and `rslib/cli.py:_default_clock` (defaults
+  only; the in-process `Cli` always passes FakeClock), `rslib/ingest.py` `output_mtime` = file mtime (read by
+  `verdict.py` only; `test_verdict.py` ingests temp copies stamped with the test clock, amendment 08). Wall clock but
+  no FakeClock comparison: `test_runner._store` (`tool_runs.ts`), `test_store` subprocess, real-process hook / H16,
+  H17 live. `test_ingest_f3.py` ingests fixtures with their checkout mtime (C23c, C23d report, line-212 read-rate
+  report) but asserts nothing that reads `output_mtime` or reaches a verdict. No other frozen outcome depends on the
+  wall clock.
+- Open questions: AM10-Q1 which gate id the `guard.log` allow line names when a stale and a fresh open gate coexist;
+  AM10-Q2 the deny message when several open gates are stale (all ids or one); AM10-Q3 the `guard.log` gate field on a
+  stale deny (`-` or the stale id). None asserted.

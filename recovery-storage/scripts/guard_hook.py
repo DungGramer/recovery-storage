@@ -34,10 +34,15 @@ def _deny_code():
     return int(v) if v.isdigit() and 2 <= int(v) <= 125 else 2
 
 
+def _now():
+    # single clock: tests pin it (amendment 10; wall clock vs FakeClock era broke 6 tests 2026-10-20 12:00Z)
+    return dt.datetime.now(dt.timezone.utc)
+
+
 def _log(home, rule_id, decision, gate_id, command):
     try:
         digest = hashlib.sha256(command.encode("utf-8", "replace")).hexdigest()
-        line = (f"{dt.datetime.now(dt.timezone.utc).isoformat()} rule={rule_id} decision={decision} "
+        line = (f"{_now().isoformat()} rule={rule_id} decision={decision} "
                 f"gate={gate_id or '-'} sha256={digest}\n")
         with open(pathlib.Path(home) / "guard.log", "a", encoding="utf-8") as f:
             f.write(line)
@@ -62,7 +67,7 @@ def _gates(home):
         v = con.execute("PRAGMA user_version").fetchone()[0]
         if v > SCHEMA_VERSION:
             raise RuntimeError(f"schema {v} is newer than this guard ({SCHEMA_VERSION})")
-        now = dt.datetime.now(dt.timezone.utc)
+        now = _now()
         opened, stale = None, None
         for gid, ts in con.execute("SELECT id, COALESCE(confirmed_ts, ts) FROM gates WHERE state = 'open' "
                                    "ORDER BY ts"):

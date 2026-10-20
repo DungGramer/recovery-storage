@@ -12,7 +12,7 @@ Claude Code skill `recovery-storage/`: storage diagnosis and recovery orchestrat
 ## Read before coding
 
 1. `plans/20261019-1726-recovery-storage-skill/requirements.md`
-2. `plans/20261019-1726-recovery-storage-skill/plan.md`, then `amendment-01-*.md`, `amendment-02-*.md`, `amendment-03-*.md`, `amendment-04-*.md`, `amendment-05-*.md`, `amendment-06-*.md`, `amendment-07-*.md`, `amendment-08-*.md` and `amendment-09-*.md`
+2. `plans/20261019-1726-recovery-storage-skill/plan.md`, then `amendment-01-*.md`, `amendment-02-*.md`, `amendment-03-*.md`, `amendment-04-*.md`, `amendment-05-*.md`, `amendment-06-*.md`, `amendment-07-*.md`, `amendment-08-*.md`, `amendment-09-*.md` and `amendment-10-*.md`
 3. `recovery-storage/scripts/tests/CONTRACT.md`
 4. `recovery-storage/SKILL.md`
 
@@ -27,5 +27,6 @@ Claude Code skill `recovery-storage/`: storage diagnosis and recovery orchestrat
 ## Lessons
 
 - Text with backslashes (Python source, regexes): write it with the Write/Edit tools, never through a Bash heredoc; on Windows always run Python with -I when the CWD is recovery-storage/scripts/rslib; frozen hashes are taken over the git blob bytes. Detail: .claude/memory/windows-and-tooling-traps.md
+- Every production read of the wall clock goes through a seam tests can pin (`store` clock, `guard_hook._now`); a wall-clock compare against FakeClock data is a date bomb. Detail: .claude/memory/windows-and-tooling-traps.md
 - Card reader medium changes size or media id mid-session: ask whether the card was swapped before concluding anything; a write gate cut by a disconnect closes `interrupted`. Detail: .claude/memory/card-swap-misread.md
 - Review findings: turn the reviewer's reproductions into spec tests (test-designer, amendment + re-freeze when the contract changes) before changing code; re-review only the changed functions. Detail: .claude/memory/review-fix-regressions.md

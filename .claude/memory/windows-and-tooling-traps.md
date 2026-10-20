@@ -34,5 +34,8 @@
 - Files written on Windows by the Write tool / agents land CRLF while git stores LF (`core.autocrlf=input`, status
   stays clean): 59 frozen files carried CRLF hashes, a fresh clone mismatched (fixed 2026-10-21, manifest entry
   `eol-lf`). Freeze hashes over the git blob bytes; check with `git show HEAD:<path>` before re-freezing.
+- Date bomb: tests build data on `FakeClock` (2026-10-20T00:00Z) but `guard_hook` compared it with the wall clock and a
+  12 h limit, so 6 tests went red at 2026-10-20 12:00Z on an unchanged tree (amendment 10, `guard_hook._now`). The
+  G4 sweep found no other: `store._utcnow` / `cli` clock are defaults the test `Cli` always replaces.
 - Verification gates (f3write-f3read...) write the source: before amendment 04 their close moved the PASS window
   past the evidence they produced. A green suite never ran the real run-ingest-close order; real runs find these.

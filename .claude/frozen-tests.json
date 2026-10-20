@@ -4,7 +4,7 @@
  "reason": "spec-first acceptance + unit suite for phases 01-08 (test-designer); contract in tests/CONTRACT.md",
  "files": {
   "pytest.ini": "b0cdc0191afb27a3ef8f41d4c25ea016a7c379913f8986d863ac871b3d50be67",
-  "recovery-storage/scripts/tests/CONTRACT.md": "89b69687bfb4a2e86131ebb771943ece8f7667ab9ba72b37d593c380359f2ca3",
+  "recovery-storage/scripts/tests/CONTRACT.md": "249d2d5ba51242c0402accb20f7183bde0f8152f04d08ebd7194d1a84c31fbb0",
   "recovery-storage/scripts/tests/conftest.py": "5204aae1530225c8bf042cbabdcff58140c642baefe59d9563c18eba45559625",
   "recovery-storage/scripts/tests/fixtures/f3/f3probe-card-limbo.txt": "a406e94fe1c9d4ac19ae56c15e033520fdfed2bf4803b694c71f90a11d719198",
   "recovery-storage/scripts/tests/fixtures/f3/f3read-card-lost.txt": "a597018215fc652d6bcc9a4928e8261514c2e4729cd51eeb6650012a2b8cf3c5",
@@ -127,7 +127,7 @@
   "recovery-storage/scripts/tests/test_gate_confirm_close.py": "4e6107523693115741378c4d134f23a736c3fa7a7c96a67030b7ffb7592e4752",
   "recovery-storage/scripts/tests/test_gate_lock.py": "94f92051c40833ea1b902883234b101986f3f63b9fea64c345cad5f9fe6953c9",
   "recovery-storage/scripts/tests/test_gate_open.py": "d3561628d78b9c9fd835ffbe19f269cd08961a692b742bc87ce5dcc827851325",
-  "recovery-storage/scripts/tests/test_guard_hook.py": "83d3f993f65ca7583705b7a1f0bc6d4ee6fef2dfb6f015d50119a6c5d4e2e921",
+  "recovery-storage/scripts/tests/test_guard_hook.py": "ffb51ac12e1eccd14f46d633ce1065dc8185bc711ef16a2130fcd499c57c1c41",
   "recovery-storage/scripts/tests/test_guard_patterns.py": "348bc4d5b57734247c26a904e81f0de9df7e45684773c84abadd1b676cb2be2e",
   "recovery-storage/scripts/tests/test_health_rules.py": "5dfd9ac9c2c158dbb5409c9307bdbb1d367e518d2dd8aeb88420f70d4cfce5e2",
   "recovery-storage/scripts/tests/test_hypotheses.py": "65c169c533227a7954e998bb3c7965f37ae94130c6467e499b86abb3a6b67cae",
@@ -1526,8 +1526,26 @@
   "H18": [
    "recovery-storage/scripts/tests/test_skill_docs.py::test_H18_guard_limits_section_lists_every_leak"
   ],
+  "H19": [
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H19_guard_log_time_is_now",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H19_now_default_is_the_aware_utc_wall_clock",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H19_stale_check_reads_now"
+  ],
   "H2": [
    "recovery-storage/scripts/tests/test_guard_hook.py::test_H2_other_tools_pass_silently"
+  ],
+  "H20": [
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H20_exactly_12h_unlocks_one_second_more_is_stale",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H20_gate_time_is_the_confirm_time_not_the_open_time",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H20_null_confirmed_ts_uses_ts",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H20_stale_gate_does_not_stop_a_fresh_open_gate[stale-cli-row-fresh-ts-older]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H20_stale_gate_does_not_stop_a_fresh_open_gate[stale-cli-row]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H20_stale_gate_does_not_stop_a_fresh_open_gate[stale-copy-row-fresh-ts-older]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H20_stale_gate_does_not_stop_a_fresh_open_gate[stale-copy-row]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H20_unparseable_or_naive_gate_time_is_not_stale[confirmed_ts-garbage]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H20_unparseable_or_naive_gate_time_is_not_stale[confirmed_ts-naive]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H20_unparseable_or_naive_gate_time_is_not_stale[ts-garbage]",
+   "recovery-storage/scripts/tests/test_guard_hook.py::test_H20_unparseable_or_naive_gate_time_is_not_stale[ts-naive]"
   ],
   "H3": [
    "recovery-storage/scripts/tests/test_guard_hook.py::test_H3_non_matching_command_never_opens_store"
@@ -2012,6 +2030,21 @@
    "id": "C17d",
    "coverage": "partial",
    "reason": "nearest observation with no device (device_id null: ambiguous / unlinked) not tested (amendment 09 Q2); gate before/after observations not tested separately (Q3)."
+  },
+  {
+   "id": "AM10-Q1",
+   "coverage": "none",
+   "reason": "which gate id the guard.log allow line names when a stale and a fresh open gate coexist: not specified, not asserted."
+  },
+  {
+   "id": "AM10-Q2",
+   "coverage": "none",
+   "reason": "deny message when several open gates are stale (every id or one): not specified; only the single-stale-gate deny is asserted."
+  },
+  {
+   "id": "AM10-Q3",
+   "coverage": "none",
+   "reason": "guard.log gate field on a stale deny ('-' or the stale gate id): not specified, not asserted."
   }
  ],
  "amendments": [
@@ -2362,6 +2395,26 @@
     "recovery-storage/scripts/tests/test_scenarios.py",
     "recovery-storage/scripts/tests/test_tool_failures.py",
     "recovery-storage/scripts/tests/test_verdict.py"
+   ]
+  },
+  {
+   "id": "10",
+   "date": "2026-10-21",
+   "doc": "plans/20261019-1726-recovery-storage-skill/amendment-10-guard-hook-clock.md",
+   "refrozen_at": "2026-10-20T23:15:20+00:00",
+   "reason": "user-approved amendment 10 (2026-10-21, 'c\u00f3 c\u1ea3 2', answering 's\u1eeda l\u1ed7i h\u1eb9n gi\u1edd qua amendment 10'): guard_hook reads the time only through module-level _now() (aware UTC, default wall clock; stale check and guard.log time); an open gate whose gate time (confirmed_ts, else ts) is more than 12 h before _now() does not unlock, exactly 12 h does, the deny names the gate, says 'more than 12 h' and keeps the next-step hint, a stale gate does not stop a fresh one, an unparseable or timezone-less gate time is not stale; H10, H10b, H13, H14 pinned inside the FakeClock era (they went red by date alone after 2026-10-20T12:00Z); contract in tests/CONTRACT.md section 'Amendment 10'",
+   "files_changed": [
+    "recovery-storage/scripts/tests/CONTRACT.md",
+    "recovery-storage/scripts/tests/test_guard_hook.py"
+   ],
+   "files_added": [],
+   "also_changed_not_frozen": [],
+   "criteria_added": [
+    "H19",
+    "H20"
+   ],
+   "amended_tests": [
+    "test_guard_hook.py hook() helper: pins guard_hook._now to FakeClock start + 1 h (raising=False) by default; now=<datetime> pins strictly, now=None leaves the clock (fixes test_H10_one_open_gate_unlocks_matched_commands, test_H10b_amendment02_open_gate_unlocks_new_block_list, test_H13_env_home_is_read, test_H13_default_home_when_env_unset, test_H14_audit_line_has_rule_decision_gate_hash_not_text, test_H14_logging_failure_keeps_decision; assertions unchanged)"
    ]
   }
  ]

@@ -2,6 +2,14 @@
 
 Format: newest first. Versions are semantic and assigned retroactively (no version is declared in the skill). Roadmap: [project-roadmap.md](project-roadmap.md).
 
+## [0.9.1] - 2026-10-21 - Amendment 10 (guard hook clock)
+
+Spec: [amendment-10](../plans/20261019-1726-recovery-storage-skill/amendment-10-guard-hook-clock.md). Rules version unchanged.
+
+### Fixed
+- `guard_hook.py` reads time through one `_now()`; frozen tests pin it. Six guard tests built open gates on the fixed `FakeClock` date and went red 12 h later by the wall clock alone (2026-10-20 12:00Z). The 12 h open-gate limit is now specified and tested.
+- Frozen files re-hashed over their git blob bytes (59 were CRLF in the working copy; manifest entry `eol-lf`).
+
 ## [0.9.0] - 2026-10-20 - Amendment 09 (event attribution by drive letter)
 
 Spec: [amendment-09](../plans/20261019-1726-recovery-storage-skill/amendment-09-event-attribution-by-nearest-letter-holder.md). Rules version `2026.10.20-8`.
